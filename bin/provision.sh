@@ -7,4 +7,6 @@ echo "export GOPATH=/home/develop/go" >> /home/develop/.zshrc
 echo "export GOPATH=/home/develop/go" >> /etc/environment
 echo "export PATH=$PATH:/usr/local/go/bin:/home/develop/go/bin" >> /home/develop/.zshrc
 
+make -f /home/develop/gad/Makefile mysql-setup
+
 sudo -u develop /home/develop/gad/bin/provision_user.sh

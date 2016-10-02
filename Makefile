@@ -16,6 +16,7 @@ export LDARG=-ldflags $(FLAGS)
 export BUILD=$(BIN)/gb build $(LDARG)
 export DBPASS?=$(DEFAULT_PASS)
 export DB_USER?=root
+export DB_NAME?=clickyab
 export RUSER?=$(APPNAME)
 export RPASS?=$(DEFAULT_PASS)
 export WORK_DIR=$(ROOT)/tmp
@@ -47,3 +48,10 @@ server: $(GB)
 run-server: server
 	sudo setcap cap_net_bind_service=+ep $(BIN)/server
 	$(BIN)/server
+
+
+mysql-setup: needroot
+	echo 'UPDATE user SET plugin="";' | mysql mysql
+	echo 'UPDATE user SET password=PASSWORD("$(DBPASS)") WHERE user="$(DB_USER)";' | mysql mysql
+	echo 'FLUSH PRIVILEGES;' | mysql mysql
+	echo 'CREATE DATABASE $(DB_NAME);' | mysql -u $(DB_USER) -p$(DBPASS)

@@ -20,5 +20,6 @@ func (tc *testController) Routes(e *echo.Echo, _ string) {
 }
 
 func init() {
+
 	modules.Register(&testController{})
 }
