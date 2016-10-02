@@ -6,6 +6,8 @@ import (
 	"time"
 	"version"
 
+	"models"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo/engine/fasthttp"
 )
@@ -24,5 +26,6 @@ func main() {
 		},
 	).Infof("Application started")
 
+	models.Initialize()
 	modules.Initialize(config.Config.MountPoint).Run(fasthttp.New(config.Config.Port))
 }
