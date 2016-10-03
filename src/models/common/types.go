@@ -198,6 +198,7 @@ func (gjf *GenericJSONField) Scan(src interface{}) error {
 		b = []byte(src.(string))
 	case nil:
 		b = make([]byte, 0)
+		return nil
 	default:
 		return errors.New("unsupported type")
 	}

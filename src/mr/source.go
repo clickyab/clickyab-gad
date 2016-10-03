@@ -8,12 +8,11 @@ import (
 	"models/common"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type PooyaArray []int64
 
-type AdData []struct {
+type AdData struct {
 	AdID              int64                   `json:"ad_id" db:"ad_id"`
 	AdSize            int                     `json:"ad_size" db:"ad_size"`
 	UserID            int64                   `json:"u_id" db:"u_id"`
@@ -34,9 +33,9 @@ type AdData []struct {
 	AdTextColor       sql.NullString          `json:"ad_textColor" db:"ad_textColor"`
 	AdTarget          sql.NullString          `json:"ad_target" db:"ad_target"`
 	AdAttribute       common.GenericJSONField `json:"ad_attribute" db:"ad_attribute"`
-	AdHashAttribute   string                  `json:"ad_hash_attribute" db:"ad_hash_attribute"`
-	CreatedAt         time.Time               `json:"created_at" db:"created_at"`
-	UpdatedAt         time.Time               `json:"updated_at" db:"updated_at"`
+	AdHashAttribute   sql.NullString          `json:"ad_hash_attribute" db:"ad_hash_attribute"`
+	CreatedAt         sql.NullString          `json:"created_at" db:"created_at"`
+	UpdatedAt         sql.NullString          `json:"updated_at" db:"updated_at"`
 	UEmail            string                  `json:"u_email" db:"u_email"`
 	UBalance          string                  `json:"u_balance" db:"u_balance"`
 	CpID              int64                   `json:"cp_id" db:"cp_id"`
