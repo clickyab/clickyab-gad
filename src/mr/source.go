@@ -136,10 +136,12 @@ func (pa *PooyaArray) Scan(src interface{}) error {
 // Value try to get the string slice representation in database
 func (is PooyaArray) Value() (driver.Value, error) {
 	tmp := "#"
-	for range is {
+	arr := make([]interface{}, len(is))
+	for i := range is {
 		tmp += "%d#"
+		arr[i] = is[i]
 	}
-	res := fmt.Sprintf(tmp, is...)
+	res := fmt.Sprintf(tmp, arr...)
 
 	return []byte(res), nil
 }
