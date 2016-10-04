@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type PooyaArray []int64
+type SharpArray []int64
 
 type AdData struct {
 	AdID              int64                   `json:"ad_id" db:"ad_id"`
@@ -43,8 +43,8 @@ type AdData struct {
 	CpBillingType     sql.NullString          `json:"cp_billing_type" db:"cp_billing_type"`
 	CpName            sql.NullString          `json:"cp_name" db:"cp_name"`
 	CpNetwork         int                     `json:"cp_network" db:"cp_network"`
-	CpPlacement       PooyaArray              `json:"cp_placement" db:"cp_placement"`
-	CpWfilter         PooyaArray              `json:"cp_wfilter" db:"cp_wfilter"`
+	CpPlacement       SharpArray              `json:"cp_placement" db:"cp_placement"`
+	CpWfilter         SharpArray              `json:"cp_wfilter" db:"cp_wfilter"`
 	CpRetargeting     sql.NullString          `json:"cp_retargeting" db:"cp_retargeting"`
 	CpFrequency       int                     `json:"cp_frequency" db:"cp_frequency"`
 	CpSegmentID       sql.NullInt64           `json:"cp_segment_id" db:"cp_segment_id"`
@@ -67,18 +67,18 @@ type AdData struct {
 	CpAlexa           int                     `json:"cp_alexa" db:"cp_alexa"`
 	CpFatfinger       int                     `json:"cp_fatfinger" db:"cp_fatfinger"`
 	CpUnder           int                     `json:"cp_under" db:"cp_under"`
-	CpGeos            PooyaArray              `json:"cp_geos" db:"cp_geos"`
-	CpRegion          PooyaArray              `json:"cp_region" db:"cp_region"`
-	CpCountry         PooyaArray              `json:"cp_country" db:"cp_country"`
-	CpHoods           PooyaArray              `json:"cp_hoods" db:"cp_hoods"`
-	CpIspBlacklist    PooyaArray              `json:"cp_isp_blacklist" db:"cp_isp_blacklist"`
-	CpCat             PooyaArray              `json:"cp_cat" db:"cp_cat"`
-	CpLikeApp         PooyaArray              `json:"cp_like_app" db:"cp_like_app"`
-	CpApp             PooyaArray              `json:"cp_app" db:"cp_app"`
-	CpAppFilter       PooyaArray              `json:"cp_app_filter" db:"cp_app_filter"`
-	CpKeywords        PooyaArray              `json:"cp_keywords" db:"cp_keywords"`
-	CpPlatforms       PooyaArray              `json:"cp_platforms" db:"cp_platforms"`
-	CpPlatformVersion PooyaArray              `json:"cp_platform_version" db:"cp_platform_version"`
+	CpGeos            SharpArray              `json:"cp_geos" db:"cp_geos"`
+	CpRegion          SharpArray              `json:"cp_region" db:"cp_region"`
+	CpCountry         SharpArray              `json:"cp_country" db:"cp_country"`
+	CpHoods           SharpArray              `json:"cp_hoods" db:"cp_hoods"`
+	CpIspBlacklist    SharpArray              `json:"cp_isp_blacklist" db:"cp_isp_blacklist"`
+	CpCat             SharpArray              `json:"cp_cat" db:"cp_cat"`
+	CpLikeApp         SharpArray              `json:"cp_like_app" db:"cp_like_app"`
+	CpApp             SharpArray              `json:"cp_app" db:"cp_app"`
+	CpAppFilter       SharpArray              `json:"cp_app_filter" db:"cp_app_filter"`
+	CpKeywords        SharpArray              `json:"cp_keywords" db:"cp_keywords"`
+	CpPlatforms       SharpArray              `json:"cp_platforms" db:"cp_platforms"`
+	CpPlatformVersion SharpArray              `json:"cp_platform_version" db:"cp_platform_version"`
 	CpMaxbid          int                     `json:"cp_maxbid" db:"cp_maxbid"`
 	CpWeeklyBudget    int                     `json:"cp_weekly_budget" db:"cp_weekly_budget"`
 	CpDailyBudget     int                     `json:"cp_daily_budget" db:"cp_daily_budget"`
@@ -107,7 +107,7 @@ type AdData struct {
 }
 
 // Scan convert the json array ino string slice
-func (pa *PooyaArray) Scan(src interface{}) error {
+func (pa *SharpArray) Scan(src interface{}) error {
 	var b []byte
 	switch src.(type) {
 	case []byte:
@@ -123,7 +123,7 @@ func (pa *PooyaArray) Scan(src interface{}) error {
 	s := strings.Split(string(b), "#")
 	for i := range s {
 		v, err := strconv.ParseInt(s[i], 10, 0)
-		if err != nil {
+		if err == nil {
 			*pa = append(*pa, v)
 		}
 	}
@@ -133,7 +133,7 @@ func (pa *PooyaArray) Scan(src interface{}) error {
 }
 
 // Value try to get the string slice representation in database
-func (is PooyaArray) Value() (driver.Value, error) {
+func (is SharpArray) Value() (driver.Value, error) {
 	tmp := "#"
 	arr := make([]interface{}, len(is))
 	for i := range is {
