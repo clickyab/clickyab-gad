@@ -4,6 +4,7 @@ export GO=$(shell which go)
 export GIT:=$(shell which git)
 export ROOT=$(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 export BIN=$(ROOT)/bin
+export GB=$(BIN)/gb
 export GOPATH=$(ROOT):$(ROOT)/vendor
 export WATCH?=hello
 export LONGHASH=$(shell git log -n1 --pretty="format:%H" | cat)
@@ -41,6 +42,12 @@ clean:
 
 $(GB): notroot
 	@[ -f $(BIN)/gb ] || make gb
+
+restore: $(GB)
+	PATH=$(PATH):$(BIN) $(GB) vendor restore
+
+fetch: $(GB)
+	PATH=$(PATH):$(BIN) $(GB) vendor fetch $(REPO)
 
 server: $(GB)
 	$(BUILD) server
