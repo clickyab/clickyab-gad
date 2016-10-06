@@ -26,7 +26,6 @@ func interval() {
 	assert.Nil(err)
 	ticker := time.NewTicker(time.Minute)
 	fail := 0
-theBigLoop:
 	for {
 		select {
 		case <-ticker.C:
@@ -39,7 +38,7 @@ theBigLoop:
 						assert.Nil(err, fmt.Sprintf("more than %s time failed to load data", fail))
 					}
 					fail++
-					break theBigLoop
+					break
 				}
 				fail = 0
 				lock.Lock()
