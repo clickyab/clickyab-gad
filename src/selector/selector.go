@@ -25,8 +25,7 @@ func filterSize(c echo.Context, in mr.AdData) bool {
 
 func (tc *selectController) Select(c echo.Context) error {
 	c.Set("ccc", 3)
-	x := Apply(c, GetAdData(), filterNonApp, 3)
-	x = Apply(c, x, filterSize, 3)
+	x := Apply(c, GetAdData(), Mix(filterNonApp, filterSize), 3)
 	fmt.Println(len(x))
 	return c.JSON(http.StatusOK, x)
 }
