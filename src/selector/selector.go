@@ -1,14 +1,13 @@
 package selector
 
 import (
+	"fmt"
 	"modules"
-
 	"mr"
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
-	"fmt"
 )
 
 type selectController struct {
@@ -24,10 +23,9 @@ func filterSize(c echo.Context, in mr.AdData) bool {
 	return in.AdSize == size
 }
 
-
 func (tc *selectController) Select(c echo.Context) error {
 	c.Set("ccc", 3)
-	x := Apply(c, GetAdData(), filterSize, 3)
+	x := Apply(c, GetAdData(), filterNonApp, 3)
 	x = Apply(c, x, filterSize, 3)
 	fmt.Println(len(x))
 	return c.JSON(http.StatusOK, x)

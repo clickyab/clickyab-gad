@@ -2,12 +2,11 @@ package selector
 
 import (
 	"assert"
+	"fmt"
 	"models"
 	"mr"
 	"sync"
 	"time"
-
-	"fmt"
 )
 
 var (

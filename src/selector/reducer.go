@@ -1,9 +1,10 @@
 package selector
 
 import (
+	"fmt"
 	"mr"
 	"sync"
-	"fmt"
+
 	"github.com/labstack/echo"
 )
 
