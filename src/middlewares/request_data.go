@@ -21,11 +21,11 @@ type RequestData struct {
 }
 
 
-// Recovery is the middleware to prevent the panic to crash the app
-func Test(next echo.HandlerFunc) echo.HandlerFunc {
+// RequestCollector try to collect data from request
+func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		e := &RequestData{}
-		ua := user_agent.New(ctx.Request().Header().Get("User-Agent"))
+		ua := user_agent.New(ctx.Request().UserAgent())
 		name, version := ua.Browser()
 		e.Browser=name
 		e.BrowserVersion=version

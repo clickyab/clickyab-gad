@@ -28,7 +28,7 @@ func Register(c ...Controller) {
 func Initialize(mountPoint string) *echo.Echo {
 	once.Do(func() {
 		e = echo.New()
-		mid := []echo.MiddlewareFunc{middlewares.Recovery, middlewares.Logger}
+		mid := []echo.MiddlewareFunc{middlewares.Recovery, middlewares.Logger, middlewares.RequestCollector}
 		if config.Config.CORS {
 			mid = append(mid, middleware.CORS())
 		}

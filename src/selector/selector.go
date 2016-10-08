@@ -2,10 +2,10 @@ package selector
 
 import (
 	"fmt"
+	"middlewares"
 	"modules"
 	"mr"
 	"net/http"
-	"middlewares"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -24,12 +24,12 @@ func filterSize(c *Context, in mr.AdData) bool {
 }
 
 func (tc *selectController) Select(c echo.Context) error {
-	RequestData := c.Get("RequestData").(*middlewares.RequestData)
+	rd := c.Get("RequestData").(*middlewares.RequestData)
 	//call context
 	m := Context{
-		RequestData: *RequestData,
+		RequestData: *rd,
 	}
-	x := Apply(m, GetAdData(), Mix(filterNonApp, filterSize), 3)
+	x := Apply(&m, GetAdData(), Mix(filterNonApp, filterSize), 3)
 	fmt.Println(len(x))
 	return c.JSON(http.StatusOK, x)
 }
