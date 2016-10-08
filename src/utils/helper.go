@@ -4,6 +4,9 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"encoding/binary"
+	"net"
+	"errors"
 )
 
 var spaceMatch = regexp.MustCompile(`\s+`)
@@ -60,4 +63,19 @@ func Int64InArray(q int64, arr ...int64) bool {
 	}
 
 	return false
+}
+
+func Long2IP(ipLong uint32) string {
+	ipByte := make([]byte, 4)
+	binary.BigEndian.PutUint32(ipByte, ipLong)
+	ip := net.IP(ipByte)
+	return ip.String()
+}
+func IP2long(ipAddr string) (uint32, error) {
+	ip := net.ParseIP(ipAddr)
+	if ip == nil {
+		return 0, errors.New("wrong ipAddr format")
+	}
+	ip = ip.To4()
+	return binary.BigEndian.Uint32(ip), nil
 }
