@@ -5,10 +5,10 @@ import (
 	"modules"
 	"mr"
 	"net/http"
+	"middlewares"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
-	"middlewares"
 )
 
 type selectController struct {
@@ -24,10 +24,10 @@ func filterSize(c *Context, in mr.AdData) bool {
 }
 
 func (tc *selectController) Select(c echo.Context) error {
-	RequestData:= c.Get("RequestData").(*middlewares.RequestData)
+	RequestData := c.Get("RequestData").(*middlewares.RequestData)
 	//call context
-	m:=Context{
-		RequestData : *RequestData,
+	m := Context{
+		RequestData: *RequestData,
 	}
 	x := Apply(m, GetAdData(), Mix(filterNonApp, filterSize), 3)
 	fmt.Println(len(x))
