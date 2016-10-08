@@ -124,6 +124,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/mssola/user_agent",
+			"repository": "https://github.com/mssola/user_agent",
+			"revision": "8e786bcb38b846e5eb8eb5f036d9144fc7b0a1f8",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/pmezard/go-difflib/difflib",
 			"repository": "https://github.com/pmezard/go-difflib",
 			"revision": "792786c7400a136282c1664665ae0a8db921c6c2",
