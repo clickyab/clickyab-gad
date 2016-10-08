@@ -30,7 +30,8 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	 	LEFT JOIN campaigns_ads AS CA ON C.cp_id=CA.cp_id
 		LEFT JOIN ads AS A ON A.ad_id=CA.ad_id
 		LEFT JOIN users AS U ON C.u_id=U.u_id
-		WHERE A.ad_status=1 AND C.cp_status=1 AND C.cp_start <= ? AND C.cp_end >= ?
+		WHERE A.ad_status=1 AND C.cp_status=1 AND (C.cp_start <= ? OR C.cp_start=0)
+				AND (C.cp_end >= ? OR C.cp_end=0)
 				AND cp_hour_start <= ? AND cp_hour_end >= ?
 				AND U.u_balance >= ?`
 

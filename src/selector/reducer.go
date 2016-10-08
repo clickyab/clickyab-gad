@@ -1,7 +1,6 @@
 package selector
 
 import (
-	"fmt"
 	"mr"
 	"sync"
 
@@ -38,13 +37,12 @@ func Apply(ctx echo.Context, in []mr.AdData, ff FilterFunc, cc int) []mr.AdData 
 	sem := make(chan struct{}, cc)
 	res := make([]mr.AdData, 0, len(in))
 	for i := range in {
+		sem <- struct{}{}
 		go func(j int) {
-			sem <- struct{}{}
 			defer func() {
 				wg.Done()
 				<-sem
 			}()
-			fmt.Println(j)
 			if ff(ctx, in[j]) {
 				res = append(res, in[j])
 			}
