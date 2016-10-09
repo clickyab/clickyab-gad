@@ -7,7 +7,6 @@ import (
 	"mr"
 	"net/http"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 )
 
@@ -15,7 +14,6 @@ type selectController struct {
 }
 
 func filterNonApp(c *Context, in mr.AdData) bool {
-	logrus.Info("Hi, its me")
 	return in.CpType == 0
 }
 
@@ -25,9 +23,11 @@ func filterSize(c *Context, in mr.AdData) bool {
 
 func (tc *selectController) Select(c echo.Context) error {
 	rd := c.Get("RequestData").(*middlewares.RequestData)
+	wd := c.Get("WebsiteData").(*mr.WebsiteData)
 	//call context
 	m := Context{
 		RequestData: *rd,
+		WebsiteData: *wd,
 	}
 	x := Apply(&m, GetAdData(), Mix(filterNonApp, filterSize), 3)
 	fmt.Println(len(x))

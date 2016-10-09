@@ -10,6 +10,7 @@ import (
 type Context struct {
 	middlewares.RequestData
 	Size []int
+	mr.WebsiteData
 }
 
 // FilterFunc is the type use to filter the
