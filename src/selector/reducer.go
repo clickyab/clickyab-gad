@@ -2,7 +2,6 @@ package selector
 
 import (
 	"mr"
-	"sync"
 
 	"middlewares"
 )
@@ -10,6 +9,7 @@ import (
 type Context struct {
 	middlewares.RequestData
 	Size []int
+	mr.WebsiteData
 }
 
 // FilterFunc is the type use to filter the
@@ -37,24 +37,24 @@ func Apply(ctx *Context, in []mr.AdData, ff FilterFunc, cc int) []mr.AdData {
 	if cc < 1 {
 		cc = 1
 	}
-	wg := sync.WaitGroup{}
-	wg.Add(len(in))
-	sem := make(chan struct{}, cc)
+	//wg := sync.WaitGroup{}
+	//wg.Add(len(in))
+	//sem := make(chan struct{}, cc)
 	res := make([]mr.AdData, 0, len(in))
 	for i := range in {
-		sem <- struct{}{}
+		/*sem <- struct{}{}
 		go func(j int) {
 			defer func() {
 				wg.Done()
 				<-sem
-			}()
-			if ff(ctx, in[j]) {
-				res = append(res, in[j])
-			}
-		}(i)
+			}()*/
+		if ff(ctx, in[i]) {
+			res = append(res, in[i])
+		}
+		/*}(i)
 	}
 
-	wg.Wait()
-
+	wg.Wait()*/
+	}
 	return res
 }
