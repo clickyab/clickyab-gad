@@ -1,14 +1,14 @@
 package middlewares
 
 import (
+	"banners"
 	_ "fmt"
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 	"github.com/mssola/user_agent"
 	"mr"
-	"strconv"
 	"regexp"
-	"banners"
+	"strconv"
 )
 
 type RequestData struct {
@@ -22,6 +22,7 @@ type RequestData struct {
 	BrowserVersion string
 	Method         string
 	Referrer       string
+	Mobile         bool
 }
 
 type Size []int
@@ -36,7 +37,7 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.BrowserVersion = version
 		e.Os = ua.OS()
 		e.Mobile = ua.Mobile()
-		e.Platform = ua.Platform()
+		e.OsVersion = ua.Platform()
 		e.RealIP = ctx.Request().RealIP()
 		e.Referrer = ctx.Request().Referer()
 		e.Method = ctx.Request().Method()
@@ -46,17 +47,17 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		public_id, _ := strconv.Atoi(params["i"][0])
 		domain := params["d"][0]
 
-		var size =make(map[string]string)
+		var size = make(map[string]string)
 		var sizeNumSlice []int
-		reg:=regexp.MustCompile(`s\[(\d*)\]`)
-		for key := range params{
-			slice:=reg.FindStringSubmatch(key)
+		reg := regexp.MustCompile(`s\[(\d*)\]`)
+		for key := range params {
+			slice := reg.FindStringSubmatch(key)
 			//fmt.Println(slice,len(slice))
-			if len(slice)==2{
-				size[slice[1]]=params[key][0]
+			if len(slice) == 2 {
+				size[slice[1]] = params[key][0]
 				//check for size
-				SizeNum,_:=banners.GetSize(size[slice[1]])
-				sizeNumSlice=append(sizeNumSlice,SizeNum)
+				SizeNum, _ := banners.GetSize(size[slice[1]])
+				sizeNumSlice = append(sizeNumSlice, SizeNum)
 
 			}
 

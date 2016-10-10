@@ -16,7 +16,7 @@ func main() {
 
 	config.Initialize()
 	ver := version.GetVersion()
-
+	//logrus.SetLevel(logrus.PanicLevel)
 	logrus.WithFields(
 		logrus.Fields{
 			"Commit hash":       ver.Hash,

@@ -7,10 +7,9 @@ import (
 	"mr"
 	"net/http"
 
+	"filter"
 	"github.com/labstack/echo"
 	"selector"
-	//"filter"
-	"filter"
 )
 
 type selectController struct {
@@ -36,7 +35,7 @@ func (tc *selectController) Select(c echo.Context) error {
 	}
 	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize,filter.CheckWhiteList), 3)
 	fmt.Println(len(x))
-	return c.JSON(http.StatusOK, x)
+	return c.JSON(http.StatusOK, 1)
 }
 
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
