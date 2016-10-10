@@ -17,7 +17,8 @@ type RequestData struct {
 	IP2Location    *mr.IP2Location
 	Browser        string
 	Os             string
-	OsVersion      string
+	Mobile         bool
+	Platform      string
 	BrowserVersion string
 	Method         string
 	Referrer       string
@@ -34,7 +35,8 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Browser = name
 		e.BrowserVersion = version
 		e.Os = ua.OS()
-		e.OsVersion = ua.Platform()
+		e.Mobile = ua.Mobile()
+		e.Platform = ua.Platform()
 		e.RealIP = ctx.Request().RealIP()
 		e.Referrer = ctx.Request().Referer()
 		e.Method = ctx.Request().Method()
@@ -61,7 +63,6 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		//set size in context
 		ctx.Set("RequestSize", sizeNumSlice)
-
 
 		////fetch website and set in Context
 		wd, err := mr.NewManager().FetchWebsite(public_id, domain)
