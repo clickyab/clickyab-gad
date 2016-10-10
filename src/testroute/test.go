@@ -1,31 +1,45 @@
-package testroute
+package selector
 
 import (
+	"fmt"
+	"middlewares"
 	"modules"
+	"mr"
+	"net/http"
 
 	"github.com/labstack/echo"
-	"mr"
+	"filter"
+	"selector"
 )
 
-type testController struct {
+type selectController struct {
 }
 
-func (tc *testController) Example(c echo.Context) error {
-	m := mr.NewManager()
+func filterNonApp(c *selector.Context, in mr.AdData) bool {
+	return in.CpType == 0
+}
 
-	x, err := m.LoadAds()
-	if err != nil {
-		return c.HTML(500, err.Error())
+
+func (tc *selectController) Select(c echo.Context) error {
+	rd := c.Get("RequestData").(*middlewares.RequestData)
+	wd := c.Get("WebsiteData").(*mr.WebsiteData)
+	size:=c.Get("RequestSize").(*middlewares.Size)
+	//call context
+	m := selector.Context{
+		RequestData: *rd,
+		WebsiteData: *wd,
+		Size:*size,
 	}
-
-	return c.JSON(200, x)
+	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize), 3)
+	fmt.Println(len(x))
+	return c.JSON(http.StatusOK, x)
 }
 
-func (tc *testController) Routes(e *echo.Echo, _ string) {
-	e.Get("/test", tc.Example)
+func (tc *selectController) Routes(e *echo.Echo, _ string) {
+	e.Get("/select", tc.Select)
 }
 
 func init() {
 
-	modules.Register(&testController{})
+	modules.Register(&selectController{})
 }
