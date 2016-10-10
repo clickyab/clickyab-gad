@@ -1,12 +1,12 @@
 package utils
 
 import (
+	"encoding/binary"
+	"errors"
+	"net"
 	"os"
 	"regexp"
 	"strings"
-	"encoding/binary"
-	"net"
-	"errors"
 )
 
 var spaceMatch = regexp.MustCompile(`\s+`)

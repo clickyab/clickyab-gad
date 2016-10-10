@@ -44,11 +44,11 @@ type AppConfig struct {
 		MaxIdleConnection int    `onion:"max_idle_connection"`
 	}
 
-	Select struct{
-		Date 		int `onion:"date"`
-		Hour		int `onion:"hour"`
-		Balance		int `onion:"Balance"`
-	       }
+	Select struct {
+		Date    int `onion:"date"`
+		Hour    int `onion:"hour"`
+		Balance int `onion:"Balance"`
+	}
 
 	Page struct {
 		PerPage    int `onion:"per_page"`
@@ -97,8 +97,7 @@ func init() {
 	//Config.Mysql.DSN = "novid:x4WT4a2o86oR1lup@tcp(5.9.150.114:3312)/clickyab?parseTime=true"
 
 	//db, err := sql.Open("mysql", "clickyab_test:760f5bad06b18134ef6@tcp(46.4.116.104:3306)/clickyab?charset=utf8")
-	Config.Mysql.DSN ="clickyab_test:760f5bad06b18134ef6@tcp(46.4.116.104:3306)/clickyab?charset=utf8&parseTime=true"
-
+	Config.Mysql.DSN = "clickyab_test:760f5bad06b18134ef6@tcp(46.4.116.104:3306)/clickyab?charset=utf8&parseTime=true"
 
 	Config.Mysql.MaxConnection = 100
 	Config.Mysql.MaxIdleConnection = 10
@@ -106,7 +105,7 @@ func init() {
 	Config.Page.MaxPerPage = 100
 	Config.Page.MinPerPage = 1
 
-	Config.Select.Date =0
+	Config.Select.Date = 0
 	Config.Select.Hour = 1
 	Config.Select.Balance = 50000
 

@@ -10,7 +10,6 @@ type Context struct {
 	middlewares.RequestData
 	Size []int
 	mr.WebsiteData
-
 }
 
 // FilterFunc is the type use to filter the
@@ -53,9 +52,9 @@ func Apply(ctx *Context, in []mr.AdData, ff FilterFunc, cc int) []mr.AdData {
 			res = append(res, in[i])
 		}
 		/*}(i)
-	}
+		}
 
-	wg.Wait()*/
+		wg.Wait()*/
 	}
 	return res
 }
