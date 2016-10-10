@@ -7,4 +7,5 @@ type RegionData struct {
 	LocationMaster 	bool	`json:"location_master" db:"location_master"`
 	LocationSelect	bool	`json:"location_select" db:"location_select"`
 }
-type RegionsData []RegionData
+
+var listRegions []RegionData
