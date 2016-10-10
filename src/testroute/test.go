@@ -9,6 +9,8 @@ import (
 
 	"github.com/labstack/echo"
 	"selector"
+	//"filter"
+	"filter"
 )
 
 type selectController struct {
@@ -24,13 +26,15 @@ func (tc *selectController) Select(c echo.Context) error {
 	rd := c.Get("RequestData").(*middlewares.RequestData)
 	wd := c.Get("WebsiteData").(*mr.WebsiteData)
 	size:=c.Get("RequestSize").([]int)
+	rgd := c.Get("RegionData").(*mr.RegionsData)
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
 		WebsiteData: *wd,
 		Size: size,
+		RegionsData: *rgd,
 	}
-	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(), 3)
+	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize,filter.CheckWhiteList), 3)
 	fmt.Println(len(x))
 	return c.JSON(http.StatusOK, x)
 }
