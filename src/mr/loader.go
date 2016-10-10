@@ -51,16 +51,15 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	return res, nil
 }
 
-func (m *Manager) FetchWebsite(public_id int, domain string) (*WebsiteData, error) {
+func (m *Manager) FetchWebsite(public_id int) (*WebsiteData, error) {
 	var res = WebsiteData{}
 
-	query := `SELECT * FROM websites WHERE w_pub_id = ? AND w_domain = ? LIMIT 1`
+	query := `SELECT * FROM websites WHERE w_pub_id = ?  LIMIT 1`
 
 	err := m.GetDbMap().SelectOne(
 		&res,
 		query,
 		public_id,
-		domain,
 	)
 	if err != nil {
 		return nil, err
@@ -69,12 +68,12 @@ func (m *Manager) FetchWebsite(public_id int, domain string) (*WebsiteData, erro
 	return &res, nil
 }
 
-func (m *Manager) FetchRegion() (*RegionsData, error) {
-	var res = RegionsData{}
+func (m *Manager) FetchRegion() (*RegionData, error) {
+	var res = RegionData{}
 
 	query := `SELECT * FROM list_locations`
 
-	_,err := m.GetDbMap().Select(
+	_, err := m.GetDbMap().Select(
 		&res,
 		query,
 	)

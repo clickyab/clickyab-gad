@@ -1,15 +1,15 @@
 package filter
 
 import (
-	"selector"
 	"mr"
+	"selector"
 )
 
-func CheckWhiteList(c *selector.Context, in mr.AdData) bool  {
-	if len(in.CpWfilter)==0{
-		return true;
+func CheckWhiteList(c *selector.Context, in mr.AdData) bool {
+	if len(in.CpWfilter) == 0 {
+		return true
 	}
-	for _, v := range in.CpWfilter{
+	for _, v := range in.CpWfilter {
 		if v == c.WID {
 			return true
 		}
