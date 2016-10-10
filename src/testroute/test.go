@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
-	"filter"
 	"selector"
 )
 
@@ -19,18 +18,19 @@ func filterNonApp(c *selector.Context, in mr.AdData) bool {
 	return in.CpType == 0
 }
 
+type size []int
 
 func (tc *selectController) Select(c echo.Context) error {
 	rd := c.Get("RequestData").(*middlewares.RequestData)
 	wd := c.Get("WebsiteData").(*mr.WebsiteData)
-	size:=c.Get("RequestSize").(*middlewares.Size)
+	size:=c.Get("RequestSize").([]int)
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
 		WebsiteData: *wd,
-		Size:*size,
+		Size: size,
 	}
-	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize), 3)
+	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(), 3)
 	fmt.Println(len(x))
 	return c.JSON(http.StatusOK, x)
 }

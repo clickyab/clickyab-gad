@@ -60,7 +60,7 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 
 		}
 		//set size in context
-		ctx.Set("RequestSize", e)
+		ctx.Set("RequestSize", sizeNumSlice)
 
 
 		////fetch website and set in Context
