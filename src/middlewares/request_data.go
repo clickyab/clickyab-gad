@@ -71,6 +71,11 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		ctx.Set("WebsiteData", wd)
 
 		////fetch size and add to context
+		rgd, err := mr.NewManager().FetchRegion()
+		if err != nil{
+			logrus.Fatal(err)
+		}
+		ctx.Set("RegionData",rgd)
 
 		return next(ctx)
 	}

@@ -68,3 +68,19 @@ func (m *Manager) FetchWebsite(public_id int, domain string) (*WebsiteData, erro
 
 	return &res, nil
 }
+
+func (m *Manager) FetchRegion() (*RegionsData, error) {
+	var res = RegionsData{}
+
+	query := `SELECT * FROM list_locations`
+
+	_,err := m.GetDbMap().Select(
+		&res,
+		query,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
