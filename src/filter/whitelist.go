@@ -6,10 +6,10 @@ import (
 )
 
 func CheckWhiteList(c *selector.Context, in mr.AdData) bool {
-	if len(in.CpWfilter) == 0 {
+	if len(in.CpPlacement) == 0 {
 		return true
 	}
-	for _, v := range in.CpWfilter {
+	for _, v := range in.CpPlacement {
 		if v == c.WID {
 			return true
 		}
