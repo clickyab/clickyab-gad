@@ -1,7 +1,7 @@
 package selector
 
 import (
-	"fmt"
+	_"fmt"
 	"middlewares"
 	"modules"
 	"mr"
@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"selector"
 	"strconv"
+	"fmt"
 )
 
 type selectController struct {
@@ -38,11 +39,19 @@ func (tc *selectController) Select(c echo.Context) error {
 	if err != nil {
 		return errors.New("public_id not found")
 	}
+	domain,ok:= params["d"]
+	if !ok {
+		return errors.New("domain not found")
+	}
 
 	////fetch website and set in Context
 	website, err := mr.NewManager().FetchWebsite(public_id)
 	if err != nil {
 		logrus.Fatal(err)
+	}
+	//check if the website domain is valid
+	if website.WDomain.Valid && website.WDomain.String!=domain[0] {
+		return errors.New("domain and public id mismatch")
 	}
 
 	var size = make(map[string]string)
@@ -63,9 +72,6 @@ func (tc *selectController) Select(c echo.Context) error {
 
 	rd := c.Get("RequestData").(*middlewares.RequestData)
 
-	//Fetch Category
-
-
 
 	//call context
 	m := selector.Context{
@@ -73,9 +79,9 @@ func (tc *selectController) Select(c echo.Context) error {
 		WebsiteData: *website,
 		Size:        sizeNumSlice,
 	}
-	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS, filter.CheckWhiteList, filter.CheckNetwork), 3)
+	x:=selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS,filter.CheckWhiteList, filter.CheckNetwork), 3)
 	fmt.Println(len(x))
-	return c.JSON(http.StatusOK, 1)
+	return c.JSON(http.StatusOK, x)
 }
 
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
