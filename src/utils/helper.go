@@ -54,7 +54,7 @@ func StringInArray(q string, arr ...string) bool {
 	return false
 }
 
-// StringInArray check for a string in other strings
+// Int64InArray check for a string in other strings
 func Int64InArray(q int64, arr ...int64) bool {
 	for i := range arr {
 		if arr[i] == q {
@@ -65,12 +65,15 @@ func Int64InArray(q int64, arr ...int64) bool {
 	return false
 }
 
+// Long2IP function @todo
 func Long2IP(ipLong uint32) string {
 	ipByte := make([]byte, 4)
 	binary.BigEndian.PutUint32(ipByte, ipLong)
 	ip := net.IP(ipByte)
 	return ip.String()
 }
+
+// IP2long function @todo
 func IP2long(ipAddr string) (uint32, error) {
 	ip := net.ParseIP(ipAddr)
 	if ip == nil {

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 )
 
+// WebsiteData type @todo
 type WebsiteData struct {
 	WID                int64          `json:"w_id" db:"w_id"`
 	UserID             int64          `json:"u_id" db:"u_id"`

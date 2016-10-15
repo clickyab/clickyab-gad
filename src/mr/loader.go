@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// LoadAds function @todo
 func (m *Manager) LoadAds() ([]AdData, error) {
 	var res []AdData
 	//t:= strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
@@ -51,7 +52,8 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	return res, nil
 }
 
-func (m *Manager) FetchWebsite(public_id int) (*WebsiteData, error) {
+// FetchWebsite function @todo
+func (m *Manager) FetchWebsite(publicID int) (*WebsiteData, error) {
 	var res = WebsiteData{}
 
 	query := `SELECT * FROM websites WHERE w_pub_id = ?  LIMIT 1`
@@ -59,7 +61,7 @@ func (m *Manager) FetchWebsite(public_id int) (*WebsiteData, error) {
 	err := m.GetDbMap().SelectOne(
 		&res,
 		query,
-		public_id,
+		publicID,
 	)
 	if err != nil {
 		return nil, err
@@ -68,6 +70,7 @@ func (m *Manager) FetchWebsite(public_id int) (*WebsiteData, error) {
 	return &res, nil
 }
 
+// FetchRegion function @todo
 func (m *Manager) FetchRegion() (*RegionData, error) {
 	var res = RegionData{}
 

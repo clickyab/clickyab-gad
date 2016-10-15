@@ -23,8 +23,6 @@ type RequestData struct {
 	Mobile         bool
 }
 
-type Size []int
-
 const requestDataToken = "__request_data__"
 
 // RequestCollector try to collect data from request

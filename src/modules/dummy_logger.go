@@ -117,6 +117,7 @@ func (m *myLogger) Fatalf(s string, args ...interface{}) {
 	m.logger.Fatalf(s, args...)
 }
 
+// NewLogger function that  logs events on show ads
 func NewLogger() ll.Logger {
 	return &myLogger{logger: logrus.New()}
 }

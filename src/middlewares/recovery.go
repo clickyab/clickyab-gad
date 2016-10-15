@@ -16,7 +16,7 @@ func Recovery(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		defer func() {
 			if err := recover(); err != nil {
-				ctx.JSON(
+				_ = ctx.JSON(
 					http.StatusInternalServerError,
 					struct {
 						Error string `json:"error"`

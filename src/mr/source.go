@@ -10,8 +10,10 @@ import (
 	"strings"
 )
 
+// SharpArray type @todo
 type SharpArray []int64
 
+// AdData type @todo
 type AdData struct {
 	AdID              int64                   `json:"ad_id" db:"ad_id"`
 	AdSize            int                     `json:"ad_size" db:"ad_size"`
@@ -133,14 +135,13 @@ func (pa *SharpArray) Scan(src interface{}) error {
 }
 
 // Value try to get the string slice representation in database
-func (is SharpArray) Value() (driver.Value, error) {
+func (pa SharpArray) Value() (driver.Value, error) {
 	tmp := "#"
-	arr := make([]interface{}, len(is))
-	for i := range is {
+	arr := make([]interface{}, len(pa))
+	for i := range pa {
 		tmp += "%d#"
-		arr[i] = is[i]
+		arr[i] = pa[i]
 	}
 	res := fmt.Sprintf(tmp, arr...)
-
 	return []byte(res), nil
 }

@@ -10,7 +10,7 @@ type Manager struct {
 	common.Manager
 }
 
-// NewAaaManager create and return a manager for this module
+// NewManager create and return a manager for this module
 func NewManager() *Manager {
 	return &Manager{}
 }

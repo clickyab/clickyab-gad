@@ -76,14 +76,13 @@ func (s *StringSlice) Scan(src interface{}) error {
 	return nil
 }
 
-// Value A very exprimental string slice to postgres array.
-// BUG use it with care, its not tested so much
+// Value A very experimental string slice to postgres array. BUG use it with care, its not tested so much
 func (s StringSlice) Value() (driver.Value, error) {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return nil, err
 	}
-	// the first charachter is [ and the last is ] so change them to {}
+	// the first character is [ and the last is ] so change them to {}
 	res := fmt.Sprintf("{%s}", string(b[1:len(b)-1]))
 	return []byte(res), nil
 }
@@ -103,43 +102,43 @@ func BuildPgPlaceHolder(start int, params ...interface{}) ([]string, []interface
 
 // EscapeText is my attempt to implement the escape-string for postgres query for some
 // trick on insert/duplicate
-func EscapeText(text string) string {
-	var buf []byte
-	escapeNeeded := false
-	startPos := 0
-	var c byte
-
-	// check if we need to escape
-	for i := 0; i < len(text); i++ {
-		c = text[i]
-		if c == '\\' || c == '\n' || c == '\r' || c == '\t' || c == '\'' {
-			escapeNeeded = true
-			startPos = i
-			break
-		}
-	}
-	if !escapeNeeded {
-		return string(append(buf, text...))
-	}
-
-	// copy till first char to escape, iterate the rest
-	result := append(buf, text[:startPos]...)
-	for i := startPos; i < len(text); i++ {
-		c = text[i]
-		switch c {
-		case '\'':
-			result = append(result, '\\', '\'')
-		case '\\':
-			result = append(result, '\\', '\\')
-		case '\n':
-			result = append(result, '\\', 'n')
-		case '\r':
-			result = append(result, '\\', 'r')
-		case '\t':
-			result = append(result, '\\', 't')
-		default:
-			result = append(result, c)
-		}
-	}
-	return string(result)
-}
+//func EscapeText(text string) string {
+//	var buf []byte
+//	escapeNeeded := false
+//	startPos := 0
+//	var c byte
+//
+//	// check if we need to escape
+//	for i := 0; i < len(text); i++ {
+//		c = text[i]
+//		if c == '\\' || c == '\n' || c == '\r' || c == '\t' || c == '\'' {
+//			escapeNeeded = true
+//			startPos = i
+//			break
+//		}
+//	}
+//	if !escapeNeeded {
+//		return string(append(buf, text...))
+//	}
+//
+//	// copy till first char to escape, iterate the rest
+//	result := append(buf, text[:startPos]...)
+//	for i := startPos; i < len(text); i++ {
+//		c = text[i]
+//		switch c {
+//		case '\'':
+//			result = append(result, '\\', '\'')
+//		case '\\':
+//			result = append(result, '\\', '\\')
+//		case '\n':
+//			result = append(result, '\\', 'n')
+//		case '\r':
+//			result = append(result, '\\', 'r')
+//		case '\t':
+//			result = append(result, '\\', 't')
+//		default:
+//			result = append(result, c)
+//		}
+//	}
+//	return string(result)
+//}

@@ -5,6 +5,7 @@ import (
 	"selector"
 )
 
+// CheckWhiteList return boolean
 func CheckWhiteList(c *selector.Context, in mr.AdData) bool {
 	if len(in.CpPlacement) == 0 {
 		return true

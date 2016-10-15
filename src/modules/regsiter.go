@@ -20,6 +20,7 @@ type Controller interface {
 	Routes(*echo.Echo, string)
 }
 
+// Register function
 func Register(c ...Controller) {
 	all = append(all, c...)
 }

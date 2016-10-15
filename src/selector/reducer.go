@@ -6,6 +6,7 @@ import (
 	"middlewares"
 )
 
+// Context type @todo
 type Context struct {
 	middlewares.RequestData
 	Size []int
@@ -34,9 +35,9 @@ func Mix(f ...FilterFunc) FilterFunc {
 // Apply get the data and then call filter on each of them concurrently, the
 // result is the accepted items
 func Apply(ctx *Context, in []mr.AdData, ff FilterFunc, cc int) []mr.AdData {
-	if cc < 1 {
-		cc = 1
-	}
+	//if cc < 1 {
+	//	cc = 1
+	//}
 	//wg := sync.WaitGroup{}
 	//wg.Add(len(in))
 	//sem := make(chan struct{}, cc)

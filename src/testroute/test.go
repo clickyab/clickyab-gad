@@ -1,7 +1,6 @@
 package selector
 
 import (
-	_ "fmt"
 	"middlewares"
 	"modules"
 	"mr"
@@ -23,17 +22,16 @@ import (
 type selectController struct {
 }
 
-type size []int
-
+// Select functioon @todo
 func (tc *selectController) Select(c echo.Context) error {
 
 	params := c.QueryParams()
 
-	public_params, ok := params["i"]
+	publicParams, ok := params["i"]
 	if !ok {
 		return errors.New("params i not found")
 	}
-	public_id, err := strconv.Atoi(public_params[0])
+	publicID, err := strconv.Atoi(publicParams[0])
 	if err != nil {
 		return errors.New("public_id not found")
 	}
@@ -43,7 +41,7 @@ func (tc *selectController) Select(c echo.Context) error {
 	}
 
 	//fetch website and set in Context
-	website, err := mr.NewManager().FetchWebsite(public_id)
+	website, err := mr.NewManager().FetchWebsite(publicID)
 	if err != nil {
 		logrus.Fatal(err)
 	}
@@ -81,6 +79,7 @@ func (tc *selectController) Select(c echo.Context) error {
 	return c.JSON(http.StatusOK, x)
 }
 
+// Routes function @todo
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.Get("/select", tc.Select)
 }

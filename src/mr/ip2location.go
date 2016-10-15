@@ -5,6 +5,7 @@ import (
 	"utils"
 )
 
+// IP2Location type @todo
 type IP2Location struct {
 	IPFrom      int64          `json:"ip_from" db:"ip_from"`
 	IPTo        int64          `json:"ip_to" db:"ip_to"`
@@ -14,7 +15,7 @@ type IP2Location struct {
 	CityName    sql.NullString `json:"city_name" db:"city_name"`
 }
 
-//
+//GetLocation @todo
 func (m *Manager) GetLocation(ip string) (*IP2Location, error) {
 	var res IP2Location
 	long, err := utils.IP2long(ip)

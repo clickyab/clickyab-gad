@@ -25,30 +25,27 @@ func interval() {
 	assert.Nil(err)
 	ticker := time.NewTicker(time.Minute)
 	fail := 0
-	for {
-		select {
-		case <-ticker.C:
-			{
-				l, err := manager.LoadAds()
-				if err != nil {
-					// TODO : handle this
-					//oh crap, failed. can we tolerate this?
-					if fail > 3 { // TODO Read from config
-						assert.Nil(err, fmt.Sprintf("more than %s time failed to load data", fail))
-					}
-					fail++
-					break
-				}
-				fail = 0
-				lock.Lock()
-				copy(loaded, l)
-				lock.Unlock()
+	for range ticker.C {
+		l, err := manager.LoadAds()
+		if err != nil {
+			// TODO : handle this
+			//oh crap, failed. can we tolerate this?
+			if fail > 3 { // TODO Read from config
+				assert.Nil(err, fmt.Sprintf("more than %s time failed to load data", fail))
 			}
+			fail++
+			break
 		}
+		fail = 0
+		lock.Lock()
+		copy(loaded, l)
+		lock.Unlock()
 	}
+
 	ticker.Stop()
 }
 
+// GetAdData function @todo
 func GetAdData() []mr.AdData {
 	lock.RLock()
 	defer lock.RUnlock()
@@ -56,6 +53,7 @@ func GetAdData() []mr.AdData {
 	return loaded
 }
 
+// Initialize funct @todo
 func (m *myModel) Initialize() {
 	once.Do(func() {
 		go interval()

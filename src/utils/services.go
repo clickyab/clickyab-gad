@@ -24,15 +24,7 @@ func RedmineDoError(err interface{}, stack []byte) {
 	short := v.Short
 	commits := v.Count
 
-	title := fmt.Errorf("[%s, %d] cannot extract title, the type is %T, value is %v", short, commits, err, err)
-	switch err.(type) {
-	case string:
-		title = fmt.Errorf("[%s, %d] %s", short, commits, err.(string))
-	case error:
-		title = fmt.Errorf("[%s, %d] %s", short, commits, err.(error).Error())
-	case *logrus.Entry:
-		title = fmt.Errorf("[%s, %d] %s", short, commits, err.(*logrus.Entry).Message)
-	}
+	title := extractTitle(short, commits, err)
 
 	// redmine can not accept more than 255 character title
 	if len(title.Error()) > 200 {
@@ -98,15 +90,7 @@ type SlackAttachment struct {
 	Title   string `json:"title,omitempty"`
 }
 
-// SlackDoMessage Try to send message to configured slack channel
-func SlackDoMessage(err interface{}, icon string, attachments ...SlackAttachment) {
-	payload := &SlackPayload{}
-	payload.Channel = config.Config.Slack.Channel
-
-	v := version.GetVersion()
-	short := v.Short
-	commits := v.Count
-
+func extractTitle(short string, commits int64, err interface{}) error {
 	title := fmt.Errorf("[%s, %d] cannot extract title, the type is %T, value is %v", short, commits, err, err)
 	switch err.(type) {
 	case string:
@@ -117,6 +101,19 @@ func SlackDoMessage(err interface{}, icon string, attachments ...SlackAttachment
 		title = fmt.Errorf("[%s, %d] %s", short, commits, err.(*logrus.Entry).Message)
 	}
 
+	return title
+}
+
+// SlackDoMessage Try to send message to configured slack channel
+func SlackDoMessage(err interface{}, icon string, attachments ...SlackAttachment) {
+	payload := &SlackPayload{}
+	payload.Channel = config.Config.Slack.Channel
+
+	v := version.GetVersion()
+	short := v.Short
+	commits := v.Count
+
+	title := extractTitle(short, commits, err)
 	payload.Text = title.Error()
 	payload.Username = config.Config.Slack.Username
 	payload.Parse = "full" // WTF?
