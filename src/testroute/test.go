@@ -1,28 +1,26 @@
 package selector
 
 import (
-	_"fmt"
+	_ "fmt"
 	"middlewares"
 	"modules"
 	"mr"
 	"net/http"
 
-	"banners"
 	"errors"
 	"filter"
-	"github.com/Sirupsen/logrus"
-	"github.com/labstack/echo"
+	"fmt"
 	"regexp"
 	"selector"
 	"strconv"
-	"fmt"
+
+	"config"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/labstack/echo"
 )
 
 type selectController struct {
-}
-
-func filterNonApp(c *selector.Context, in mr.AdData) bool {
-	return in.CpType == 0
 }
 
 type size []int
@@ -39,18 +37,18 @@ func (tc *selectController) Select(c echo.Context) error {
 	if err != nil {
 		return errors.New("public_id not found")
 	}
-	domain,ok:= params["d"]
+	domain, ok := params["d"]
 	if !ok {
 		return errors.New("domain not found")
 	}
 
-	////fetch website and set in Context
+	//fetch website and set in Context
 	website, err := mr.NewManager().FetchWebsite(public_id)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 	//check if the website domain is valid
-	if website.WDomain.Valid && website.WDomain.String!=domain[0] {
+	if website.WDomain.Valid && website.WDomain.String != domain[0] {
 		return errors.New("domain and public id mismatch")
 	}
 
@@ -63,15 +61,14 @@ func (tc *selectController) Select(c echo.Context) error {
 		if len(slice) == 2 {
 			size[slice[1]] = params[key][0]
 			//check for size
-			SizeNum, _ := banners.GetSize(size[slice[1]])
+			SizeNum, _ := config.GetSize(size[slice[1]])
 			sizeNumSlice = append(sizeNumSlice, SizeNum)
 
 		}
 
 	}
 
-	rd := c.Get("RequestData").(*middlewares.RequestData)
-
+	rd := middlewares.MustGetRequestData(c)
 
 	//call context
 	m := selector.Context{
@@ -79,7 +76,7 @@ func (tc *selectController) Select(c echo.Context) error {
 		WebsiteData: *website,
 		Size:        sizeNumSlice,
 	}
-	x:=selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS,filter.CheckWhiteList, filter.CheckNetwork), 3)
+	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS, filter.CheckWhiteList, filter.CheckNetwork), 3)
 	fmt.Println(len(x))
 	return c.JSON(http.StatusOK, x)
 }

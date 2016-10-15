@@ -1,7 +1,6 @@
 package filter
 
 import (
-	_ "middlewares"
 	"mr"
 	"selector"
 )

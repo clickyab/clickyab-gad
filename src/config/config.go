@@ -6,7 +6,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"
-	_ "gopkg.in/fzerorubigd/onion.v2/yamlloader"
+	_ "gopkg.in/fzerorubigd/onion.v2/yamlloader" // config need this to load yaml file
 )
 
 const appName = "cyrest"

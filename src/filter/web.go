@@ -5,6 +5,7 @@ import (
 	"selector"
 )
 
+// CheckNetwork filter network for campaigns
 func CheckNetwork(c *selector.Context, in mr.AdData) bool {
 	if c.Mobile == true {
 		return in.CpNetwork == 1

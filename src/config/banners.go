@@ -1,8 +1,6 @@
-package banners
+package config
 
-type size map[string]int
-
-var sizes = size{
+var sizes = map[string]int{
 	"120x600":  1,
 	"160x600":  2,
 	"300x250":  3,
@@ -22,6 +20,7 @@ var sizes = size{
 	"128x128":  18,
 }
 
+// GetSize return the size of a banner in clickyab std
 func GetSize(size string) (int, error) {
 	for key, value := range sizes {
 		if key == size {

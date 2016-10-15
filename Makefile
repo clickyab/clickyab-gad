@@ -22,7 +22,7 @@ export DB_NAME?=clickyab
 export RUSER?=$(APPNAME)
 export RPASS?=$(DEFAULT_PASS)
 export WORK_DIR=$(ROOT)/tmp
-export LINTERCMD=$(LINTER) --deadline=100s --errors --disable-all --enable=structcheck --enable=aligncheck --enable=deadcode --enable=gocyclo --enable=ineffassign --enable=dupl --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=interfacer --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell --enable=lll
+export LINTERCMD=$(LINTER) --deadline=100s --disable-all --enable=structcheck --enable=deadcode --enable=gocyclo --enable=ineffassign --enable=dupl --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=interfacer --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell
 
 
 .PHONY: all gb clean
@@ -77,11 +77,13 @@ mysql-setup: needroot
 lint: $(LINTER)
 	$(LINTERCMD) $(ROOT)/src/assert
 	$(LINTERCMD) $(ROOT)/src/config
+	$(LINTERCMD) $(ROOT)/src/filter
 	$(LINTERCMD) $(ROOT)/src/middlewares
 	$(LINTERCMD) $(ROOT)/src/models
 	$(LINTERCMD) $(ROOT)/src/modules
 	$(LINTERCMD) $(ROOT)/src/mr
 	$(LINTERCMD) $(ROOT)/src/selector
 	$(LINTERCMD) $(ROOT)/src/server
+	$(LINTERCMD) $(ROOT)/src/testroute
 	$(LINTERCMD) $(ROOT)/src/utils
 	$(LINTERCMD) $(ROOT)/src/version

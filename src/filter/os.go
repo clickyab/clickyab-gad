@@ -1,22 +1,20 @@
 package filter
 
 import (
+	"config"
 	"mr"
-	"platform"
 	"selector"
 )
 
+// CheckOS is the filter function that check for OS in system
 func CheckOS(c *selector.Context, in mr.AdData) bool {
 
-	if in.CpPlatforms == nil {
+	if len(in.CpPlatforms) == 0 {
 		return true
 	}
-	Os, err := platform.FindIdOs(c.RequestData)
-	if err != nil {
-		return false
-	}
+	os := config.FindOsID(c.RequestData.Platform)
 	for _, v := range in.CpPlatforms {
-		if v == int64(Os) {
+		if v == int64(os) {
 			return true
 		}
 	}
