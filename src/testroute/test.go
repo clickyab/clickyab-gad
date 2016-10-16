@@ -74,7 +74,7 @@ func (tc *selectController) Select(c echo.Context) error {
 		WebsiteData: *website,
 		Size:        sizeNumSlice,
 	}
-	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS, filter.CheckWhiteList, filter.CheckNetwork), 3)
+	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS, filter.CheckWhiteList, filter.CheckNetwork, filter.CheckBlackList), 3)
 	fmt.Println(len(x))
 	return c.JSON(http.StatusOK, x)
 }
