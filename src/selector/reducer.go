@@ -11,6 +11,7 @@ type Context struct {
 	middlewares.RequestData
 	Size []int
 	mr.WebsiteData
+	mr.Country2Info
 }
 
 // FilterFunc is the type use to filter the

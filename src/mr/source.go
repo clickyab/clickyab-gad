@@ -145,3 +145,13 @@ func (pa SharpArray) Value() (driver.Value, error) {
 	res := fmt.Sprintf(tmp, arr...)
 	return []byte(res), nil
 }
+
+// Has check exist value in sharpArray
+func (pa SharpArray) Has(in int64) bool {
+	for i := range pa {
+		if pa[i] == in {
+			return true
+		}
+	}
+	return false
+}

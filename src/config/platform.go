@@ -3,15 +3,15 @@ package config
 import "strings"
 
 const (
-	osMac     = 1
-	osUnknown = 2
-	osWindows = 3
-	osLinux   = 4
-	osIOS     = 5
-	osAndroid = 6
+	osMac     int64 = 1
+	osUnknown       = 2
+	osWindows       = 3
+	osLinux         = 4
+	osIOS           = 5
+	osAndroid       = 6
 )
 
-var platforms = map[string]int{
+var platforms = map[string]int64{
 	"windows":   osWindows,
 	"macintosh": osMac,
 	"x11":       osLinux,
@@ -26,10 +26,13 @@ var platforms = map[string]int{
 }
 
 // FindOsID try to find os ID base on old id of system
-func FindOsID(platform string) int {
+func FindOsID(platform string) int64 {
+	if platform == "" {
+		return osUnknown
+	}
 	platform = strings.ToLower(platform)
 	for OSName, ID := range platforms {
-		if strings.Contains(OSName, platform) {
+		if strings.Contains(platform, OSName) {
 			return ID
 		}
 	}

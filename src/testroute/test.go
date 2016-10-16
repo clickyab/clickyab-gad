@@ -39,11 +39,12 @@ func (tc *selectController) Select(c echo.Context) error {
 	if !ok {
 		return errors.New("domain not found")
 	}
-
+	rd := middlewares.MustGetRequestData(c)
 	//fetch website and set in Context
-	website, err := mr.NewManager().FetchWebsite(publicID)
+	website := tc.FetchWebsite(publicID)
+	country, err := tc.FetchCountry(rd.RealIP)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Info(err)
 	}
 	//check if the website domain is valid
 	if website.WDomain.Valid && website.WDomain.String != domain[0] {
@@ -66,17 +67,40 @@ func (tc *selectController) Select(c echo.Context) error {
 
 	}
 
-	rd := middlewares.MustGetRequestData(c)
-
 	//call context
 	m := selector.Context{
-		RequestData: *rd,
-		WebsiteData: *website,
-		Size:        sizeNumSlice,
+		RequestData:  *rd,
+		WebsiteData:  *website,
+		Size:         sizeNumSlice,
+		Country2Info: *country,
 	}
-	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS, filter.CheckWhiteList, filter.CheckNetwork), 3)
+	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS, filter.CheckWhiteList, filter.CheckNetwork, filter.CheckCategory, filter.CheckCountry), 3)
 	fmt.Println(len(x))
 	return c.JSON(http.StatusOK, x)
+}
+
+//FetchWebsite website and set in Context
+func (tc *selectController) FetchWebsite(publicID int) *mr.WebsiteData {
+	website, err := mr.NewManager().FetchWebsite(publicID)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	return website
+}
+
+//FetchCountry find country and set context
+func (tc *selectController) FetchCountry(c string) (*mr.Country2Info, error) {
+	var country mr.Country2Info
+	ip, err := mr.NewManager().GetLocation(c)
+	if err != nil || !ip.CountryName.Valid {
+		return &country, errors.New("Country not found")
+	}
+	country, err = mr.NewManager().ConvertCountry2Info(ip.CountryName.String)
+	if err != nil {
+		return &country, errors.New("Country not found")
+	}
+	return &country, nil
+
 }
 
 // Routes function @todo

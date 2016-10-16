@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"assert"
+	"config"
 	"errors"
 	"mr"
 
@@ -17,6 +18,7 @@ type RequestData struct {
 	Browser        string
 	Os             string
 	Platform       string
+	PlatformID     int64
 	BrowserVersion string
 	Method         string
 	Referrer       string
@@ -36,6 +38,7 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Os = ua.OS()
 		e.Mobile = ua.Mobile()
 		e.Platform = ua.Platform()
+		e.PlatformID = config.FindOsID(ua.Platform())
 		e.RealIP = ctx.Request().RealIP()
 		e.Referrer = ctx.Request().Referer()
 		e.Method = ctx.Request().Method()
