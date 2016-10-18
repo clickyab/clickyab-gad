@@ -174,6 +174,6 @@ func (pa SharpArray) Less(i, j int) bool {
 }
 
 // Swap swaps the elements with indexes i and j.
-func (pa *SharpArray) Swap(i, j int) {
+func (pa SharpArray) Swap(i, j int) {
 	pa[i], pa[j] = pa[j], pa[i]
 }

@@ -94,6 +94,12 @@ func (tc *selectController) Select(c echo.Context) error {
 		Country2Info: *country,
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
+
+	var adIdBanner []string
+	for adId := range x{
+		adIdBanner=append(adIdBanner,strconv.FormatInt(x[adId].AdID,10))
+	}
+	mr.NewManager().FetchSlotAd(mr.Build(m.SlotPublic),mr.Build(adIdBanner))
 	return c.JSON(http.StatusOK, x)
 }
 
