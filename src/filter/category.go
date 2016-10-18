@@ -7,6 +7,7 @@ import (
 
 // CheckCategory is the filter for category
 func CheckCategory(c *selector.Context, in mr.AdData) bool {
+
 	lenC := len(in.CpCat)
 	lenW := len(c.WCategories)
 

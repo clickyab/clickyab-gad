@@ -33,14 +33,15 @@ func Initialize() {
 		logrus.Warn(err)
 	}
 
-	if err = o.AddLayer(onion.NewFileLayer("/etc/" + appName + "/cyrest.yaml")); err == nil {
-		logrus.Infof("loading config from %s", "/etc/"+appName+"/cyrest.yaml")
+	if err = o.AddLayer(onion.NewFileLayer("/etc/" + organization + "/" + appName + ".yaml")); err == nil {
+
+		logrus.Infof("loading config from %s", "/etc/"+organization+"/"+appName+".yaml")
 	}
-	if err = o.AddLayer(onion.NewFileLayer(usr.HomeDir + "/." + appName + "/cyrest.yaml")); err == nil {
-		logrus.Infof("loading config from %s", usr.HomeDir+"/."+appName+"/cyrest.yaml")
+	if err = o.AddLayer(onion.NewFileLayer(usr.HomeDir + "/." + organization + "/" + appName + ".yaml")); err == nil {
+		logrus.Infof("loading config from %s", usr.HomeDir+"/."+organization+"/"+appName+".yaml")
 	}
-	if err = o.AddLayer(onion.NewFileLayer(dir + "/configs/cyrest.yaml")); err == nil {
-		logrus.Infof("loading config from %s", dir+"/configs/cyrest.yaml")
+	if err = o.AddLayer(onion.NewFileLayer(dir + "/configs/" + appName + ".yaml")); err == nil {
+		logrus.Infof("loading config from %s", dir+"/configs/"+appName+".yaml")
 	}
 
 	for i := range all {

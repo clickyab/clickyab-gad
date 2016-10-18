@@ -8,7 +8,6 @@ import (
 
 	"errors"
 	"filter"
-	"fmt"
 	"regexp"
 	"selector"
 	"strconv"
@@ -19,32 +18,49 @@ import (
 	"github.com/labstack/echo"
 )
 
+var (
+	webSelector = selector.Mix(
+		filter.CheckForSize,
+		filter.CheckOS,
+		filter.CheckWhiteList,
+		filter.CheckNetwork,
+		filter.CheckCategory,
+		filter.CheckCountry,
+	)
+)
+
 type selectController struct {
 }
 
-// Select functioon @todo
+// Select function @todo
 func (tc *selectController) Select(c echo.Context) error {
-
+	rd := middlewares.MustGetRequestData(c)
 	params := c.QueryParams()
 
 	publicParams, ok := params["i"]
 	if !ok {
-		return errors.New("params i not found")
+		return c.HTML(400, "invalid request")
 	}
+
 	publicID, err := strconv.Atoi(publicParams[0])
 	if err != nil {
-		return errors.New("public_id not found")
+		return c.HTML(400, "invalid request")
 	}
+
 	domain, ok := params["d"]
 	if !ok {
-		return errors.New("domain not found")
+		return c.HTML(400, "invalid request")
 	}
-	rd := middlewares.MustGetRequestData(c)
+
 	//fetch website and set in Context
-	website := tc.FetchWebsite(publicID)
+	website, err := tc.FetchWebsite(publicID)
+	if err != nil {
+		return c.HTML(400, "invalid request")
+	}
+
 	country, err := tc.FetchCountry(rd.RealIP)
 	if err != nil {
-		logrus.Info(err)
+		logrus.Warn(err)
 	}
 	//check if the website domain is valid
 	if website.WDomain.Valid && website.WDomain.String != domain[0] {
@@ -74,18 +90,17 @@ func (tc *selectController) Select(c echo.Context) error {
 		Size:         sizeNumSlice,
 		Country2Info: *country,
 	}
-	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS, filter.CheckWhiteList, filter.CheckNetwork, filter.CheckCategory, filter.CheckCountry), 3)
-	fmt.Println(len(x))
+	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
 	return c.JSON(http.StatusOK, x)
 }
 
 //FetchWebsite website and set in Context
-func (tc *selectController) FetchWebsite(publicID int) *mr.WebsiteData {
+func (tc *selectController) FetchWebsite(publicID int) (*mr.WebsiteData, error) {
 	website, err := mr.NewManager().FetchWebsite(publicID)
 	if err != nil {
-		logrus.Fatal(err)
+		return nil, err
 	}
-	return website
+	return website, err
 }
 
 //FetchCountry find country and set context

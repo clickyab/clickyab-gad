@@ -9,7 +9,10 @@ import (
 	_ "gopkg.in/fzerorubigd/onion.v2/yamlloader" // config need this to load yaml file
 )
 
-const appName = "cyrest"
+const (
+	organization = "clickyab"
+	appName      = "gad"
+)
 
 //Config is the global application config instance
 var Config AppConfig

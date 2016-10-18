@@ -31,10 +31,9 @@ func FindOsID(platform string) int64 {
 		return osUnknown
 	}
 	platform = strings.ToLower(platform)
-	for OSName, ID := range platforms {
-		if strings.Contains(platform, OSName) {
-			return ID
-		}
+	p, ok := platforms[platform]
+	if ok {
+		return p
 	}
 	return osUnknown
 }

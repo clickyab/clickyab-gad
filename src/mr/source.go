@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"models/common"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -122,13 +123,18 @@ func (pa *SharpArray) Scan(src interface{}) error {
 		return errors.New("unsupported type")
 	}
 
+	tmp := make(SharpArray, 0)
 	s := strings.Split(string(b), "#")
 	for i := range s {
 		v, err := strconv.ParseInt(s[i], 10, 0)
 		if err == nil {
-			*pa = append(*pa, v)
+			tmp = append(tmp, v)
 		}
 	}
+
+	sort.Sort(&tmp)
+
+	*pa = append(SharpArray{}, tmp...)
 
 	return nil
 
@@ -154,4 +160,20 @@ func (pa SharpArray) Has(in int64) bool {
 		}
 	}
 	return false
+}
+
+// Len is the number of elements in the collection.
+func (pa SharpArray) Len() int {
+	return len(pa)
+}
+
+// Less reports whether the element with
+// index i should sort before the element with index j.
+func (pa SharpArray) Less(i, j int) bool {
+	return i < j
+}
+
+// Swap swaps the elements with indexes i and j.
+func (pa *SharpArray) Swap(i, j int) {
+	pa[i], pa[j] = pa[j], pa[i]
 }

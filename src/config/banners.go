@@ -1,5 +1,7 @@
 package config
 
+import "fmt"
+
 var sizes = map[string]int{
 	"120x600":  1,
 	"160x600":  2,
@@ -22,11 +24,10 @@ var sizes = map[string]int{
 
 // GetSize return the size of a banner in clickyab std
 func GetSize(size string) (int, error) {
-	for key, value := range sizes {
-		if key == size {
-			return value, nil
-		}
+	s, ok := sizes[size]
+	if ok {
+		return s, nil
 	}
 
-	return 0, nil
+	return 0, fmt.Errorf("size %s is not valid", size)
 }
