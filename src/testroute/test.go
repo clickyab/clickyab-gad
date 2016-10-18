@@ -8,6 +8,7 @@ import (
 
 	"errors"
 	"filter"
+	"fmt"
 	"regexp"
 	"selector"
 	"strconv"
@@ -90,7 +91,10 @@ func (tc *selectController) Select(c echo.Context) error {
 		Size:         sizeNumSlice,
 		Country2Info: *country,
 	}
-	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
+
+	x := selector.Apply(&m, selector.GetAdData(), selector.Mix(filter.CheckForSize, filter.CheckOS, filter.CheckWhiteList, filter.CheckNetwork, filter.CheckBlackList), 3)
+	fmt.Println(len(x))
+
 	return c.JSON(http.StatusOK, x)
 }
 
