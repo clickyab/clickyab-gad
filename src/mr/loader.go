@@ -97,7 +97,7 @@ func (m *Manager) FetchSlotAd(slotString string,adIDString string) ([]SlotData, 
 		slots_ads.sla_imps,
 		slots.slot_floor_cpm,
 		slots_ads.ad_id
-	FROM slots INNER JOIN slots_ads ON slots_ads.slot_id=slots.slot_id WHERE slots.slot_pubilc_id IN (?) AND slots.slot_lastupdate=? AND slots.slot_ads.ad_id IN (?)`
+	FROM slots INNER JOIN slots_ads ON slots_ads.slot_id=slots.slot_id WHERE slots.slot_pubilc_id IN (?) AND slots.slot_lastupdate=? AND slots_ads.ad_id IN (?)`
 	_, err := m.GetDbMap().Select(
 		&res,
 		query,

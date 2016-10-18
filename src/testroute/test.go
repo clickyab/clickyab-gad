@@ -16,6 +16,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
+	"fmt"
 )
 
 var (
@@ -99,7 +100,8 @@ func (tc *selectController) Select(c echo.Context) error {
 	for adId := range x{
 		adIdBanner=append(adIdBanner,strconv.FormatInt(x[adId].AdID,10))
 	}
-	mr.NewManager().FetchSlotAd(mr.Build(m.SlotPublic),mr.Build(adIdBanner))
+	adBanner,_:=mr.NewManager().FetchSlotAd(mr.Build(m.SlotPublic),mr.Build(adIdBanner))
+	fmt.Println(len(adBanner))
 	return c.JSON(http.StatusOK, x)
 }
 
