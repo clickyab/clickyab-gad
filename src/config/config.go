@@ -73,6 +73,8 @@ type AppConfig struct {
 		WebHookURL string
 		Active     bool
 	}
+
+	DefaultCTR float64
 }
 
 func init() {
@@ -124,4 +126,7 @@ func init() {
 	Config.Slack.Username = "azmoona"
 	Config.Slack.WebHookURL = "https://hooks.slack.com/services/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"
 	Config.Slack.Active = false
+
+	Config.DefaultCTR = 0.1
+
 }

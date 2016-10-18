@@ -69,11 +69,13 @@ func (tc *selectController) Select(c echo.Context) error {
 
 	var size = make(map[string]string)
 	var sizeNumSlice []int
+	var slotPublic []string
 	reg := regexp.MustCompile(`s\[(\d*)\]`)
 	for key := range params {
 		slice := reg.FindStringSubmatch(key)
 		//fmt.Println(slice,len(slice))
 		if len(slice) == 2 {
+			slotPublic = append(slotPublic, slice[1])
 			size[slice[1]] = params[key][0]
 			//check for size
 			SizeNum, _ := config.GetSize(size[slice[1]])
@@ -88,6 +90,7 @@ func (tc *selectController) Select(c echo.Context) error {
 		RequestData:  *rd,
 		WebsiteData:  *website,
 		Size:         sizeNumSlice,
+		SlotPublic:   slotPublic,
 		Country2Info: *country,
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
