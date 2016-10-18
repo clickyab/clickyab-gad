@@ -2,6 +2,7 @@ package mr
 
 import (
 	"config"
+	"strings"
 	"time"
 )
 
@@ -85,4 +86,33 @@ func (m *Manager) FetchRegion() (*RegionData, error) {
 	}
 
 	return &res, nil
+}
+
+// FetchSlotAd fetch slot ad
+func (m *Manager) FetchSlotAd(slotString string,adIDString string) ([]SlotData, error) {
+	var res  []SlotData
+	query := `SELECT slots.slot_pubilc_id,
+		slots.slot_size,
+		slots_ads.sla_clicks,
+		slots_ads.sla_imps,
+		slots.slot_floor_cpm,
+		slots_ads.ad_id
+	FROM slots INNER JOIN slots_ads ON slots_ads.slot_id=slots.slot_id WHERE slots.slot_pubilc_id IN (?) AND slots.slot_lastupdate=? AND slots_ads.ad_id IN (?)`
+	_, err := m.GetDbMap().Select(
+		&res,
+		query,
+		slotString,
+		time.Now().AddDate(0, 0, -1).Format("20060102"),
+		adIDString,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+//
+func Build(slot []string) string {
+	return strings.Join(slot, ",")
 }

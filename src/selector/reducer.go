@@ -13,6 +13,7 @@ type Context struct {
 	Size []int
 	mr.WebsiteData
 	mr.Country2Info
+	SlotPublic []string
 }
 
 // FilterFunc is the type use to filter the
