@@ -3,6 +3,8 @@ package mr
 import (
 	"fmt"
 	"testing"
+
+	"github.com/Sirupsen/logrus"
 )
 
 func TestSharpArray(t *testing.T) {
@@ -10,9 +12,12 @@ func TestSharpArray(t *testing.T) {
 
 	var (
 		pa SharpArray
-		ps SharpArray = SharpArray{1, 11, 55, 99, 111, 987}
+		ps = SharpArray{1, 11, 55, 99, 111, 987}
 	)
-	pa.Scan(data)
+	err := pa.Scan(data)
+	if err != nil {
+		logrus.Info(err)
+	}
 
 	fmt.Print(pa)
 
