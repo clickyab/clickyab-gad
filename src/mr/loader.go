@@ -89,8 +89,8 @@ func (m *Manager) FetchRegion() (*RegionData, error) {
 }
 
 // FetchSlotAd fetch slot ad
-func (m *Manager) FetchSlotAd(slotString string,adIDString string) ([]SlotData, error) {
-	var res  []SlotData
+func (m *Manager) FetchSlotAd(slotString string, adIDString string) ([]SlotData, error) {
+	var res []SlotData
 	query := `SELECT slots.slot_pubilc_id,
 		slots.slot_size,
 		slots_ads.sla_clicks,
@@ -112,7 +112,7 @@ func (m *Manager) FetchSlotAd(slotString string,adIDString string) ([]SlotData, 
 	return res, nil
 }
 
-//
+// Build imlode slice of string with ,
 func Build(slot []string) string {
 	return strings.Join(slot, ",")
 }

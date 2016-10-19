@@ -14,9 +14,10 @@ import (
 
 	"config"
 
+	"fmt"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
-	"fmt"
 )
 
 var (
@@ -96,11 +97,14 @@ func (tc *selectController) Select(c echo.Context) error {
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
 
-	var adIdBanner []string
-	for adId := range x{
-		adIdBanner=append(adIdBanner,strconv.FormatInt(x[adId].AdID,10))
+	var adIDBanner []string
+	for _, adData := range x {
+		for adSliceData := range adData {
+
+			adIDBanner = append(adIDBanner, strconv.FormatInt(adData[adSliceData].AdID, 10))
+		}
 	}
-	adBanner,_:=mr.NewManager().FetchSlotAd(mr.Build(m.SlotPublic),mr.Build(adIdBanner))
+	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(m.SlotPublic), mr.Build(adIDBanner))
 	fmt.Println(len(adBanner))
 	return c.JSON(http.StatusOK, x)
 }
