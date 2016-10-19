@@ -97,14 +97,9 @@ func (tc *selectController) Select(c echo.Context) error {
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
 
-	var adIDBanner []string
-	for _, adData := range x {
-		for adSliceData := range adData {
+	adIDBanner := GetAdID(x)
 
-			adIDBanner = append(adIDBanner, strconv.FormatInt(adData[adSliceData].AdID, 10))
-		}
-	}
-	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(m.SlotPublic), mr.Build(adIDBanner))
+	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
 	fmt.Println(len(adBanner))
 	return c.JSON(http.StatusOK, x)
 }
@@ -136,6 +131,19 @@ func (tc *selectController) FetchCountry(c string) (*mr.Country2Info, error) {
 // Routes function @todo
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.Get("/select", tc.Select)
+}
+
+// GetAdID return ad ids as []string
+func GetAdID(ad map[int][]mr.AdData) []string {
+	var adIDBanner []string
+	for _, adData := range ad {
+		for adSliceData := range adData {
+
+			adIDBanner = append(adIDBanner, strconv.FormatInt(adData[adSliceData].AdID, 10))
+		}
+	}
+	return adIDBanner
+
 }
 
 func init() {
