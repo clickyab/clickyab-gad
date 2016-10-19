@@ -99,9 +99,13 @@ func (tc *selectController) Select(c echo.Context) error {
 
 	adIDBanner := GetAdID(x)
 
-	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
+	adBanner, err := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
+	if err != nil {
+		logrus.Info(err)
+	}
+	fmt.Println(adBanner)
 	fmt.Println(len(adBanner))
-	return c.JSON(http.StatusOK, x)
+	return c.JSON(http.StatusOK, adBanner)
 }
 
 //FetchWebsite website and set in Context
