@@ -40,23 +40,28 @@ type selectController struct {
 func (tc *selectController) Select(c echo.Context) error {
 	rd := middlewares.MustGetRequestData(c)
 	params := c.QueryParams()
+
 	publicParams, ok := params["i"]
 	if !ok {
 		return c.HTML(400, "invalid request")
 	}
+
 	publicID, err := strconv.Atoi(publicParams[0])
 	if err != nil {
 		return c.HTML(400, "invalid request")
 	}
+
 	domain, ok := params["d"]
 	if !ok {
 		return c.HTML(400, "invalid request")
 	}
+
 	//fetch website and set in Context
 	website, err := tc.FetchWebsite(publicID)
 	if err != nil {
 		return c.HTML(400, "invalid request")
 	}
+
 	country, err := tc.FetchCountry(rd.RealIP)
 	if err != nil {
 		logrus.Warn(err)
@@ -65,6 +70,7 @@ func (tc *selectController) Select(c echo.Context) error {
 	if website.WDomain.Valid && website.WDomain.String != domain[0] {
 		return errors.New("domain and public id mismatch")
 	}
+
 	var size = make(map[string]string)
 	var sizeNumSlice []int
 	var slotPublic []string
@@ -80,7 +86,9 @@ func (tc *selectController) Select(c echo.Context) error {
 			sizeNumSlice = append(sizeNumSlice, SizeNum)
 
 		}
+
 	}
+
 	//call context
 	m := selector.Context{
 		RequestData:  *rd,
@@ -90,6 +98,7 @@ func (tc *selectController) Select(c echo.Context) error {
 		Country2Info: *country,
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
+
 	adIDBanner := GetAdID(x)
 	adBanner, _ := mr.NewManager().FetchSlotAd(slotPublic, adIDBanner)
 	tc.AddCTR(adBanner, x)
