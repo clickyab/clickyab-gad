@@ -28,6 +28,7 @@ var (
 		filter.CheckNetwork,
 		filter.CheckCategory,
 		filter.CheckCountry,
+		filter.CheckBlackList,
 	)
 )
 
@@ -98,12 +99,11 @@ func (tc *selectController) Select(c echo.Context) error {
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
 
 	adIDBanner := GetAdID(x)
-
-	adBanner, err := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
+	adBanner, err := mr.NewManager().FetchSlotAd(slotPublic, adIDBanner)
 	if err != nil {
 		logrus.Info(err)
 	}
-	fmt.Println(adBanner)
+	//fmt.Println(adBanner)
 	fmt.Println(len(adBanner))
 	return c.JSON(http.StatusOK, adBanner)
 }
