@@ -82,7 +82,7 @@ type AdData struct {
 	CpKeywords        SharpArray              `json:"cp_keywords" db:"cp_keywords"`
 	CpPlatforms       SharpArray              `json:"cp_platforms" db:"cp_platforms"`
 	CpPlatformVersion SharpArray              `json:"cp_platform_version" db:"cp_platform_version"`
-	CpMaxbid          int                     `json:"cp_maxbid" db:"cp_maxbid"`
+	CpMaxbid          int64                   `json:"cp_maxbid" db:"cp_maxbid"`
 	CpWeeklyBudget    int                     `json:"cp_weekly_budget" db:"cp_weekly_budget"`
 	CpDailyBudget     int                     `json:"cp_daily_budget" db:"cp_daily_budget"`
 	CpTotalBudget     int                     `json:"cp_total_budget" db:"cp_total_budget"`
@@ -107,6 +107,21 @@ type AdData struct {
 	CpHourEnd         int                     `json:"cp_hour_end" db:"cp_hour_end"`
 	IsCrm             int                     `json:"is_crm" db:"is_crm"`
 	CpLock            int                     `json:"cp_lock" db:"cp_lock"`
+	CTR               float64                 `json:"ctr" db:"ctr"`
+	CPM               int64                   `json:"cpm" db:"cpm"`
+}
+
+//ByCPM sort by cpm
+type ByCPM []AdData
+
+func (a ByCPM) Len() int {
+	return len(a)
+}
+func (a ByCPM) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+func (a ByCPM) Less(i, j int) bool {
+	return a[i].CPM > a[j].CPM
 }
 
 // Scan convert the json array ino string slice
