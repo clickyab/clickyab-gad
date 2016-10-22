@@ -15,7 +15,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     s.args   = [%x(ip addr | grep inet | grep docker0 | awk -F" " '{print $2}'| sed -e 's/\\/.*$//')]
   end
 
-  config.vm.network "forwarded_port", guest: 80,    host: 80    # nginx
+  config.vm.network "forwarded_port", guest: 80,    	host: 80       # nginx
+  config.vm.network "forwarded_port", guest: 15672,     host: 15672    # rabbitmq management
   config.vm.synced_folder ".", "/home/develop/gad", owner: "develop", group: "develop", create: true
 
   config.vm.provider "docker" do |d|
