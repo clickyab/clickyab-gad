@@ -47,6 +47,13 @@ type AppConfig struct {
 		MaxIdleConnection int    `onion:"max_idle_connection"`
 	}
 
+	AMQP struct {
+		DSN        string
+		Exchange   string
+		Publisher  int
+		ConfirmLen int
+	}
+
 	Select struct {
 		Date    int `onion:"date"`
 		Hour    int `onion:"hour"`
@@ -115,6 +122,11 @@ func init() {
 	Config.Select.Balance = 50000
 
 	Config.TimeZone = "Asia/Tehran"
+
+	Config.AMQP.Publisher = 30
+	Config.AMQP.Exchange = "cy"
+	Config.AMQP.DSN = "amqp://server:bita123@127.0.0.1:5672/"
+	Config.AMQP.ConfirmLen = 100
 
 	Config.Redmine.APIKey = "5d29e2039762e19fbfe3db72b013bf356b3ed072"
 	Config.Redmine.URL = "https://redmine.azmoona.com/"
