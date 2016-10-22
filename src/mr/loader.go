@@ -2,7 +2,7 @@ package mr
 
 import (
 	"config"
-	"fmt"
+	//"fmt"
 	"strings"
 	"time"
 )
@@ -90,18 +90,31 @@ func (m *Manager) FetchRegion() (*RegionData, error) {
 }
 
 // FetchSlotAd fetch slot ad
-func (m *Manager) FetchSlotAd(slotString string, adIDString string) ([]SlotData, error) {
+func (m *Manager) FetchSlotAd(slotString []string, adIDString []string) ([]SlotData, error) {
 	var res []SlotData
-	query := fmt.Sprintf(`SELECT slots.slot_pubilc_id,
+	query := `SELECT slots.slot_pubilc_id,
 		slots.slot_size,
 		slots_ads.sla_clicks,
 		slots_ads.sla_imps,
 		slots.slot_floor_cpm,
 		slots_ads.ad_id
-	FROM slots INNER JOIN slots_ads ON slots_ads.slot_id=slots.slot_id WHERE slots.slot_pubilc_id IN (%s)`, slotString)
+	FROM slots INNER JOIN slots_ads ON slots_ads.slot_id=slots.slot_id WHERE
+	slots.slot_pubilc_id IN (?` +strings.Repeat(",?", len(slotString)-1) +`)
+	 AND slots_ads.ad_id IN (?` + strings.Repeat(",?", len(adIDString)-1) + `)`
+	//sls := build(slotString)
+	//
+	//sld := build(adIDString)
+	data := mergeInterface(build(slotString),build(adIDString))
+	//sls := make([]interface{}, len(slotString))
+	//for i, v := range slotString {
+	//	sls[i] = v
+	//}
 	_, err := m.GetDbMap().Select(
 		&res,
 		query,
+		//time.Now().AddDate(0, 0, -1).Format("20060102"),
+		data...,
+
 	)
 	if err != nil {
 		return nil, err
@@ -111,6 +124,21 @@ func (m *Manager) FetchSlotAd(slotString string, adIDString string) ([]SlotData,
 }
 
 // Build imlode slice of string with ,
-func Build(slot []string) string {
-	return strings.Join(slot, ",")
+func build(slot []string) []interface{} {
+	sld := make([]interface{}, len(slot))
+	for i, v := range slot {
+		sld[i] = v
+	}
+	return sld
 }
+// mergeInterface function merge to interface arrays into one interface array
+func mergeInterface(arr ...[]interface{})[]interface{}{
+	implodeIntf := make([]interface{},0 )
+	for k := range arr{
+		for j := range arr[k] {
+			implodeIntf = append(implodeIntf, arr[k][j])
+		}
+	}
+	return implodeIntf
+}
+
