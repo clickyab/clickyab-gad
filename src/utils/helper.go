@@ -5,8 +5,10 @@ import (
 	"errors"
 	"net"
 	"os"
+	"os/signal"
 	"regexp"
 	"strings"
+	"syscall"
 )
 
 var spaceMatch = regexp.MustCompile(`\s+`)
@@ -81,4 +83,17 @@ func IP2long(ipAddr string) (uint32, error) {
 	}
 	ip = ip.To4()
 	return binary.BigEndian.Uint32(ip), nil
+}
+
+// WaitSignal get os signal
+func WaitSignal(exit chan chan struct{}) {
+	quit := make(chan os.Signal, 5)
+	signal.Notify(quit, syscall.SIGABRT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGQUIT)
+
+	<-quit
+
+	tmp := make(chan struct{})
+	exit <- tmp
+
+	<-tmp
 }

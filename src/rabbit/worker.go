@@ -4,11 +4,11 @@ import (
 	"assert"
 	"encoding/json"
 	"reflect"
+	"sync"
 	"utils"
 
-	"sync"
-
 	"github.com/Sirupsen/logrus"
+	"github.com/streadway/amqp"
 )
 
 // goodFunc verifies that the function satisfies the signature, represented as a slice of types.
@@ -74,7 +74,10 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 	// If ignore this, then there is a problem with rabbit. prefetch all jobs for this worker then.
 	// the next worker get nothing at all!
 	// **WARNING**
-	c.Qos(prefetch, 0, false)
+	err = c.Qos(prefetch, 0, false)
+	if err != nil {
+		return err
+	}
 
 	err = c.QueueBind(
 		q.Name,   // queue name
@@ -92,6 +95,12 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 		return err
 	}
 
+	consume(delivery, jobPattern, fn, quit, c, consumerTag)
+
+	return nil
+}
+
+func consume(delivery <-chan amqp.Delivery, jobPattern interface{}, fn reflect.Value, quit chan chan struct{}, c *amqp.Channel, consumerTag string) {
 	waiter := sync.WaitGroup{}
 bigLoop:
 	for {
@@ -115,7 +124,7 @@ bigLoop:
 				}
 			}()
 		case ok := <-quit:
-			c.Cancel(consumerTag, false)
+			_ = c.Cancel(consumerTag, false)
 			waiter.Wait()
 			FinalizeWait()
 			ok <- struct{}{}
@@ -123,6 +132,4 @@ bigLoop:
 		}
 
 	}
-
-	return nil
 }

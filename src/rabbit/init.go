@@ -146,7 +146,8 @@ func Initialize() {
 		chn, err := conn.Channel()
 		assert.Nil(err)
 		rtrn := make(chan amqp.Confirmation, config.Config.AMQP.ConfirmLen)
-		chn.Confirm(false)
+		err = chn.Confirm(false)
+		assert.Nil(err)
 		chn.NotifyPublish(rtrn)
 		tmp := chnlLock{
 			chn:    chn,
