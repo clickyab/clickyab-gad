@@ -5,7 +5,7 @@ import (
 	"transport"
 )
 
-func impWorker(in *transport.Impression) bool {
+func impWorker(in *transport.Impression) (bool, error) {
 	fmt.Println("IM HERE", in)
-	return true
+	return true, nil
 }
