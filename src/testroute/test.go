@@ -29,6 +29,7 @@ var (
 		filter.CheckNetwork,
 		filter.CheckCategory,
 		filter.CheckCountry,
+		filter.CheckBlackList,
 	)
 )
 
@@ -39,23 +40,28 @@ type selectController struct {
 func (tc *selectController) Select(c echo.Context) error {
 	rd := middlewares.MustGetRequestData(c)
 	params := c.QueryParams()
+
 	publicParams, ok := params["i"]
 	if !ok {
 		return c.HTML(400, "invalid request")
 	}
+
 	publicID, err := strconv.Atoi(publicParams[0])
 	if err != nil {
 		return c.HTML(400, "invalid request")
 	}
+
 	domain, ok := params["d"]
 	if !ok {
 		return c.HTML(400, "invalid request")
 	}
+
 	//fetch website and set in Context
 	website, err := tc.FetchWebsite(publicID)
 	if err != nil {
 		return c.HTML(400, "invalid request")
 	}
+
 	country, err := tc.FetchCountry(rd.RealIP)
 	if err != nil {
 		logrus.Warn(err)
@@ -76,8 +82,9 @@ func (tc *selectController) Select(c echo.Context) error {
 		Country2Info: *country,
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
+
 	adIDBanner := GetAdID(x)
-	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
+	adBanner, _ := mr.NewManager().FetchSlotAd(slotPublic, adIDBanner)
 	tc.AddCTR(adBanner, x)
 	filteredAdd := tc.CpmFloor(x, *website)
 	return c.JSON(http.StatusOK, filteredAdd[7])
