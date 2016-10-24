@@ -1,14 +1,13 @@
 package main
 
 import (
+	"assert"
 	"config"
 	"models"
-	"os"
-	"os/signal"
 	"rabbit"
-	"syscall"
 	"time"
 	"transport"
+	"utils"
 	"version"
 
 	"github.com/Sirupsen/logrus"
@@ -31,24 +30,19 @@ func main() {
 
 	exit := make(chan chan struct{})
 
-	rabbit.RunWorker(
-		config.Config.AMQP.Exchange,
-		"cy.imp",
-		"cy_imp_queue",
-		&transport.Impression{},
-		impWorker,
-		10,
-		exit,
-	)
+	go func() {
+		err := rabbit.RunWorker(
+			config.Config.AMQP.Exchange,
+			"cy.imp",
+			"cy_imp_queue",
+			&transport.Impression{},
+			impWorker,
+			10,
+			exit,
+		)
+		assert.Nil(err)
+	}()
 
-	quit := make(chan os.Signal, 5)
-	signal.Notify(quit, syscall.SIGABRT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGQUIT)
-
-	<-quit
-
-	tmp := make(chan struct{})
-	exit <- tmp
-
-	<-tmp
+	utils.WaitSignal(exit)
 	logrus.Info("goodbye")
 }

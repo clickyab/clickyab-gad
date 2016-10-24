@@ -17,24 +17,12 @@ var (
 	rng *ring.Ring
 )
 
-type amqpWrapper struct {
-	conn *amqp.Connection
-}
-
 type chnlLock struct {
 	chn    Channel
 	lock   *sync.Mutex
 	rtrn   chan amqp.Confirmation
 	wg     *sync.WaitGroup
 	closed bool
-}
-
-type replyError struct {
-	Error string `json:"error"`
-}
-
-func (aw *amqpWrapper) Channel() (Channel, error) {
-	return aw.conn.Channel()
 }
 
 // Publish try to publish an event
@@ -87,7 +75,7 @@ func FinalizeWait() {
 
 		v.closed = true
 		v.wg.Wait()
-		v.chn.Close()
+		_ = v.chn.Close()
 	}
 }
 

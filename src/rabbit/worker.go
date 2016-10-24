@@ -4,33 +4,39 @@ import (
 	"assert"
 	"encoding/json"
 	"reflect"
+	"sync"
 	"utils"
 
-	"sync"
-
 	"github.com/Sirupsen/logrus"
+	"github.com/streadway/amqp"
 )
 
 // goodFunc verifies that the function satisfies the signature, represented as a slice of types.
 // The last type is the single result type; the others are the input types.
 // A final type of nil means any result type is accepted.
-func goodFunc(fn reflect.Value, types ...reflect.Type) bool {
+func goodFunc(fn reflect.Value, rtrn int, types ...reflect.Type) bool {
 	if fn.Kind() != reflect.Func {
 		return false
 	}
 	// Last type is return, the rest are ins.
-	if fn.Type().NumIn() != len(types)-1 || fn.Type().NumOut() != 1 {
+	if fn.Type().NumIn() != len(types)-rtrn || fn.Type().NumOut() != rtrn {
 		return false
 	}
-	for i := 0; i < len(types)-1; i++ {
+	for i := 0; i < len(types)-rtrn; i++ {
 		if fn.Type().In(i) != types[i] {
 			return false
 		}
 	}
-	outType := types[len(types)-1]
-	if outType != nil && fn.Type().Out(0) != outType {
-		return false
+
+	var j int
+	for i := len(types) - rtrn + 1; i < len(types); i++ {
+		outType := types[i]
+		if outType != nil && fn.Type().Out(j) != outType {
+			return false
+		}
+		j++
 	}
+
 	return true
 }
 
@@ -42,7 +48,7 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 	elemType := in.Type()
 
 	var t bool
-	if !goodFunc(fn, elemType, reflect.ValueOf(t).Type()) {
+	if !goodFunc(fn, 1, elemType, reflect.ValueOf(t).Type()) {
 		logrus.Panic("function must be of type func(" + in.Type().Elem().String() + ") bool")
 	}
 
@@ -50,6 +56,7 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 	if err != nil {
 		return err
 	}
+
 	err = c.ExchangeDeclare(
 		exchange, // name
 		"topic",  // type
@@ -74,7 +81,10 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 	// If ignore this, then there is a problem with rabbit. prefetch all jobs for this worker then.
 	// the next worker get nothing at all!
 	// **WARNING**
-	c.Qos(prefetch, 0, false)
+	err = c.Qos(prefetch, 0, false)
+	if err != nil {
+		return err
+	}
 
 	err = c.QueueBind(
 		q.Name,   // queue name
@@ -92,6 +102,12 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 		return err
 	}
 
+	consume(delivery, jobPattern, fn, quit, c, consumerTag)
+
+	return nil
+}
+
+func consume(delivery <-chan amqp.Delivery, jobPattern interface{}, fn reflect.Value, quit chan chan struct{}, c *amqp.Channel, consumerTag string) {
 	waiter := sync.WaitGroup{}
 bigLoop:
 	for {
@@ -101,11 +117,18 @@ bigLoop:
 			err := json.Unmarshal(job.Body, cp)
 			if err != nil {
 				assert.Nil(job.Reject(false))
+				break
 			}
 			input := []reflect.Value{reflect.ValueOf(cp).Elem()}
 			waiter.Add(1)
 			go func() {
 				defer waiter.Done()
+				defer func() {
+					if e := recover(); e != nil {
+						// Panic??
+						job.Reject(false)
+					}
+				}()
 
 				out := fn.Call(input)
 				if out[0].Interface().(bool) {
@@ -115,7 +138,7 @@ bigLoop:
 				}
 			}()
 		case ok := <-quit:
-			c.Cancel(consumerTag, false)
+			_ = c.Cancel(consumerTag, false)
 			waiter.Wait()
 			FinalizeWait()
 			ok <- struct{}{}
@@ -123,6 +146,4 @@ bigLoop:
 		}
 
 	}
-
-	return nil
 }

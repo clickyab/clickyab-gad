@@ -98,3 +98,5 @@ lint: $(LINTER)
 	$(LINTERCMD) $(ROOT)/src/testroute
 	$(LINTERCMD) $(ROOT)/src/utils
 	$(LINTERCMD) $(ROOT)/src/version
+	$(LINTERCMD) $(ROOT)/src/rabbit
+	$(LINTERCMD) $(ROOT)/src/impworker
