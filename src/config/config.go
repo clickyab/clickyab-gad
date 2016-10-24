@@ -3,6 +3,8 @@ package config
 import (
 	"runtime"
 
+	"time"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"
@@ -35,10 +37,12 @@ type AppConfig struct {
 	TimeZone string `onion:"time_zone"`
 
 	Redis struct {
-		Size     int
-		Network  string
-		Address  string
-		Password string
+		Size                 int
+		Network              string
+		Address              string
+		Password             string
+		DailyStateExpireTime time.Duration //Daily Statistic TimeOut Expiration
+
 	}
 
 	Mysql struct {
@@ -103,6 +107,7 @@ func init() {
 	Config.Redis.Network = "tcp"
 	Config.Redis.Address = ":6379"
 	//Config.Redis.Password = ""
+	Config.Redis.DailyStateExpireTime = 72 * time.Hour
 
 	// TODO : make sure ?parseTime=true is always set!
 	//[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]

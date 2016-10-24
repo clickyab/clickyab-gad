@@ -8,6 +8,8 @@ import (
 	"utils"
 	"version"
 
+	"redis"
+
 	"github.com/Sirupsen/logrus"
 )
 
@@ -17,6 +19,23 @@ func main() {
 	version.PrintVersion().Info("Application started")
 	models.Initialize()
 	rabbit.Initialize()
+	aredis.Initialize()
+	//
+	//tmp := transport.Impression{
+	//	User: <-utils.ID,
+	//	ImpID: <-utils.ID,
+	//	AdID: 12,
+	//	CampaignID: 3456789,
+	//	UserAgent: <-utils.ID,
+	//	WinnerBID: 1,
+	//	Status: 1,
+	//	Cookie:false,
+	//	Suspicious:false,
+	//
+	//}
+	//
+	//s, _ := json.MarshalIndent(tmp, "\t", "\t")
+	//fmt.Println(string(s))
 
 	exit := make(chan chan struct{})
 

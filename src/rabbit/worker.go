@@ -124,14 +124,15 @@ bigLoop:
 			go func() {
 				defer waiter.Done()
 				defer func() {
-					if e := recover(); e != nil {
-						// Panic??
-						_ = job.Reject(false)
-					}
+					//	if e := recover(); e != nil {
+					// Panic??
+					//		fmt.Println(e)
+					//		_ = job.Reject(false)
+					//	}
 				}()
 
 				out := fn.Call(input)
-				if out[1].Interface().(error) == nil {
+				if out[0].Interface().(bool) {
 					assert.Nil(job.Ack(false))
 				} else {
 					assert.Nil(job.Nack(false, false))

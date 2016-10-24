@@ -96,15 +96,15 @@ func RemoveKey(key string) error {
 	return err
 }
 
-// IncHash
-func IncHash(key string, hash string, value int, touch bool, expire time.Duration) (int, error) {
+// IncHash function increase the specify sub key by one
+func IncHash(key string, hash string, value int, touch bool, expire time.Duration) (int64, error) {
 	r := Pool.Get()
 	defer func() { assert.Nil(r.Close()) }()
 
 	res, err := r.Do("HINCRBY", key, hash, value)
-	data, err := redis.Bytes(res, err)
+	data, err := redis.Int64(res, err)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	if touch {
 		_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))

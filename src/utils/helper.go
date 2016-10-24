@@ -1,14 +1,18 @@
 package utils
 
 import (
+	"config"
 	"encoding/binary"
 	"errors"
 	"net"
 	"os"
 	"os/signal"
+	"redis"
 	"regexp"
 	"strings"
 	"syscall"
+	"time"
+	"transport"
 )
 
 var spaceMatch = regexp.MustCompile(`\s+`)
@@ -96,4 +100,21 @@ func WaitSignal(exit chan chan struct{}) {
 	exit <- tmp
 
 	<-tmp
+}
+
+//KeyGenDaily function  generate a redis key
+func KeyGenDaily(prefix, value string) string {
+	date := time.Now().Format("060102")
+	return prefix + transport.DELIMITER + value + transport.DELIMITER + date
+}
+
+//IncKeyDaily function increase redis daily key
+func IncKeyDaily(key, subKey string, count int) (int64, error) {
+	res, err := aredis.IncHash(
+		key,
+		subKey,
+		count,
+		true,
+		config.Config.Redis.DailyStateExpireTime)
+	return res, err
 }

@@ -100,8 +100,9 @@ lint: $(LINTER)
 	$(LINTERCMD) $(ROOT)/src/mr
 	$(LINTERCMD) $(ROOT)/src/selector
 	$(LINTERCMD) $(ROOT)/src/server
-	$(LINTERCMD) $(ROOT)/src/testroute
+	$(LINTERCMD) $(ROOT)/src/selectroute
 	$(LINTERCMD) $(ROOT)/src/utils
 	$(LINTERCMD) $(ROOT)/src/version
 	$(LINTERCMD) $(ROOT)/src/rabbit
 	$(LINTERCMD) $(ROOT)/src/impworker
+	$(LINTERCMD) $(ROOT)/src/redis
