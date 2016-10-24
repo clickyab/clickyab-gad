@@ -115,6 +115,6 @@ func IncKeyDaily(key, subKey string, count int) (int64, error) {
 		subKey,
 		count,
 		true,
-		config.Config.Redis.DailyStateExpireTime)
+		config.Config.Redis.DailyImpExpireTime)
 	return res, err
 }

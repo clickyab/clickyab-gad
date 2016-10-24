@@ -81,7 +81,7 @@ func (tc *selectController) Select(c echo.Context) error {
 	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
 	tc.AddCTR(adBanner, x)
 	filteredAdd := tc.CpmFloor(x, *website)
-	return c.JSON(http.StatusOK, filteredAdd)
+	return c.JSON(http.StatusOK, filteredAdd[7])
 }
 
 //AddCTR add ctr from slot_ad

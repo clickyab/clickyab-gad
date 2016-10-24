@@ -10,6 +10,5 @@ const (
 
 	FRAUD_PREFIX = "F"
 	SUBKEY_IMP   = "I"
-	SUBKEY_Cl   = "C"
-
+	SUBKEY_Cl    = "C"
 )

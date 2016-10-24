@@ -1,6 +1,7 @@
 package main
 
 import (
+	"assert"
 	"config"
 	"models"
 	"rabbit"
@@ -26,17 +27,14 @@ func main() {
 	go func() {
 		err := rabbit.RunWorker(
 			config.Config.AMQP.Exchange,
-			"cy.imp",
-			"cy_imp_queue",
-			&transport.Impression{},
-			impWorker,
+			"cy.click",
+			"cy_click_queue",
+			&transport.Click{},
+			clickWorker,
 			10,
 			exit,
 		)
-		if err != nil {
-			// Fatal is only allowed in main
-			logrus.Fatal(err)
-		}
+		assert.Nil(err)
 	}()
 
 	utils.WaitSignal(exit)

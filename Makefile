@@ -65,12 +65,18 @@ server: $(GB)
 impworker: $(GB)
 	$(BUILD) impworker
 
+clickworker: $(GB)
+	$(BUILD) clickworker
+
 run-server: server
 	sudo setcap cap_net_bind_service=+ep $(BIN)/server
 	$(BIN)/server
 
 run-impworker: impworker
 	$(BIN)/impworker
+
+run-clickworker: clickworker
+	$(BIN)/clickworker
 
 mysql-setup: needroot
 	echo 'UPDATE user SET plugin="";' | mysql mysql
@@ -105,4 +111,4 @@ lint: $(LINTER)
 	$(LINTERCMD) $(ROOT)/src/version
 	$(LINTERCMD) $(ROOT)/src/rabbit
 	$(LINTERCMD) $(ROOT)/src/impworker
-	$(LINTERCMD) $(ROOT)/src/redis
+	$(LINTERCMD) $(ROOT)/src/clickworker

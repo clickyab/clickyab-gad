@@ -96,7 +96,7 @@ func RemoveKey(key string) error {
 	return err
 }
 
-// IncHash function increase the specify sub key by one
+// IncHash
 func IncHash(key string, hash string, value int, touch bool, expire time.Duration) (int64, error) {
 	r := Pool.Get()
 	defer func() { assert.Nil(r.Close()) }()
