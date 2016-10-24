@@ -37,10 +37,10 @@ notroot :
 	@[ "$(shell id -u)" != "0" ] || exit 1
 
 gb: notroot
-	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(GO) get -u -v github.com/constabulary/gb/...
+	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(GO) get -v github.com/constabulary/gb/...
 
 metalinter: notroot
-	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(GO)  get -u gopkg.in/alecthomas/gometalinter.v1
+	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(GO)  get -v gopkg.in/alecthomas/gometalinter.v1
 	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(LINTER) --install
 
 clean:
@@ -62,10 +62,15 @@ fetch: $(GB)
 server: $(GB)
 	$(BUILD) server
 
+impworker: $(GB)
+	$(BUILD) impworker
+
 run-server: server
 	sudo setcap cap_net_bind_service=+ep $(BIN)/server
 	$(BIN)/server
 
+run-impworker: impworker
+	$(BIN)/impworker
 
 mysql-setup: needroot
 	echo 'UPDATE user SET plugin="";' | mysql mysql

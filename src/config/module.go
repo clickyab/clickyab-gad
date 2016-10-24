@@ -60,6 +60,18 @@ func Initialize() {
 	}
 }
 
+// SetConfigParameter try to set the config parameter for the logrus base on config
+func SetConfigParameter() {
+	if Config.DevelMode {
+		// In development mode I need colors :) candy mode is GREAT!
+		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true, DisableColors: false})
+		logrus.SetLevel(logrus.DebugLevel)
+	} else {
+		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: false, DisableColors: true})
+		logrus.SetLevel(logrus.WarnLevel)
+	}
+}
+
 // Register a config module
 func Register(i ...Initializer) {
 	all = append(all, i...)

@@ -1,11 +1,9 @@
 package main
 
 import (
-	"assert"
 	"config"
 	"models"
 	"rabbit"
-	"time"
 	"transport"
 	"utils"
 	"version"
@@ -15,16 +13,8 @@ import (
 
 func main() {
 	config.Initialize()
-	ver := version.GetVersion()
-	//logrus.SetLevel(logrus.PanicLevel)
-	logrus.WithFields(
-		logrus.Fields{
-			"Commit hash":       ver.Hash,
-			"Commit short hash": ver.Short,
-			"Commit date":       ver.Date.Format(time.RFC3339),
-			"Build date":        ver.BuildDate.Format(time.RFC3339),
-		},
-	).Infof("Application started")
+	config.SetConfigParameter()
+	version.PrintVersion().Info("Application started")
 	models.Initialize()
 	rabbit.Initialize()
 
@@ -40,7 +30,10 @@ func main() {
 			10,
 			exit,
 		)
-		assert.Nil(err)
+		if err != nil {
+			// Fatal is only allowed in main
+			logrus.Fatal(err)
+		}
 	}()
 
 	utils.WaitSignal(exit)

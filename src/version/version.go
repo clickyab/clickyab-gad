@@ -3,6 +3,8 @@ package version
 import (
 	"strconv"
 	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // The following variables, are for compile time set, do not edit
@@ -33,4 +35,18 @@ func GetVersion() Version {
 	c.BuildDate, _ = time.Parse("01-02-06-15-04-05", build)
 
 	return c
+}
+
+// PrintVersion try to print version with a log message
+func PrintVersion() *logrus.Entry {
+	ver := GetVersion()
+	//logrus.SetLevel(logrus.PanicLevel)
+	return logrus.WithFields(
+		logrus.Fields{
+			"Commit hash":       ver.Hash,
+			"Commit short hash": ver.Short,
+			"Commit date":       ver.Date.Format(time.RFC3339),
+			"Build date":        ver.BuildDate.Format(time.RFC3339),
+		},
+	)
 }

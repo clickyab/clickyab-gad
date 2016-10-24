@@ -2,30 +2,20 @@ package main
 
 import (
 	"config"
+	"models"
 	"modules"
-	"time"
+	"rabbit"
 	"version"
 
-	"models"
-
-	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo/engine/fasthttp"
 )
 
 func main() {
-
 	config.Initialize()
-	ver := version.GetVersion()
-	//logrus.SetLevel(logrus.PanicLevel)
-	logrus.WithFields(
-		logrus.Fields{
-			"Commit hash":       ver.Hash,
-			"Commit short hash": ver.Short,
-			"Commit date":       ver.Date.Format(time.RFC3339),
-			"Build date":        ver.BuildDate.Format(time.RFC3339),
-		},
-	).Infof("Application started")
-
+	config.SetConfigParameter()
+	version.PrintVersion().Info("Application started")
 	models.Initialize()
+	rabbit.Initialize()
+
 	_ = modules.Initialize(config.Config.MountPoint).Run(fasthttp.New(config.Config.Port))
 }

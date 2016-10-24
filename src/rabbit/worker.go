@@ -56,7 +56,6 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 	if err != nil {
 		return err
 	}
-
 	err = c.ExchangeDeclare(
 		exchange, // name
 		"topic",  // type
@@ -116,6 +115,7 @@ bigLoop:
 			cp := reflect.New(reflect.TypeOf(jobPattern)).Elem().Addr().Interface()
 			err := json.Unmarshal(job.Body, cp)
 			if err != nil {
+				logrus.Debugf("invalid job, error was : %s", err)
 				assert.Nil(job.Reject(false))
 				break
 			}
@@ -126,12 +126,12 @@ bigLoop:
 				defer func() {
 					if e := recover(); e != nil {
 						// Panic??
-						job.Reject(false)
+						_ = job.Reject(false)
 					}
 				}()
 
 				out := fn.Call(input)
-				if out[0].Interface().(bool) {
+				if out[1].Interface().(error) == nil {
 					assert.Nil(job.Ack(false))
 				} else {
 					assert.Nil(job.Nack(false, false))
