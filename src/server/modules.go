@@ -1,4 +1,4 @@
 package main
 
-import _ "testroute"
+import _ "selectroute"
 import _ "selector"

@@ -1,20 +1,17 @@
 package selector
 
 import (
+	"config"
+	"errors"
+	"filter"
 	"middlewares"
 	"modules"
 	"mr"
 	"net/http"
-
-	"errors"
-	"filter"
 	"regexp"
 	"selector"
-	"strconv"
-
-	"config"
-
 	"sort"
+	"strconv"
 	"utils"
 
 	"github.com/Sirupsen/logrus"
@@ -26,10 +23,13 @@ var (
 		filter.CheckForSize,
 		filter.CheckOS,
 		filter.CheckWhiteList,
+		filter.CheckBlackList,
 		filter.CheckNetwork,
 		filter.CheckCategory,
 		filter.CheckCountry,
 	)
+
+	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
 )
 
 type selectController struct {
@@ -38,6 +38,7 @@ type selectController struct {
 // Select function @todo
 func (tc *selectController) Select(c echo.Context) error {
 	rd := middlewares.MustGetRequestData(c)
+
 	params := c.QueryParams()
 	publicParams, ok := params["i"]
 	if !ok {
@@ -80,7 +81,7 @@ func (tc *selectController) Select(c echo.Context) error {
 	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
 	tc.AddCTR(adBanner, x)
 	filteredAdd := tc.CpmFloor(x, *website)
-	return c.JSON(http.StatusOK, filteredAdd[7])
+	return c.JSON(http.StatusOK, filteredAdd)
 }
 
 //AddCTR add ctr from slot_ad
@@ -90,9 +91,7 @@ func (tc *selectController) AddCTR(adBanner []mr.SlotData, x map[int][]mr.AdData
 			if x[adBanner[i].SlotSize][r].AdID == adBanner[i].AdID {
 				x[adBanner[i].SlotSize][r].CTR = utils.Ctr(adBanner[i].SLAImps, adBanner[i].SLAClicks)
 			}
-
 		}
-
 	}
 }
 
@@ -102,10 +101,10 @@ func (tc *selectController) CpmFloor(x map[int][]mr.AdData, website mr.WebsiteDa
 	for size := range x {
 		for ad := range x[size] {
 			//if ads not have slot_ad ctr get ctr of ad_ctr
-			if x[size][ad].AdCtr != 0 && x[size][ad].CTR == config.Config.DefaultCTR {
+			if x[size][ad].AdCtr != 0 {
 				x[size][ad].CTR = x[size][ad].AdCtr
 			}
-			//callculate cpm
+			//calculate cpm
 			x[size][ad].CPM = utils.Cpm(x[size][ad].CpMaxbid, x[size][ad].CTR)
 
 			if x[size][ad].CPM >= website.WFloorCpm.Int64 {
@@ -165,9 +164,9 @@ func (tc *selectController) slotSize(params map[string][]string) ([]string, []in
 	var size = make(map[string]string)
 	var sizeNumSlice []int
 	var slotPublic []string
-	reg := regexp.MustCompile(`s\[(\d*)\]`)
+
 	for key := range params {
-		slice := reg.FindStringSubmatch(key)
+		slice := slotReg.FindStringSubmatch(key)
 		//fmt.Println(slice,len(slice))
 		if len(slice) == 2 {
 			slotPublic = append(slotPublic, slice[1])
