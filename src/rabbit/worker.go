@@ -126,7 +126,7 @@ bigLoop:
 				defer func() {
 					if e := recover(); e != nil {
 						// Panic??
-						job.Reject(false)
+						_ = job.Reject(false)
 					}
 				}()
 
