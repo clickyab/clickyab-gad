@@ -7,7 +7,8 @@ import (
 	"utils"
 )
 
-func clickWorker(in *transport.Click) bool {
+// error means Ack/Nack the boolean maens only when error is not nil, and means re-queue
+func clickWorker(in *transport.Click) (bool, error) {
 
 	// increment click to user
 	prefix := ""
@@ -35,5 +36,5 @@ func clickWorker(in *transport.Click) bool {
 	assert.Nil(err)
 
 	// persist in mysql database
-	return true
+	return false, nil
 }

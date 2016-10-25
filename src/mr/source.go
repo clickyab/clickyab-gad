@@ -109,6 +109,7 @@ type AdData struct {
 	CpLock            int                     `json:"cp_lock" db:"cp_lock"`
 	CTR               float64                 `json:"ctr" db:"ctr"`
 	CPM               int64                   `json:"cpm" db:"cpm"`
+	Capping           int                     `db:"-" json:"capping"`
 }
 
 //ByCPM sort by cpm

@@ -3,6 +3,7 @@ package rabbit
 import (
 	"assert"
 	"encoding/json"
+	"errors"
 	"reflect"
 	"sync"
 	"utils"
@@ -32,6 +33,7 @@ func goodFunc(fn reflect.Value, rtrn int, types ...reflect.Type) bool {
 	for i := len(types) - rtrn + 1; i < len(types); i++ {
 		outType := types[i]
 		if outType != nil && fn.Type().Out(j) != outType {
+			panic(outType)
 			return false
 		}
 		j++
@@ -47,9 +49,12 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 	fn := reflect.ValueOf(function)
 	elemType := in.Type()
 
-	var t bool
-	if !goodFunc(fn, 1, elemType, reflect.ValueOf(t).Type()) {
-		logrus.Panic("function must be of type func(" + in.Type().Elem().String() + ") bool")
+	var (
+		t bool
+		e = errors.New("test")
+	)
+	if !goodFunc(fn, 2, elemType, reflect.ValueOf(e).Type(), reflect.ValueOf(t).Type()) {
+		logrus.Panic("function must be of type func(" + in.Type().Elem().String() + ") (bool, error)")
 	}
 
 	c, err := conn.Channel()
@@ -124,18 +129,18 @@ bigLoop:
 			go func() {
 				defer waiter.Done()
 				defer func() {
-					//	if e := recover(); e != nil {
-					// Panic??
-					//		fmt.Println(e)
-					//		_ = job.Reject(false)
-					//	}
+					if e := recover(); e != nil {
+						//Panic??
+						logrus.Warn(e)
+						_ = job.Reject(false)
+					}
 				}()
 
 				out := fn.Call(input)
-				if out[0].Interface().(bool) {
+				if out[1].Interface().(error) == nil {
 					assert.Nil(job.Ack(false))
 				} else {
-					assert.Nil(job.Nack(false, false))
+					assert.Nil(job.Nack(false, out[0].Interface().(bool)))
 				}
 			}()
 		case ok := <-quit:
