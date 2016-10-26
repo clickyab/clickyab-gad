@@ -43,6 +43,7 @@ type AppConfig struct {
 		Password             string //Daily Statistic TimeOut Expiration
 		DailyImpExpireTime   time.Duration
 		DailyClickExpireTime time.Duration
+		DailyCapExpireTime   time.Duration
 	}
 
 	Mysql struct {
@@ -109,6 +110,7 @@ func init() {
 	Config.Redis.DailyClickExpireTime = 72 * time.Hour
 	//Config.Redis.Password = ""
 	Config.Redis.DailyClickExpireTime = 72 * time.Hour
+	Config.Redis.DailyCapExpireTime = 24 * time.Hour
 
 	// TODO : make sure ?parseTime=true is always set!
 	//[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]

@@ -87,6 +87,27 @@ func GetKey(key string, touch bool, expire time.Duration) (string, error) {
 	return string(data), nil
 }
 
+// GetAll Get a key and value from redis
+func GetAll(key string, touch bool, expire time.Duration) (map[string]int, error) {
+	var res map[string]int
+	r := Pool.Get()
+	defer func() { assert.Nil(r.Close()) }()
+	res, err := redis.IntMap(r.Do("HGETALL", key))
+
+	if err != nil {
+		return res, err
+	}
+
+	if touch {
+		for k := range res {
+			_, err = r.Do("EXPIRE", k, int64(expire.Seconds()))
+			assert.Nil(err)
+		}
+
+	}
+	return res, nil
+}
+
 // RemoveKey for removing a key in redis
 func RemoveKey(key string) error {
 	r := Pool.Get()

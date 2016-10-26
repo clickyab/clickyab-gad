@@ -6,6 +6,10 @@ import (
 	"errors"
 	"mr"
 
+	"net"
+
+	"utils"
+
 	"github.com/labstack/echo"
 	"github.com/mssola/user_agent"
 )
@@ -13,7 +17,8 @@ import (
 // RequestData is the data for request
 type RequestData struct {
 	CloudIP        string
-	RealIP         string
+	IP             net.IP
+	UserAgent      string
 	IP2Location    *mr.IP2Location
 	Browser        string
 	Os             string
@@ -23,6 +28,9 @@ type RequestData struct {
 	Method         string
 	Referrer       string
 	Mobile         bool
+
+	MegaImp string
+	CopID   string
 }
 
 const requestDataToken = "__request_data__"
@@ -30,7 +38,10 @@ const requestDataToken = "__request_data__"
 // RequestCollector try to collect data from request
 func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
+
 		e := &RequestData{}
+		e.IP = net.ParseIP(ctx.Request().RealIP())
+		e.UserAgent = ctx.Request().UserAgent()
 		ua := user_agent.New(ctx.Request().UserAgent())
 		name, version := ua.Browser()
 		e.Browser = name
@@ -39,9 +50,10 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Mobile = ua.Mobile()
 		e.Platform = ua.Platform()
 		e.PlatformID = config.FindOsID(ua.Platform())
-		e.RealIP = ctx.Request().RealIP()
 		e.Referrer = ctx.Request().Referer()
 		e.Method = ctx.Request().Method()
+		e.MegaImp = <-utils.ID
+		e.CopID = utils.CreateCopID(e.UserAgent, e.IP)
 
 		ctx.Set(requestDataToken, e)
 		return next(ctx)

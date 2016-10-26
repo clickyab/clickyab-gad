@@ -2,6 +2,7 @@ package mr
 
 import (
 	"database/sql"
+	"net"
 	"utils"
 )
 
@@ -16,7 +17,7 @@ type IP2Location struct {
 }
 
 //GetLocation @todo
-func (m *Manager) GetLocation(ip string) (*IP2Location, error) {
+func (m *Manager) GetLocation(ip net.IP) (*IP2Location, error) {
 	var res IP2Location
 	long, err := utils.IP2long(ip)
 	if err != nil {

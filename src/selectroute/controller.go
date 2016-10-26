@@ -1,6 +1,7 @@
 package selector
 
 import (
+	"assert"
 	"config"
 	"errors"
 	"filter"
@@ -14,8 +15,14 @@ import (
 	"strconv"
 	"utils"
 
+	"net"
+
+	"fmt"
+	"transport"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
+	"redis"
 )
 
 var (
@@ -57,7 +64,7 @@ func (tc *selectController) Select(c echo.Context) error {
 	if err != nil {
 		return c.HTML(400, "invalid request")
 	}
-	country, err := tc.FetchCountry(rd.RealIP)
+	country, err := tc.FetchCountry(rd.IP)
 	if err != nil {
 		logrus.Warn(err)
 	}
@@ -80,8 +87,19 @@ func (tc *selectController) Select(c echo.Context) error {
 	adIDBanner := GetAdID(x)
 	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
 	tc.AddCTR(adBanner, x)
-	filteredAdd := tc.CpmFloor(x, *website)
+	filteredAdd := tc.Finaldata(x, *website)
 	return c.JSON(http.StatusOK, filteredAdd[7])
+}
+
+// SetCaping , must be changes!!! for use, after select
+func (tc *selectController) SetCaping(in *transport.Impression) bool {
+	_, err := utils.IncKeyDaily(utils.KeyGenDaily(transport.FREQUENCY_CAPING, in.User), fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, in.CampaignID), 1)
+	assert.Nil(err)
+
+	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.FREQUENCY_CAPING, in.User), fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, in.AdID), 1)
+	assert.Nil(err)
+
+	return true
 }
 
 //AddCTR add ctr from slot_ad
@@ -96,21 +114,16 @@ func (tc *selectController) AddCTR(adBanner []mr.SlotData, x map[int][]mr.AdData
 }
 
 //CpmFloor create slice ads filter cpm > cpm floor and sort by cpm
-func (tc *selectController) CpmFloor(x map[int][]mr.AdData, website mr.WebsiteData) map[int][]mr.AdData {
+func (tc *selectController) Finaldata(x map[int][]mr.AdData, website mr.WebsiteData) map[int][]mr.AdData {
 	filteredAdd := make(map[int][]mr.AdData)
 	for size := range x {
 		for ad := range x[size] {
-			//if ads not have slot_ad ctr get ctr of ad_ctr
-			if x[size][ad].AdCtr != 0 {
-				x[size][ad].CTR = x[size][ad].AdCtr
-			}
 			//calculate cpm
 			x[size][ad].CPM = utils.Cpm(x[size][ad].CpMaxbid, x[size][ad].CTR)
 
 			if x[size][ad].CPM >= website.WFloorCpm.Int64 {
 				filteredAdd[size] = append(filteredAdd[size], x[size][ad])
 			}
-
 		}
 		//sort by cpm
 		sort.Sort(mr.ByCPM(filteredAdd[size]))
@@ -128,7 +141,7 @@ func (tc *selectController) FetchWebsite(publicID int) (*mr.WebsiteData, error) 
 }
 
 //FetchCountry find country and set context
-func (tc *selectController) FetchCountry(c string) (*mr.Country2Info, error) {
+func (tc *selectController) FetchCountry(c net.IP) (*mr.Country2Info, error) {
 	var country mr.Country2Info
 	ip, err := mr.NewManager().GetLocation(c)
 	if err != nil || !ip.CountryName.Valid {
