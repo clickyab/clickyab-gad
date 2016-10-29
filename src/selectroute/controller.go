@@ -1,7 +1,6 @@
 package selector
 
 import (
-	"assert"
 	"config"
 	"errors"
 	"filter"
@@ -23,12 +22,8 @@ import (
 
 	"net"
 
-	"fmt"
-	"transport"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
-	"redis"
 )
 
 var (
@@ -91,7 +86,7 @@ func (tc *selectController) Select(c echo.Context) error {
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
 
-	minCap:=findMinCap(m.UserKey)
+	minCap := findMinCap(m.CopID)
 	fmt.Println(minCap)
 
 	//let the game begin :)
@@ -170,9 +165,9 @@ func (tc *selectController) slotSize(params map[string][]string) ([]string, []in
 	return slotPublic, sizeNumSlice
 }
 
-func findMinCap(userKey string) int{
+func findMinCap(userKey string) int {
 	//get user capping data
-	result, err := aredis.HGetAll(userKey, true, time.Hour)
+	result, err := aredis.GetAll(userKey, true, time.Hour)
 	if err != nil {
 		logrus.Warn("Hgetall error")
 	}
