@@ -9,6 +9,7 @@ import (
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"
 	_ "gopkg.in/fzerorubigd/onion.v2/yamlloader" // config need this to load yaml file
+	"transport"
 )
 
 const (
@@ -87,6 +88,8 @@ type AppConfig struct {
 	}
 
 	DefaultCTR float64
+
+	CtrConst []string
 }
 
 func init() {
@@ -148,5 +151,7 @@ func init() {
 	Config.Slack.Active = false
 
 	Config.DefaultCTR = 0.1
+
+	Config.CtrConst = []string{transport.AD_SLOT, transport.AD_WEBSITE, transport.CAMPAIGN_SLOT, transport.SLOT}
 
 }

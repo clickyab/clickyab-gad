@@ -11,8 +11,14 @@ import (
 	"net/http"
 	"regexp"
 	"selector"
-	"sort"
 	"strconv"
+
+	"fmt"
+
+	"redis"
+
+	"time"
+
 	"utils"
 
 	"net"
@@ -84,51 +90,21 @@ func (tc *selectController) Select(c echo.Context) error {
 		Country2Info: *country,
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
-	adIDBanner := GetAdID(x)
-	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
-	tc.AddCTR(adBanner, x)
-	filteredAdd := tc.Finaldata(x, *website)
-	return c.JSON(http.StatusOK, filteredAdd[7])
-}
 
-// SetCaping , must be changes!!! for use, after select
-func (tc *selectController) SetCaping(in *transport.Impression) bool {
-	_, err := utils.IncKeyDaily(utils.KeyGenDaily(transport.FREQUENCY_CAPING, in.User), fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, in.CampaignID), 1)
-	assert.Nil(err)
+	minCap:=findMinCap(m.UserKey)
+	fmt.Println(minCap)
 
-	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.FREQUENCY_CAPING, in.User), fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, in.AdID), 1)
-	assert.Nil(err)
+	//let the game begin :)
+	for s := range slotPublic {
+		fmt.Println(s)
+		i := 0
+		/*for size := range x[sizeNumSlice[i]] {
 
-	return true
-}
-
-//AddCTR add ctr from slot_ad
-func (tc *selectController) AddCTR(adBanner []mr.SlotData, x map[int][]mr.AdData) {
-	for i := range adBanner {
-		for r := range x[adBanner[i].SlotSize] {
-			if x[adBanner[i].SlotSize][r].AdID == adBanner[i].AdID {
-				x[adBanner[i].SlotSize][r].CTR = utils.Ctr(adBanner[i].SLAImps, adBanner[i].SLAClicks)
-			}
-		}
+		}*/
+		i++
 	}
-}
 
-//CpmFloor create slice ads filter cpm > cpm floor and sort by cpm
-func (tc *selectController) Finaldata(x map[int][]mr.AdData, website mr.WebsiteData) map[int][]mr.AdData {
-	filteredAdd := make(map[int][]mr.AdData)
-	for size := range x {
-		for ad := range x[size] {
-			//calculate cpm
-			x[size][ad].CPM = utils.Cpm(x[size][ad].CpMaxbid, x[size][ad].CTR)
-
-			if x[size][ad].CPM >= website.WFloorCpm.Int64 {
-				filteredAdd[size] = append(filteredAdd[size], x[size][ad])
-			}
-		}
-		//sort by cpm
-		sort.Sort(mr.ByCPM(filteredAdd[size]))
-	}
-	return filteredAdd
+	return c.JSON(http.StatusOK, x[7])
 }
 
 //FetchWebsite website and set in Context
@@ -192,6 +168,37 @@ func (tc *selectController) slotSize(params map[string][]string) ([]string, []in
 
 	}
 	return slotPublic, sizeNumSlice
+}
+
+func findMinCap(userKey string) int{
+	//get user capping data
+	result, err := aredis.HGetAll(userKey, true, time.Hour)
+	if err != nil {
+		logrus.Warn("Hgetall error")
+	}
+
+	//find min capping for the user
+	invMap := make(map[int]string, len(result))
+	for k, v := range result {
+		invMap[v] = k
+	}
+
+	//Sorting
+	sortedKeys := make([]int, len(invMap))
+	var i int = 0
+	for k := range invMap {
+		sortedKeys[i] = k
+		i++
+	}
+	fmt.Println("Sorted keys")
+	bubbleSorted := utils.BubbleSort(sortedKeys)
+	var minCap int
+	if len(bubbleSorted) == 0 {
+		minCap = 0
+	} else {
+		minCap = bubbleSorted[0]
+	}
+	return minCap
 }
 
 func init() {
