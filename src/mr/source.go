@@ -125,6 +125,19 @@ func (a ByCPM) Less(i, j int) bool {
 	return a[i].CPM > a[j].CPM
 }
 
+// BuCapping sort by Capping
+type ByCapping []AdData
+func (a ByCapping) Len() int {
+	return len(a)
+}
+func (a ByCapping) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+func (a ByCapping) Less(i, j int) bool {
+	return a[i].Capping < a[j].Capping
+}
+
+
 // Scan convert the json array ino string slice
 func (pa *SharpArray) Scan(src interface{}) error {
 	var b []byte

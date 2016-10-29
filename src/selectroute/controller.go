@@ -1,7 +1,6 @@
 package selector
 
 import (
-	"assert"
 	"config"
 	"errors"
 	"filter"
@@ -11,18 +10,21 @@ import (
 	"net/http"
 	"regexp"
 	"selector"
-	"sort"
 	"strconv"
-	"utils"
+
+	"fmt"
 
 	"net"
 
-	"fmt"
+	"redis"
+	"time"
+
+	"sort"
 	"transport"
+	"utils"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
-	"redis"
 )
 
 var (
@@ -84,51 +86,35 @@ func (tc *selectController) Select(c echo.Context) error {
 		Country2Info: *country,
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
-	adIDBanner := GetAdID(x)
-	adBanner, _ := mr.NewManager().FetchSlotAd(mr.Build(slotPublic), mr.Build(adIDBanner))
-	tc.AddCTR(adBanner, x)
-	filteredAdd := tc.Finaldata(x, *website)
-	return c.JSON(http.StatusOK, filteredAdd[7])
-}
+	redisUserHashKey := fmt.Sprintf("%s%s%s%s%s", transport.USER_CAPPING, transport.DELIMITER, m.CopID, transport.DELIMITER, time.Now().Format("060102"))
+	//let the game begin :)
+	/*for s := range slotPublic {
+	fmt.Println(s)
+	i := 0
+	*/ /*for size := range x[sizeNumSlice[i]] {
 
-// SetCaping , must be changes!!! for use, after select
-func (tc *selectController) SetCaping(in *transport.Impression) bool {
-	_, err := utils.IncKeyDaily(utils.KeyGenDaily(transport.FREQUENCY_CAPING, in.User), fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, in.CampaignID), 1)
-	assert.Nil(err)
-
-	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.FREQUENCY_CAPING, in.User), fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, in.AdID), 1)
-	assert.Nil(err)
-
-	return true
-}
-
-//AddCTR add ctr from slot_ad
-func (tc *selectController) AddCTR(adBanner []mr.SlotData, x map[int][]mr.AdData) {
-	for i := range adBanner {
-		for r := range x[adBanner[i].SlotSize] {
-			if x[adBanner[i].SlotSize][r].AdID == adBanner[i].AdID {
-				x[adBanner[i].SlotSize][r].CTR = utils.Ctr(adBanner[i].SLAImps, adBanner[i].SLAClicks)
+	}*/ /*
+		i++
+	}*/
+	return c.JSON(http.StatusOK, x[7])
+	results, _ := aredis.HGetAll(redisUserHashKey, true, 72*time.Hour)
+	for i := range sizeNumSlice {
+		for ad := range x[sizeNumSlice[i]] {
+			if view, ok := results[fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, x[sizeNumSlice[i]][ad].CpID)]; ok {
+				if x[sizeNumSlice[i]][ad].CpFrequency <= 0 {
+					x[sizeNumSlice[i]][ad].CpFrequency = 2
+				}
+				x[sizeNumSlice[i]][ad].Capping = view / x[sizeNumSlice[i]][ad].CpFrequency
+			} else {
+				x[sizeNumSlice[i]][ad].Capping = 0
 			}
 		}
+		sortCap := mr.ByCapping(x[sizeNumSlice[i]])
+		sort.Sort(sortCap)
+		x[sizeNumSlice[i]] = []mr.AdData(sortCap)
 	}
-}
 
-//CpmFloor create slice ads filter cpm > cpm floor and sort by cpm
-func (tc *selectController) Finaldata(x map[int][]mr.AdData, website mr.WebsiteData) map[int][]mr.AdData {
-	filteredAdd := make(map[int][]mr.AdData)
-	for size := range x {
-		for ad := range x[size] {
-			//calculate cpm
-			x[size][ad].CPM = utils.Cpm(x[size][ad].CpMaxbid, x[size][ad].CTR)
-
-			if x[size][ad].CPM >= website.WFloorCpm.Int64 {
-				filteredAdd[size] = append(filteredAdd[size], x[size][ad])
-			}
-		}
-		//sort by cpm
-		sort.Sort(mr.ByCPM(filteredAdd[size]))
-	}
-	return filteredAdd
+	return c.JSON(http.StatusOK, x[7])
 }
 
 //FetchWebsite website and set in Context
@@ -192,6 +178,96 @@ func (tc *selectController) slotSize(params map[string][]string) ([]string, []in
 
 	}
 	return slotPublic, sizeNumSlice
+}
+
+/*func findMinCap(userKey string) (map[string]string, error) {
+	//get user capping data
+	result, err := aredis.HGetAll(userKey, true, 72*time.Hour)
+	if err != nil {
+		return nil, errors.New("error")
+	}
+	for i:= range result{
+		fmt.Println(result[i])
+	}
+
+	return result, nil
+}*/
+
+func CalculateCtr(cpID int64, adID int64, wID int64, slotPublicID int64) (float64, string) {
+	day := 2
+	final := make(map[string]int)
+	for c := range config.Config.CtrConst {
+		var key string
+		switch config.Config.CtrConst[c] {
+		case transport.AD_SLOT:
+
+			key = fmt.Sprintf("%s%s%d%s%d%s",
+				transport.AD_SLOT,
+				transport.DELIMITER,
+				adID, transport.DELIMITER,
+				slotPublicID, transport.DELIMITER)
+
+		case transport.CAMPAIGN:
+
+			key = fmt.Sprintf("%s%s%d%s",
+				transport.CAMPAIGN,
+				transport.DELIMITER,
+				cpID, transport.DELIMITER)
+
+		case transport.ADVERTISE:
+
+			key = fmt.Sprintf("%s%s%d%s",
+				transport.ADVERTISE,
+				transport.DELIMITER,
+				adID, transport.DELIMITER)
+
+		case transport.SLOT:
+
+			fmt.Sprintf("%s%s%d",
+				transport.SLOT,
+				transport.DELIMITER,
+				slotPublicID,
+			)
+
+		case transport.WEBSITE:
+
+			key = fmt.Sprintf("%s%s%d",
+				transport.WEBSITE,
+				transport.DELIMITER,
+				wID,
+			)
+
+		case transport.AD_WEBSITE:
+
+			key = fmt.Sprintf("%s%s%d%s%d%s",
+				transport.AD_WEBSITE,
+				transport.DELIMITER,
+				adID,
+				transport.DELIMITER,
+				wID,
+				transport.DELIMITER,
+			)
+
+		case transport.CAMPAIGN_SLOT:
+
+			key = fmt.Sprintf("%s%s%d%s%d%s",
+				transport.CAMPAIGN_SLOT,
+				transport.DELIMITER,
+				cpID,
+				transport.DELIMITER,
+				slotPublicID,
+				transport.DELIMITER,
+			)
+
+		}
+		result, err := aredis.SumHMGetField(key, day, "i", "c")
+		if err != nil || result["c"] == 0 || result["i"] < config.Config.MinImp {
+			final[config.Config.CtrConst[c]] = 0
+		} else {
+			return utils.Ctr(result["i"], result["c"]), config.Config.CtrConst[c]
+		}
+	}
+	return config.Config.DefaultCTR, "default"
 }
 
 func init() {
