@@ -5,11 +5,12 @@ import (
 
 	"time"
 
+	"transport"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"
 	_ "gopkg.in/fzerorubigd/onion.v2/yamlloader" // config need this to load yaml file
-	"transport"
 )
 
 const (
@@ -45,6 +46,7 @@ type AppConfig struct {
 		DailyImpExpireTime   time.Duration
 		DailyClickExpireTime time.Duration
 		DailyCapExpireTime   time.Duration
+		Days                 int
 	}
 
 	Mysql struct {
@@ -90,6 +92,8 @@ type AppConfig struct {
 	DefaultCTR float64
 
 	CtrConst []string
+
+	MinImp int64
 }
 
 func init() {
@@ -113,14 +117,15 @@ func init() {
 	Config.Redis.DailyClickExpireTime = 72 * time.Hour
 	//Config.Redis.Password = ""
 	Config.Redis.DailyClickExpireTime = 72 * time.Hour
-	Config.Redis.DailyCapExpireTime = 24 * time.Hour
+	Config.Redis.DailyCapExpireTime = 72 * time.Hour
+	Config.Redis.Days = 2
 
 	// TODO : make sure ?parseTime=true is always set!
 	//[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
 	//Config.Mysql.DSN = "novid:x4WT4a2o86oR1lup@tcp(5.9.150.114:3312)/clickyab?parseTime=true"
 
 	//db, err := sql.Open("mysql", "clickyab_test:760f5bad06b18134ef6@tcp(46.4.116.104:3306)/clickyab?charset=utf8")
-	Config.Mysql.DSN = "clickyab_test:760f5bad06b18134ef6@tcp(46.4.116.104:3306)/clickyab?charset=utf8&parseTime=true"
+	Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(37.187.69.33:3306)/clickyab?charset=utf8&parseTime=true"
 
 	Config.Mysql.MaxConnection = 100
 	Config.Mysql.MaxIdleConnection = 10
@@ -152,6 +157,8 @@ func init() {
 
 	Config.DefaultCTR = 0.1
 
-	Config.CtrConst = []string{transport.AD_SLOT, transport.AD_WEBSITE, transport.CAMPAIGN_SLOT, transport.SLOT}
+	Config.CtrConst = []string{transport.AD_SLOT, transport.AD_WEBSITE,transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT}
+
+	Config.MinImp = 1000
 
 }

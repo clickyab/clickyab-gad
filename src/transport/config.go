@@ -16,4 +16,6 @@ const (
 	CAMPAIGN_WEBSITE = "CPW"
 	AD_SLOT          = "ADS"
 	AD_WEBSITE       = "ADW"
+
+	USER_CAPPING	= "CAP"
 )

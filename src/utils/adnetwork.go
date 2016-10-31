@@ -3,6 +3,7 @@ package utils
 import (
 	"config"
 	"crypto/sha1"
+	"fmt"
 	"net"
 )
 
@@ -28,6 +29,5 @@ func Cpm(bid int64, ctr float64) int64 {
 func CreateCopID(useragent string, ip net.IP) string {
 	h := sha1.New()
 	h.Write([]byte(useragent))
-	bs := h.Sum(ip)
-	return string(bs)
+	return fmt.Sprintf("%x", h.Sum([]byte(ip)))
 }

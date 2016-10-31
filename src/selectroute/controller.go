@@ -14,13 +14,14 @@ import (
 
 	"fmt"
 
-	"redis"
+	"net"
 
+	"redis"
 	"time"
 
+	"sort"
+	"transport"
 	"utils"
-
-	"net"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -85,18 +86,32 @@ func (tc *selectController) Select(c echo.Context) error {
 		Country2Info: *country,
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
-
-	minCap := findMinCap(m.CopID)
-	fmt.Println(minCap)
-
+	redisUserHashKey := fmt.Sprintf("%s%s%s%s%s", transport.USER_CAPPING, transport.DELIMITER, m.CopID, transport.DELIMITER, time.Now().Format("060102"))
 	//let the game begin :)
-	for s := range slotPublic {
-		fmt.Println(s)
-		i := 0
-		/*for size := range x[sizeNumSlice[i]] {
+	/*for s := range slotPublic {
+	fmt.Println(s)
+	i := 0
+	*/ /*for size := range x[sizeNumSlice[i]] {
 
-		}*/
+	}*/ /*
 		i++
+	}*/
+	return c.JSON(http.StatusOK, x[7])
+	results, _ := aredis.HGetAll(redisUserHashKey, true, 72*time.Hour)
+	for i := range sizeNumSlice {
+		for ad := range x[sizeNumSlice[i]] {
+			if view, ok := results[fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, x[sizeNumSlice[i]][ad].CpID)]; ok {
+				if x[sizeNumSlice[i]][ad].CpFrequency <= 0 {
+					x[sizeNumSlice[i]][ad].CpFrequency = 2
+				}
+				x[sizeNumSlice[i]][ad].Capping = view / x[sizeNumSlice[i]][ad].CpFrequency
+			} else {
+				x[sizeNumSlice[i]][ad].Capping = 0
+			}
+		}
+		sortCap := mr.ByCapping(x[sizeNumSlice[i]])
+		sort.Sort(sortCap)
+		x[sizeNumSlice[i]] = []mr.AdData(sortCap)
 	}
 
 	return c.JSON(http.StatusOK, x[7])
@@ -165,35 +180,94 @@ func (tc *selectController) slotSize(params map[string][]string) ([]string, []in
 	return slotPublic, sizeNumSlice
 }
 
-func findMinCap(userKey string) int {
+/*func findMinCap(userKey string) (map[string]string, error) {
 	//get user capping data
-	result, err := aredis.GetAll(userKey, true, time.Hour)
+	result, err := aredis.HGetAll(userKey, true, 72*time.Hour)
 	if err != nil {
-		logrus.Warn("Hgetall error")
+		return nil, errors.New("error")
+	}
+	for i:= range result{
+		fmt.Println(result[i])
 	}
 
-	//find min capping for the user
-	invMap := make(map[int]string, len(result))
-	for k, v := range result {
-		invMap[v] = k
-	}
+	return result, nil
+}*/
 
-	//Sorting
-	sortedKeys := make([]int, len(invMap))
-	var i int = 0
-	for k := range invMap {
-		sortedKeys[i] = k
-		i++
+func CalculateCtr(cpID int64, adID int64, wID int64, slotPublicID int64) (float64, string) {
+	day := 2
+	final := make(map[string]int)
+	for c := range config.Config.CtrConst {
+		var key string
+		switch config.Config.CtrConst[c] {
+		case transport.AD_SLOT:
+
+			key = fmt.Sprintf("%s%s%d%s%d%s",
+				transport.AD_SLOT,
+				transport.DELIMITER,
+				adID, transport.DELIMITER,
+				slotPublicID, transport.DELIMITER)
+
+		case transport.CAMPAIGN:
+
+			key = fmt.Sprintf("%s%s%d%s",
+				transport.CAMPAIGN,
+				transport.DELIMITER,
+				cpID, transport.DELIMITER)
+
+		case transport.ADVERTISE:
+
+			key = fmt.Sprintf("%s%s%d%s",
+				transport.ADVERTISE,
+				transport.DELIMITER,
+				adID, transport.DELIMITER)
+
+		case transport.SLOT:
+
+			fmt.Sprintf("%s%s%d",
+				transport.SLOT,
+				transport.DELIMITER,
+				slotPublicID,
+			)
+
+		case transport.WEBSITE:
+
+			key = fmt.Sprintf("%s%s%d",
+				transport.WEBSITE,
+				transport.DELIMITER,
+				wID,
+			)
+
+		case transport.AD_WEBSITE:
+
+			key = fmt.Sprintf("%s%s%d%s%d%s",
+				transport.AD_WEBSITE,
+				transport.DELIMITER,
+				adID,
+				transport.DELIMITER,
+				wID,
+				transport.DELIMITER,
+			)
+
+		case transport.CAMPAIGN_SLOT:
+
+			key = fmt.Sprintf("%s%s%d%s%d%s",
+				transport.CAMPAIGN_SLOT,
+				transport.DELIMITER,
+				cpID,
+				transport.DELIMITER,
+				slotPublicID,
+				transport.DELIMITER,
+			)
+
+		}
+		result, err := aredis.SumHMGetField(key, day, "i", "c")
+		if err != nil || result["c"] == 0 || result["i"] < config.Config.MinImp {
+			final[config.Config.CtrConst[c]] = 0
+		} else {
+			return utils.Ctr(result["i"], result["c"]), config.Config.CtrConst[c]
+		}
 	}
-	fmt.Println("Sorted keys")
-	bubbleSorted := utils.BubbleSort(sortedKeys)
-	var minCap int
-	if len(bubbleSorted) == 0 {
-		minCap = 0
-	} else {
-		minCap = bubbleSorted[0]
-	}
-	return minCap
+	return config.Config.DefaultCTR, "default"
 }
 
 func init() {
