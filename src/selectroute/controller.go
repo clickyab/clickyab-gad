@@ -24,7 +24,7 @@ import (
 
 	"sort"
 
-	"math/rand"
+	"assert"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -94,16 +94,22 @@ func (tc *selectController) Select(c echo.Context) error {
 
 	slotSize := tc.slotSize2(params)
 
+	// TODO : err check?
+	var userMinView int
+
 	results, _ := aredis.HGetAll(redisUserHashKey, true, 72*time.Hour)
 	for i := range sizeNumSlice {
 		for ad := range x[sizeNumSlice[i]] {
-			if view, ok := results[fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, x[sizeNumSlice[i]][ad].CpID)]; ok {
-				if x[sizeNumSlice[i]][ad].CpFrequency <= 0 {
-					x[sizeNumSlice[i]][ad].CpFrequency = rand.Intn(5)
-				}
-				x[sizeNumSlice[i]][ad].Capping = view / x[sizeNumSlice[i]][ad].CpFrequency
-			} else {
-				x[sizeNumSlice[i]][ad].Capping = rand.Intn(5)
+			view := results[fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, x[sizeNumSlice[i]][ad].CpID)]
+			if x[sizeNumSlice[i]][ad].CpFrequency <= 0 {
+				// TODO : use default freq from config
+				x[sizeNumSlice[i]][ad].CpFrequency = 2
+			}
+			x[sizeNumSlice[i]][ad].Capping = mr.NewCapping(c, x[sizeNumSlice[i]][ad].CpID, view, x[sizeNumSlice[i]][ad].CpFrequency)
+			if userMinView == 0 {
+				userMinView = view
+			} else if view > 0 && userMinView > view {
+				userMinView = view
 			}
 		}
 		sortCap := mr.ByCapping(x[sizeNumSlice[i]])
@@ -111,42 +117,68 @@ func (tc *selectController) Select(c echo.Context) error {
 		x[sizeNumSlice[i]] = []mr.MinAdData(sortCap)
 	}
 
-	var exccedFloor = make(map[string][]mr.MinAdData)
-	var winnerAd = make(map[string]mr.MinAdData)
+	fmt.Println("User min view ", userMinView)
+	// TODO {@mahm0ud22} check minimum CpmFloor for the entire site
+	var winnerAd = make(map[string]*mr.MinAdData)
 	var minCapFloor int
 	for slotID := range slotSize {
+		var exceedFloor []*mr.MinAdData
 		minCapFloor = 0
 		for ad := range x[slotSize[slotID]] {
 
-			//x[slotSize[slotID]][ad].CTR, _ = CalculateCtr(x[slotSize[slotID]][ad].CpID, x[slotSize[slotID]][ad].AdID, website.WID, slotID)
-			x[slotSize[slotID]][ad].CTR = rand.Float64()
+			x[slotSize[slotID]][ad].CTR, _ = CalculateCtr(x[slotSize[slotID]][ad].CpID, x[slotSize[slotID]][ad].AdID, website.WID, slotID)
 			x[slotSize[slotID]][ad].CPM = utils.Cpm(x[slotSize[slotID]][ad].CpMaxbid, x[slotSize[slotID]][ad].CTR)
-			//excced cpm floor
+			//exceed cpm floor
 			if x[slotSize[slotID]][ad].CPM >= website.WFloorCpm.Int64 {
-				if minCapFloor == 0 {
-					minCapFloor = x[slotSize[slotID]][ad].Capping
+				if len(exceedFloor) == 0 {
+					minCapFloor = x[slotSize[slotID]][ad].Capping.GetCapping()
 				}
 
 				//minimum capping
-				if x[slotSize[slotID]][ad].Capping <= minCapFloor {
-					exccedFloor[slotID] = append(exccedFloor[slotID], x[slotSize[slotID]][ad])
+				if x[slotSize[slotID]][ad].Capping.GetCapping() <= minCapFloor && x[slotSize[slotID]][ad].WinnerBid == 0 {
+					exceedFloor = append(exceedFloor, &x[slotSize[slotID]][ad])
 				}
 			}
 		}
-		sort.Sort(mr.ByCPM(exccedFloor[slotID]))
-		//if len == 0 @todo write worker
-		//second bidding pricing
-		if len(exccedFloor[slotID]) == 1 {
-			exccedFloor[slotID][0].WinnerBid = exccedFloor[slotID][0].CpMaxbid
-			winnerAd[slotID] = exccedFloor[slotID][0]
+		if len(exceedFloor) == 0 {
+			// TODO : send a warning, log it or anything else:)
+			continue
 		}
-		if len(exccedFloor[slotID]) > 1 {
-			exccedFloor[slotID][0].WinnerBid = utils.WinnerBid(exccedFloor[slotID][1].CPM, exccedFloor[slotID][0].CTR)
-			winnerAd[slotID] = exccedFloor[slotID][0]
+		ef := mr.ByCPM(exceedFloor)
+		sort.Sort(ef)
+		exceedFloor = []*mr.MinAdData(ef)
+
+		var secondCPM = website.WFloorCpm.Int64
+		if len(exceedFloor) > 1 && exceedFloor[0].Capping.GetSelected() == exceedFloor[1].Capping.GetSelected() {
+			secondCPM = exceedFloor[1].CPM
 		}
 
+		exceedFloor[0].WinnerBid = utils.WinnerBid(secondCPM, exceedFloor[0].CTR)
+		exceedFloor[0].Capping.IncView(1)
+		winnerAd[slotID] = exceedFloor[0]
+
+		//incCount := 1
+		////
+		//if exceedFloor[0].Capping.GetCapping() < userMinView*exceedFloor[0].Capping.GetFrequency() {
+		//	incCount = userMinView
+		//	exceedFloor[0].Capping.IncView(userMinView - 1)
+		//}
+		//fmt.Println(incCount)
+		_, err := aredis.IncHash(
+			redisUserHashKey,
+			fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, exceedFloor[0].CpID),
+			1,
+			true,
+			config.Config.Redis.DailyCapExpireTime,
+		)
+		assert.Nil(err)
+		// TODO {fzerorubigd} : Can we check for inner capping increase?
+
+		//k, _ := json.MarshalIndent(exceedFloor, "\t", "\t")
+		//fmt.Println(string(k))
 	}
-	return c.JSON(http.StatusOK, exccedFloor["32270952661"])
+
+	return c.JSON(http.StatusOK, winnerAd)
 }
 
 //FetchWebsite website and set in Context

@@ -2,6 +2,7 @@ package main
 
 import (
 	"assert"
+	"errors"
 	"fmt"
 	"strconv"
 	"transport"
@@ -12,7 +13,7 @@ import (
 func clickWorker(in *transport.Click) (bool, error) {
 
 	if !in.Validate() {
-		return false
+		return false, errors.New("invalid")
 	}
 
 	// check for user lock
