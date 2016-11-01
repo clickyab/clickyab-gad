@@ -36,7 +36,7 @@ func Mix(f ...FilterFunc) FilterFunc {
 
 // Apply get the data and then call filter on each of them concurrently, the
 // result is the accepted items
-func Apply(ctx *Context, in []mr.AdData, ff FilterFunc, cc int) map[int][]mr.AdData {
+func Apply(ctx *Context, in []mr.AdData, ff FilterFunc, cc int) map[int][]mr.MinAdData {
 	//if cc < 1 {
 	//	cc = 1
 	//}
@@ -44,7 +44,7 @@ func Apply(ctx *Context, in []mr.AdData, ff FilterFunc, cc int) map[int][]mr.AdD
 	//wg.Add(len(in))
 	//sem := make(chan struct{}, cc)
 	//res := make([]mr.AdData, 0, len(in))
-	m := make(map[int][]mr.AdData)
+	m := make(map[int][]mr.MinAdData)
 	for i := range in {
 		/*sem <- struct{}{}
 		go func(j int) {
@@ -54,7 +54,7 @@ func Apply(ctx *Context, in []mr.AdData, ff FilterFunc, cc int) map[int][]mr.AdD
 			}()*/
 		if ff(ctx, in[i]) {
 			//res = append(res, in[i])
-			m[in[i].AdSize] = append(m[in[i].AdSize], in[i])
+			m[in[i].AdSize] = append(m[in[i].AdSize], in[i].MinAdData)
 
 		}
 		/*}(i)
