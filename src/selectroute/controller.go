@@ -19,9 +19,12 @@ import (
 	"redis"
 	"time"
 
-	"sort"
 	"transport"
 	"utils"
+
+	"sort"
+
+	"math/rand"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -86,35 +89,64 @@ func (tc *selectController) Select(c echo.Context) error {
 		Country2Info: *country,
 	}
 	x := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
-	redisUserHashKey := fmt.Sprintf("%s%s%s%s%s", transport.USER_CAPPING, transport.DELIMITER, m.CopID, transport.DELIMITER, time.Now().Format("060102"))
-	//let the game begin :)
-	/*for s := range slotPublic {
-	fmt.Println(s)
-	i := 0
-	*/ /*for size := range x[sizeNumSlice[i]] {
 
-	}*/ /*
-		i++
-	}*/
-	return c.JSON(http.StatusOK, x[7])
+	redisUserHashKey := fmt.Sprintf("%s%s%s%s%s", transport.USER_CAPPING, transport.DELIMITER, m.CopID, transport.DELIMITER, time.Now().Format("060102"))
+
+	slotSize := tc.slotSize2(params)
+
 	results, _ := aredis.HGetAll(redisUserHashKey, true, 72*time.Hour)
 	for i := range sizeNumSlice {
 		for ad := range x[sizeNumSlice[i]] {
 			if view, ok := results[fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, x[sizeNumSlice[i]][ad].CpID)]; ok {
 				if x[sizeNumSlice[i]][ad].CpFrequency <= 0 {
-					x[sizeNumSlice[i]][ad].CpFrequency = 2
+					x[sizeNumSlice[i]][ad].CpFrequency = rand.Intn(5)
 				}
 				x[sizeNumSlice[i]][ad].Capping = view / x[sizeNumSlice[i]][ad].CpFrequency
 			} else {
-				x[sizeNumSlice[i]][ad].Capping = 0
+				x[sizeNumSlice[i]][ad].Capping = rand.Intn(5)
 			}
 		}
 		sortCap := mr.ByCapping(x[sizeNumSlice[i]])
 		sort.Sort(sortCap)
-		x[sizeNumSlice[i]] = []mr.AdData(sortCap)
+		x[sizeNumSlice[i]] = []mr.MinAdData(sortCap)
 	}
 
-	return c.JSON(http.StatusOK, x[7])
+	var exccedFloor = make(map[string][]mr.MinAdData)
+	var winnerAd = make(map[string]mr.MinAdData)
+	var minCapFloor int
+	for slotID := range slotSize {
+		minCapFloor = 0
+		for ad := range x[slotSize[slotID]] {
+
+			//x[slotSize[slotID]][ad].CTR, _ = CalculateCtr(x[slotSize[slotID]][ad].CpID, x[slotSize[slotID]][ad].AdID, website.WID, slotID)
+			x[slotSize[slotID]][ad].CTR = rand.Float64()
+			x[slotSize[slotID]][ad].CPM = utils.Cpm(x[slotSize[slotID]][ad].CpMaxbid, x[slotSize[slotID]][ad].CTR)
+			//excced cpm floor
+			if x[slotSize[slotID]][ad].CPM >= website.WFloorCpm.Int64 {
+				if minCapFloor == 0 {
+					minCapFloor = x[slotSize[slotID]][ad].Capping
+				}
+
+				//minimum capping
+				if x[slotSize[slotID]][ad].Capping <= minCapFloor {
+					exccedFloor[slotID] = append(exccedFloor[slotID], x[slotSize[slotID]][ad])
+				}
+			}
+		}
+		sort.Sort(mr.ByCPM(exccedFloor[slotID]))
+		//if len == 0 @todo write worker
+		//second bidding pricing
+		if len(exccedFloor[slotID]) == 1 {
+			exccedFloor[slotID][0].WinnerBid = exccedFloor[slotID][0].CpMaxbid
+			winnerAd[slotID] = exccedFloor[slotID][0]
+		}
+		if len(exccedFloor[slotID]) > 1 {
+			exccedFloor[slotID][0].WinnerBid = utils.WinnerBid(exccedFloor[slotID][1].CPM, exccedFloor[slotID][0].CTR)
+			winnerAd[slotID] = exccedFloor[slotID][0]
+		}
+
+	}
+	return c.JSON(http.StatusOK, exccedFloor["32270952661"])
 }
 
 //FetchWebsite website and set in Context
@@ -180,20 +212,26 @@ func (tc *selectController) slotSize(params map[string][]string) ([]string, []in
 	return slotPublic, sizeNumSlice
 }
 
-/*func findMinCap(userKey string) (map[string]string, error) {
-	//get user capping data
-	result, err := aredis.HGetAll(userKey, true, 72*time.Hour)
-	if err != nil {
-		return nil, errors.New("error")
-	}
-	for i:= range result{
-		fmt.Println(result[i])
+//must be checked after connect database
+func (tc *selectController) slotSize2(params map[string][]string) map[string]int {
+
+	var size = make(map[string]int)
+	//var realSize int
+	for key := range params {
+		slice := slotReg.FindStringSubmatch(key)
+
+		if len(slice) == 2 {
+			//check for size
+			SizeNum, _ := config.GetSize(params[key][0])
+			size[string(slice[1])] = SizeNum
+		}
+
 	}
 
-	return result, nil
-}*/
+	return size
+}
 
-func CalculateCtr(cpID int64, adID int64, wID int64, slotPublicID int64) (float64, string) {
+func CalculateCtr(cpID int64, adID int64, wID int64, slotPublicID string) (float64, string) {
 	day := 2
 	final := make(map[string]int)
 	for c := range config.Config.CtrConst {
@@ -201,7 +239,7 @@ func CalculateCtr(cpID int64, adID int64, wID int64, slotPublicID int64) (float6
 		switch config.Config.CtrConst[c] {
 		case transport.AD_SLOT:
 
-			key = fmt.Sprintf("%s%s%d%s%d%s",
+			key = fmt.Sprintf("%s%s%d%s%s%s",
 				transport.AD_SLOT,
 				transport.DELIMITER,
 				adID, transport.DELIMITER,
@@ -223,7 +261,7 @@ func CalculateCtr(cpID int64, adID int64, wID int64, slotPublicID int64) (float6
 
 		case transport.SLOT:
 
-			fmt.Sprintf("%s%s%d",
+			fmt.Sprintf("%s%s%s",
 				transport.SLOT,
 				transport.DELIMITER,
 				slotPublicID,
@@ -250,7 +288,7 @@ func CalculateCtr(cpID int64, adID int64, wID int64, slotPublicID int64) (float6
 
 		case transport.CAMPAIGN_SLOT:
 
-			key = fmt.Sprintf("%s%s%d%s%d%s",
+			key = fmt.Sprintf("%s%s%d%s%s%s",
 				transport.CAMPAIGN_SLOT,
 				transport.DELIMITER,
 				cpID,

@@ -25,6 +25,11 @@ func Cpm(bid int64, ctr float64) int64 {
 	return int64(float64(bid) * ctr * 10.0)
 }
 
+// WinnerBid calculate winner bid
+func WinnerBid(cpm int64,ctr float64)int64  {
+	return int64((float64(cpm) / ctr) * 10)
+}
+
 // CreateCopID create COP ID
 func CreateCopID(useragent string, ip net.IP) string {
 	h := sha1.New()

@@ -30,6 +30,7 @@ func (m *Manager) GetLocation(ip net.IP) (*IP2Location, error) {
 		long,
 		long,
 	)
+
 	if err != nil {
 		return nil, err
 	}
