@@ -26,8 +26,8 @@ func Cpm(bid int64, ctr float64) int64 {
 }
 
 // WinnerBid calculate winner bid
-func WinnerBid(cpm int64,ctr float64)int64  {
-	return int64((float64(cpm) / ctr) * 10)
+func WinnerBid(cpm int64, ctr float64) int64 {
+	return int64(float64(cpm)/(ctr*10)) + 1
 }
 
 // CreateCopID create COP ID

@@ -120,7 +120,7 @@ func RemoveKey(key string) error {
 	return err
 }
 
-// IncHash
+// IncHash try to inc hash
 func IncHash(key string, hash string, value int, touch bool, expire time.Duration) (int64, error) {
 	r := Pool.Get()
 	defer func() { assert.Nil(r.Close()) }()

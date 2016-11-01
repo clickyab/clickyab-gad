@@ -15,14 +15,14 @@ import (
 type SharpArray []int64
 
 type MinAdData struct {
-	AdID        int64   `json:"ad_id" db:"ad_id"`
-	CpFrequency int     `json:"cp_frequency" db:"cp_frequency"`
-	CTR         float64 `json:"ctr" db:"ctr"`
-	CPM         int64   `json:"cpm" db:"cpm"`
-	Capping     int     `json:"capping" db:"-"`
-	WinnerBid   int64   `json:"winner_bid" db:"-"`
-	CpMaxbid    int64   `json:"cp_maxbid" db:"cp_maxbid"`
-	CpID        int64   `json:"cp_id" db:"cp_id"`
+	AdID        int64            `json:"ad_id" db:"ad_id"`
+	CpFrequency int              `json:"cp_frequency" db:"cp_frequency"`
+	CTR         float64          `json:"ctr" db:"ctr"`
+	CPM         int64            `json:"cpm" db:"cpm"`
+	Capping     CappingInterface `json:"capping" db:"-"`
+	WinnerBid   int64            `json:"winner_bid" db:"-"`
+	CpMaxbid    int64            `json:"cp_maxbid" db:"cp_maxbid"`
+	CpID        int64            `json:"cp_id" db:"cp_id"`
 }
 
 // AdData type @todo
@@ -118,7 +118,7 @@ type AdData struct {
 }
 
 //ByCPM sort by cpm
-type ByCPM []MinAdData
+type ByCPM []*MinAdData
 
 func (a ByCPM) Len() int {
 	return len(a)
@@ -140,7 +140,7 @@ func (a ByCapping) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 func (a ByCapping) Less(i, j int) bool {
-	return a[i].Capping < a[j].Capping
+	return a[i].Capping.GetCapping() < a[j].Capping.GetCapping()
 }
 
 // Scan convert the json array ino string slice

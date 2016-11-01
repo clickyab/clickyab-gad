@@ -157,7 +157,7 @@ func init() {
 	Config.Slack.WebHookURL = "https://hooks.slack.com/services/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"
 	Config.Slack.Active = false
 
-	Config.DefaultCTR = 0.1
+	Config.DefaultCTR = 0.2
 
 	Config.CtrConst = []string{transport.AD_SLOT, transport.AD_WEBSITE,transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT}
 

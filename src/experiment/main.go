@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"rabbit"
 	"redis"
+	"selectroute"
 	"time"
 	"version"
-	"selectroute"
 )
 
 func findMinCap(userKey string) (int, error) {
@@ -30,5 +30,5 @@ func main() {
 	aredis.Initialize()
 	//CopID:=""
 
-	fmt.Println(selector.CalculateCtr(12,23,343,54))
+	fmt.Println(selector.CalculateCtr(12, 23, 343, "54"))
 }
