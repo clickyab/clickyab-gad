@@ -68,6 +68,9 @@ impworker: $(GB)
 clickworker: $(GB)
 	$(BUILD) clickworker
 
+experiment: $(GB)
+	$(BUILD) experiment
+
 run-server: server
 	sudo setcap cap_net_bind_service=+ep $(BIN)/server
 	$(BIN)/server
@@ -77,6 +80,9 @@ run-impworker: impworker
 
 run-clickworker: clickworker
 	$(BIN)/clickworker
+
+run-experiment: experiment
+	$(BIN)/experiment
 
 mysql-setup: needroot
 	echo 'UPDATE user SET plugin="";' | mysql mysql
