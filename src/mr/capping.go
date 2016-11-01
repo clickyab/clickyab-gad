@@ -6,13 +6,15 @@ import "github.com/labstack/echo"
 type capping struct {
 	View      int
 	Frequency int
+	Selected  bool
 }
 
 type CappingInterface interface {
 	GetView() int
 	GetFrequency() int
 	GetCapping() int
-	IncView()
+	IncView(int)
+	GetSelected() bool
 }
 
 const (
@@ -48,6 +50,11 @@ func (c *capping) GetCapping() int {
 	return c.View / c.Frequency
 }
 
-func (c *capping) IncView() {
-	c.View++
+func (c *capping) IncView(a int) {
+	c.View += a
+	c.Selected = true
+}
+
+func (c *capping) GetSelected() bool {
+	return c.Selected
 }

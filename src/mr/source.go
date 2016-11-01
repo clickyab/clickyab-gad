@@ -127,6 +127,9 @@ func (a ByCPM) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 func (a ByCPM) Less(i, j int) bool {
+	if a[i].Capping.GetSelected() != a[j].Capping.GetSelected() {
+		return !a[i].Capping.GetSelected()
+	}
 	return a[i].CPM > a[j].CPM
 }
 
@@ -140,6 +143,9 @@ func (a ByCapping) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 func (a ByCapping) Less(i, j int) bool {
+	if a[i].Capping.GetSelected() != a[j].Capping.GetSelected() {
+		return !a[i].Capping.GetSelected()
+	}
 	return a[i].Capping.GetCapping() < a[j].Capping.GetCapping()
 }
 

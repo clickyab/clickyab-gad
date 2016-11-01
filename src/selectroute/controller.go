@@ -127,7 +127,6 @@ func (tc *selectController) Select(c echo.Context) error {
 		for ad := range x[slotSize[slotID]] {
 
 			x[slotSize[slotID]][ad].CTR, _ = CalculateCtr(x[slotSize[slotID]][ad].CpID, x[slotSize[slotID]][ad].AdID, website.WID, slotID)
-			//x[slotSize[slotID]][ad].CTR = rand.Float64()
 			x[slotSize[slotID]][ad].CPM = utils.Cpm(x[slotSize[slotID]][ad].CpMaxbid, x[slotSize[slotID]][ad].CTR)
 			//exceed cpm floor
 			if x[slotSize[slotID]][ad].CPM >= website.WFloorCpm.Int64 {
@@ -150,22 +149,25 @@ func (tc *selectController) Select(c echo.Context) error {
 		exceedFloor = []*mr.MinAdData(ef)
 
 		var secondCPM = website.WFloorCpm.Int64
-		if len(exceedFloor) > 1 {
+		if len(exceedFloor) > 1 && exceedFloor[0].Capping.GetSelected() == exceedFloor[1].Capping.GetSelected() {
 			secondCPM = exceedFloor[1].CPM
 		}
 
 		exceedFloor[0].WinnerBid = utils.WinnerBid(secondCPM, exceedFloor[0].CTR)
-		exceedFloor[0].Capping.IncView()
+		exceedFloor[0].Capping.IncView(1)
 		winnerAd[slotID] = exceedFloor[0]
 
-		incCount := 1
-		if exceedFloor[0].Capping.GetCapping() < userMinView*exceedFloor[0].Capping.GetFrequency() {
-			incCount = userMinView
-		}
+		//incCount := 1
+		////
+		//if exceedFloor[0].Capping.GetCapping() < userMinView*exceedFloor[0].Capping.GetFrequency() {
+		//	incCount = userMinView
+		//	exceedFloor[0].Capping.IncView(userMinView - 1)
+		//}
+		//fmt.Println(incCount)
 		_, err := aredis.IncHash(
 			redisUserHashKey,
 			fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, exceedFloor[0].CpID),
-			incCount,
+			1,
 			true,
 			config.Config.Redis.DailyCapExpireTime,
 		)
