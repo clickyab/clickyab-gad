@@ -157,13 +157,6 @@ func (tc *selectController) Select(c echo.Context) error {
 		exceedFloor[0].Capping.IncView(1)
 		winnerAd[slotID] = exceedFloor[0]
 
-		//incCount := 1
-		////
-		//if exceedFloor[0].Capping.GetCapping() < userMinView*exceedFloor[0].Capping.GetFrequency() {
-		//	incCount = userMinView
-		//	exceedFloor[0].Capping.IncView(userMinView - 1)
-		//}
-		//fmt.Println(incCount)
 		_, err := aredis.IncHash(
 			redisUserHashKey,
 			fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, exceedFloor[0].CpID),
@@ -171,12 +164,34 @@ func (tc *selectController) Select(c echo.Context) error {
 			true,
 			config.Config.Redis.DailyCapExpireTime,
 		)
+
 		assert.Nil(err)
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
 
-		//k, _ := json.MarshalIndent(exceedFloor, "\t", "\t")
-		//fmt.Println(string(k))
 	}
+
+	// add mega imp
+	ip, err := utils.IP2long(rd.IP)
+	assert.Nil(err)
+	tmp := []interface{}{
+		"IP",
+		ip,
+		"UA",
+		rd.UserAgent,
+		"WS",
+		website.WID,
+		"T",
+		time.Now().Unix(),
+	}
+
+	for i := range winnerAd {
+		tmp = append(tmp, fmt.Sprintf("ad_%d", winnerAd[i].AdID), winnerAd[i].WinnerBid)
+	}
+
+	assert.Nil(aredis.HMSet(
+		"mega_"+rd.MegaImp, true, time.Hour,
+		tmp...,
+	))
 
 	return c.JSON(http.StatusOK, winnerAd)
 }

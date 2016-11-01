@@ -177,3 +177,24 @@ func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, 
 	}
 	return final, nil
 }
+
+func HMSet(key string, touch bool, expire time.Duration, fields ...interface{}) error {
+	r := Pool.Get()
+	defer func() { assert.Nil(r.Close()) }()
+
+	nf := make([]interface{}, len(fields)+1)
+	nf[0] = key
+	for i := range fields {
+		nf[i+1] = fields[i]
+	}
+	fmt.Println(nf)
+	_, err := redis.String(r.Do("HMSET", nf...))
+	if err != nil {
+		return err
+	}
+	if touch {
+		_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))
+		assert.Nil(err)
+	}
+	return nil
+}
