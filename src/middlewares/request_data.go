@@ -28,6 +28,8 @@ type RequestData struct {
 	Method         string
 	Referrer       string
 	Mobile         bool
+	Url            string
+	Proto            string
 
 	MegaImp string
 	CopID   string
@@ -43,6 +45,8 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.IP = net.ParseIP(ctx.Request().RealIP())
 		e.UserAgent = ctx.Request().UserAgent()
 		ua := user_agent.New(ctx.Request().UserAgent())
+		e.Url = ctx.Request().Host()
+		e.Proto = ctx.Request().Scheme()
 		name, version := ua.Browser()
 		e.Browser = name
 		e.UserAgent = ctx.Request().UserAgent()

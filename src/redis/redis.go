@@ -111,6 +111,28 @@ func HGetAll(key string, touch bool, expire time.Duration) (map[string]int, erro
 	return res, nil
 }
 
+// HGetAll Get a key and value from redis
+func HGetAllString(key string, touch bool, expire time.Duration) (map[string]string, error) {
+	var res map[string]string
+	r := Pool.Get()
+	defer func() { assert.Nil(r.Close()) }()
+	n, err := r.Do("HGETALL", key)
+
+	res, err = redis.StringMap(n, err)
+	if err != nil {
+		return res, err
+	}
+
+	if touch {
+		for k := range res {
+			_, err = r.Do("EXPIRE", k, int64(expire.Seconds()))
+			assert.Nil(err)
+		}
+
+	}
+	return res, nil
+}
+
 // RemoveKey for removing a key in redis
 func RemoveKey(key string) error {
 	r := Pool.Get()
@@ -187,7 +209,7 @@ func HMSet(key string, touch bool, expire time.Duration, fields ...interface{}) 
 	for i := range fields {
 		nf[i+1] = fields[i]
 	}
-	fmt.Println(nf)
+
 	_, err := redis.String(r.Do("HMSET", nf...))
 	if err != nil {
 		return err

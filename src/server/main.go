@@ -7,8 +7,9 @@ import (
 	"rabbit"
 	"version"
 
-	"github.com/labstack/echo/engine/fasthttp"
 	"redis"
+
+	"github.com/labstack/echo/engine/fasthttp"
 )
 
 func main() {

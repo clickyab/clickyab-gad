@@ -9,6 +9,7 @@ type capping struct {
 	Selected  bool
 }
 
+// CappingInterface interface caaping
 type CappingInterface interface {
 	GetView() int
 	GetFrequency() int
@@ -21,6 +22,7 @@ const (
 	cappingCtx = "__capping_context__"
 )
 
+// NewCapping create new capping
 func NewCapping(ctx echo.Context, cpID int64, view, freq int) CappingInterface {
 	var caps map[int64]*capping
 	var ok bool

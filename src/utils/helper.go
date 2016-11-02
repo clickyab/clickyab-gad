@@ -114,7 +114,7 @@ func IncKeyDaily(key, subKey string, count int) (int64, error) {
 		subKey,
 		count,
 		true,
-		config.Config.Redis.DailyImpExpireTime)
+		config.Config.Clickyab.DailyImpExpireTime)
 	return res, err
 }
 

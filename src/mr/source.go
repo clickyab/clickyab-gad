@@ -14,6 +14,7 @@ import (
 // SharpArray type @todo
 type SharpArray []int64
 
+// MinAdData min data
 type MinAdData struct {
 	AdID        int64            `json:"ad_id" db:"ad_id"`
 	CpFrequency int              `json:"cp_frequency" db:"cp_frequency"`
@@ -133,8 +134,8 @@ func (a ByCPM) Less(i, j int) bool {
 	return a[i].CPM > a[j].CPM
 }
 
-// BuCapping sort by Capping
-type ByCapping []MinAdData
+// ByCapping sort by Capping
+type ByCapping []*MinAdData
 
 func (a ByCapping) Len() int {
 	return len(a)

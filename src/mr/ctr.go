@@ -8,10 +8,11 @@ import (
 	"transport"
 )
 
+//CalculateCTR calculate ctr
 func CalculateCTR(ad AdData) float64 {
 	maxBid := ad.CpMaxbid
 	fmt.Println(maxBid)
-	ctrCalculateConst := config.Config.CtrConst
+	ctrCalculateConst := config.Config.Clickyab.CtrConst
 	for m := range ctrCalculateConst {
 		switch ctrCalculateConst[m] {
 		case transport.AD_SLOT:
