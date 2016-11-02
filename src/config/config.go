@@ -39,14 +39,11 @@ type AppConfig struct {
 	TimeZone string `onion:"time_zone"`
 
 	Redis struct {
-		Size                 int
-		Network              string
-		Address              string
-		Password             string //Daily Statistic TimeOut Expiration
-		DailyImpExpireTime   time.Duration
-		DailyClickExpireTime time.Duration
-		DailyCapExpireTime   time.Duration
-		Days                 int
+		Size     int
+		Network  string
+		Address  string
+		Password string //Daily Statistic TimeOut Expiration
+		Days     int
 	}
 
 	Mysql struct {
@@ -89,11 +86,16 @@ type AppConfig struct {
 		Active     bool
 	}
 
-	DefaultCTR float64
-
-	CtrConst []string
-
-	MinImp int64
+	Clickyab struct {
+		DefaultCTR           float64
+		CtrConst             []string
+		MinImp               int64
+		MinFrequency         int
+		DailyImpExpireTime   time.Duration
+		DailyClickExpireTime time.Duration
+		DailyCapExpireTime   time.Duration
+		MinCPMFloor          int64
+	}
 }
 
 func init() {
@@ -114,10 +116,10 @@ func init() {
 	Config.Redis.Size = 10
 	Config.Redis.Network = "tcp"
 	Config.Redis.Address = ":6379"
-	Config.Redis.DailyClickExpireTime = 72 * time.Hour
+	Config.Clickyab.DailyClickExpireTime = 72 * time.Hour
 	//Config.Redis.Password = ""
-	Config.Redis.DailyClickExpireTime = 72 * time.Hour
-	Config.Redis.DailyCapExpireTime = 72 * time.Hour
+	Config.Clickyab.DailyClickExpireTime = 72 * time.Hour
+	Config.Clickyab.DailyCapExpireTime = 72 * time.Hour
 	Config.Redis.Days = 2
 
 	// TODO : make sure ?parseTime=true is always set!
@@ -157,10 +159,12 @@ func init() {
 	Config.Slack.WebHookURL = "https://hooks.slack.com/services/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"
 	Config.Slack.Active = false
 
-	Config.DefaultCTR = 0.2
+	Config.Clickyab.DefaultCTR = 0.2
 
-	Config.CtrConst = []string{transport.AD_SLOT, transport.AD_WEBSITE,transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT}
+	Config.Clickyab.CtrConst = []string{transport.AD_SLOT, transport.AD_WEBSITE, transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT}
 
-	Config.MinImp = 1000
+	Config.Clickyab.MinImp = 1000
+	Config.Clickyab.MinFrequency = 2
+	Config.Clickyab.MinCPMFloor = 150
 
 }

@@ -5,7 +5,7 @@ import (
 	"selector"
 )
 
-// CheckBlackList function @todo
+// CheckBlackList filter blacklist
 func CheckBlackList(c *selector.Context, in mr.AdData) bool {
 	if len(in.CpWfilter) == 0 {
 		return true

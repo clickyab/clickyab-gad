@@ -6,7 +6,7 @@ import (
 	"utils"
 )
 
-// IP2Location type @todo
+// IP2Location struct table ip2location
 type IP2Location struct {
 	IPFrom      int64          `json:"ip_from" db:"ip_from"`
 	IPTo        int64          `json:"ip_to" db:"ip_to"`
