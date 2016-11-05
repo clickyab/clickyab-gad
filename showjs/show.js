@@ -1,3 +1,14 @@
+function renderFarm(objectParameter, config) {
+    console.log("milad");
+    for (var key in objectParameter) {
+        console.log(key);
+        console.log(objectParameter);
+        var element = document.getElementById("clickyab_iframe_" +key);
+        element.setAttribute("src", objectParameter[key]);
+    }
+
+}
+
 (function () {
     var clone = {};
     for (var key in clickyab_ad) {
@@ -27,6 +38,10 @@
         };
     }
 
+
+
+
+
     var dataString = window.string;
     function ArrayToURL(dataString) {
         var pairs = [];
@@ -41,15 +56,7 @@
         pairs.push('i=' + dataString[0].id);
         return pairs.join('&');
     }
-    function renderFarm(objectParameter, config) {
-        for (var key in objectParameter) {
-            console.log(key);
-            console.log(objectParameter);
-            var element = document.getElementById("clickyab_iframe_" +key);
-            element.setAttribute("src", objectParameter[key]);
-        }
 
-    }
 
     function insertDivAfterClickYabJS(data, showJS) {
         if (typeof pairs == 'undefined') {
@@ -78,17 +85,11 @@
             window.url= ArrayToURL(dataString);
             callback(window._clickyab_stack, showJsDomResult.scripts);
             var scriptFile = document.createElement('script');
-            scriptFile.setAttribute("src","http://192.168.88.207/select?" + window.url);
+            scriptFile.setAttribute("type","text/javascript");
+            scriptFile.setAttribute("src","http://127.0.0.1/select?" + window.url);
             document.body.appendChild(scriptFile);
+            console.log(scriptFile,  window.url);
 
-            renderFarm(
-                {
-                    "2635768282": "hp30download.com",
-                    "2635768282": "hp30download.com",
-                    "2635768282": "hp30download.com",
-
-                }
-            );
         }
     }
     if (typeof window.onLoadCallBack == 'undefined') {

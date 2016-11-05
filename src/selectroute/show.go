@@ -11,8 +11,20 @@ import (
 
 	"assert"
 
+	"strconv"
+
+	"bytes"
+	"config"
+
 	"github.com/labstack/echo"
 )
+
+type SingleAd struct {
+	Link   string
+	Width  string
+	Height string
+	Src    string
+}
 
 func (tc *selectController) Show(c echo.Context) error {
 	mega := c.Param("mega")
@@ -22,9 +34,23 @@ func (tc *selectController) Show(c echo.Context) error {
 	if _, ok := megaImp[fmt.Sprintf("ad_%s", ad)]; !ok {
 		return errors.New("ad not found " + ad)
 	}
-	ads, err := mr.NewManager().GetAd(ad)
+	adId, _ := strconv.ParseInt(ad, 10, 64)
+	ads, err := mr.NewManager().GetAd(adId)
 
-	result := string(ads.AdImg)
-	return c.HTML(200, result)
+	w, h := config.GetSizeByNum(ads.AdSize)
+	fmt.Println(h)
+	sa := SingleAd{
+		Link:   ads.AdURL.String,
+		Height: h,
+		Width:  w,
+		Src:    ads.AdImg.String,
+	}
 
+	buf := &bytes.Buffer{}
+	err = SingleAdTemplate.Execute(buf, sa)
+	if err != nil {
+		return err
+	}
+
+	return c.HTML(200, buf.String())
 }

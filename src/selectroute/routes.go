@@ -1,10 +1,18 @@
 package selectroute
 
-import "github.com/labstack/echo"
-
+import (
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
+)
 
 // Routes function @todo
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
+	e.Use(middleware.StaticWithConfig(
+		middleware.StaticConfig{
+			Root:   "/home/develop/gad/showjs",
+			Browse: true,
+		},
+	))
 	e.Get("/select", tc.Select)
 	e.Get("/show/:mega/:ad", tc.Show)
 }
