@@ -1,6 +1,9 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 var sizes = map[string]int{
 	"120x600":  1,
@@ -30,4 +33,15 @@ func GetSize(size string) (int, error) {
 	}
 
 	return 0, fmt.Errorf("size %s is not valid", size)
+}
+
+func GetSizeByNum(num int) (string, string) {
+	// TODO
+	for i, s := range sizes {
+		if s == num {
+			a:=strings.Split(i, "x")
+			return a[0],a[1]
+		}
+	}
+	return "",""
 }

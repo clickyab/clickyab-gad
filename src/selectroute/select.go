@@ -175,8 +175,7 @@ func (tc *selectController) Select(c echo.Context) error {
 		tmp...,
 	))
 	b, err := json.MarshalIndent(show, "\t", "\t")
-
-	result := "renderFarm(" + string(b) + ")"
+	result := "console.log('milad');renderFarm(" + string(b) + ");"
 	return c.HTML(200, result)
 }
 
@@ -224,11 +223,13 @@ func (tc *selectController) slotSize(params map[string][]string) ([]string, []in
 
 	for key := range params {
 		slice := slotReg.FindStringSubmatch(key)
+
 		//fmt.Println(slice,len(slice))
 		if len(slice) == 2 {
 			slotPublic = append(slotPublic, slice[1])
 			size[slice[1]] = params[key][0]
 			//check for size
+			//size[slice[1]] = strings.Trim(size[slice[1]], "a")
 			SizeNum, _ := config.GetSize(size[slice[1]])
 			sizeNumSlice = append(sizeNumSlice, SizeNum)
 
@@ -247,6 +248,7 @@ func (tc *selectController) slotGroupBySize(params map[string][]string) map[stri
 		slice := slotReg.FindStringSubmatch(key)
 
 		if len(slice) == 2 {
+			//params[key][0] = strings.Trim(params[key][0], "a")
 			//check for size
 			SizeNum, _ := config.GetSize(params[key][0])
 			size[string(slice[1])] = SizeNum
