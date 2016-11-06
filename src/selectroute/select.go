@@ -253,7 +253,7 @@ big:
 			}
 
 		}
-		newSlot = append(newSlot, strconv.ParseInt(slotPublic[j],10,64))
+		newSlot = append(newSlot, slotPublic[j])
 
 	}
 
