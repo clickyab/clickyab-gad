@@ -72,16 +72,15 @@ func Int64InArray(q int64, arr ...int64) bool {
 }
 
 // Long2IP function @todo
-func Long2IP(ipLong uint32) string {
+func Long2IP(ipLong uint32) net.IP {
 	ipByte := make([]byte, 4)
 	binary.BigEndian.PutUint32(ipByte, ipLong)
 	ip := net.IP(ipByte)
-	return ip.String()
+	return ip
 }
 
 // IP2long function @todo
-func IP2long(ipAddr string) (uint32, error) {
-	ip := net.ParseIP(ipAddr)
+func IP2long(ip net.IP) (uint32, error) {
 	if ip == nil {
 		return 0, errors.New("wrong ipAddr format")
 	}
@@ -115,6 +114,18 @@ func IncKeyDaily(key, subKey string, count int) (int64, error) {
 		subKey,
 		count,
 		true,
-		config.Config.Redis.DailyImpExpireTime)
+		config.Config.Clickyab.DailyImpExpireTime)
 	return res, err
+}
+
+//Bubblesort
+func BubbleSort(arr []int) []int {
+	for i := 1; i < len(arr); i++ {
+		for j := 0; j < len(arr)-i; j++ {
+			if arr[j] > arr[j+1] {
+				arr[j], arr[j+1] = arr[j+1], arr[j]
+			}
+		}
+	}
+	return arr
 }

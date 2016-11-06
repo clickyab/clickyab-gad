@@ -38,7 +38,7 @@ func Initialize() {
 		err = db.Ping()
 		assert.Nil(err)
 
-		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
+		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{}}
 
 		if config.Config.DevelMode {
 			logger := gorpLogger{}

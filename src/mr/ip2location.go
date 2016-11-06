@@ -2,10 +2,11 @@ package mr
 
 import (
 	"database/sql"
+	"net"
 	"utils"
 )
 
-// IP2Location type @todo
+// IP2Location struct table ip2location
 type IP2Location struct {
 	IPFrom      int64          `json:"ip_from" db:"ip_from"`
 	IPTo        int64          `json:"ip_to" db:"ip_to"`
@@ -16,7 +17,7 @@ type IP2Location struct {
 }
 
 //GetLocation @todo
-func (m *Manager) GetLocation(ip string) (*IP2Location, error) {
+func (m *Manager) GetLocation(ip net.IP) (*IP2Location, error) {
 	var res IP2Location
 	long, err := utils.IP2long(ip)
 	if err != nil {
@@ -29,6 +30,7 @@ func (m *Manager) GetLocation(ip string) (*IP2Location, error) {
 		long,
 		long,
 	)
+
 	if err != nil {
 		return nil, err
 	}

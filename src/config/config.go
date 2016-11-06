@@ -5,6 +5,8 @@ import (
 
 	"time"
 
+	"transport"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"
@@ -37,12 +39,11 @@ type AppConfig struct {
 	TimeZone string `onion:"time_zone"`
 
 	Redis struct {
-		Size                 int
-		Network              string
-		Address              string
-		Password             string //Daily Statistic TimeOut Expiration
-		DailyImpExpireTime   time.Duration
-		DailyClickExpireTime time.Duration
+		Size     int
+		Network  string
+		Address  string
+		Password string //Daily Statistic TimeOut Expiration
+		Days     int
 	}
 
 	Mysql struct {
@@ -85,7 +86,16 @@ type AppConfig struct {
 		Active     bool
 	}
 
-	DefaultCTR float64
+	Clickyab struct {
+		DefaultCTR           float64
+		CtrConst             []string
+		MinImp               int64
+		MinFrequency         int
+		DailyImpExpireTime   time.Duration
+		DailyClickExpireTime time.Duration
+		DailyCapExpireTime   time.Duration
+		MinCPMFloor          int64
+	}
 }
 
 func init() {
@@ -106,16 +116,22 @@ func init() {
 	Config.Redis.Size = 10
 	Config.Redis.Network = "tcp"
 	Config.Redis.Address = ":6379"
-	Config.Redis.DailyClickExpireTime = 72 * time.Hour
+	Config.Clickyab.DailyClickExpireTime = 72 * time.Hour
 	//Config.Redis.Password = ""
-	Config.Redis.DailyClickExpireTime = 72 * time.Hour
+	Config.Clickyab.DailyClickExpireTime = 72 * time.Hour
+	Config.Clickyab.DailyCapExpireTime = 72 * time.Hour
+	Config.Redis.Days = 2
 
 	// TODO : make sure ?parseTime=true is always set!
 	//[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
 	//Config.Mysql.DSN = "novid:x4WT4a2o86oR1lup@tcp(5.9.150.114:3312)/clickyab?parseTime=true"
 
 	//db, err := sql.Open("mysql", "clickyab_test:760f5bad06b18134ef6@tcp(46.4.116.104:3306)/clickyab?charset=utf8")
-	Config.Mysql.DSN = "clickyab_test:760f5bad06b18134ef6@tcp(46.4.116.104:3306)/clickyab?charset=utf8&parseTime=true"
+	//Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(37.187.69.33:3306)/clickyab?charset=utf8&parseTime=true"
+	//Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(51.254.197.46:3306)/clickyab?charset=utf8&parseTime=true"
+	//Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"
+	//Config.Mysql.DSN = "root:cOU8W1R40f1Y0uuh!W8647697D@3uV3vbyS^TuKu@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"
+	Config.Mysql.DSN = "root:bita123@tcp(127.0.0.1:3306)/clickyab?charset=utf8&parseTime=true"
 
 	Config.Mysql.MaxConnection = 100
 	Config.Mysql.MaxIdleConnection = 10
@@ -145,6 +161,12 @@ func init() {
 	Config.Slack.WebHookURL = "https://hooks.slack.com/services/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"
 	Config.Slack.Active = false
 
-	Config.DefaultCTR = 0.1
+	Config.Clickyab.DefaultCTR = 0.2
+
+	Config.Clickyab.CtrConst = []string{transport.AD_SLOT, transport.AD_WEBSITE, transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT}
+
+	Config.Clickyab.MinImp = 1000
+	Config.Clickyab.MinFrequency = 2
+	Config.Clickyab.MinCPMFloor = 150
 
 }

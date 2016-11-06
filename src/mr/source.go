@@ -14,9 +14,21 @@ import (
 // SharpArray type @todo
 type SharpArray []int64
 
+// MinAdData min data
+type MinAdData struct {
+	AdID        int64            `json:"ad_id" db:"ad_id"`
+	CpFrequency int              `json:"cp_frequency" db:"cp_frequency"`
+	CTR         float64          `json:"ctr" db:"ctr"`
+	CPM         int64            `json:"cpm" db:"cpm"`
+	Capping     CappingInterface `json:"capping" db:"-"`
+	WinnerBid   int64            `json:"winner_bid" db:"-"`
+	CpMaxbid    int64            `json:"cp_maxbid" db:"cp_maxbid"`
+	CpID        int64            `json:"cp_id" db:"cp_id"`
+}
+
 // AdData type @todo
 type AdData struct {
-	AdID              int64                   `json:"ad_id" db:"ad_id"`
+	MinAdData
 	AdSize            int                     `json:"ad_size" db:"ad_size"`
 	UserID            int64                   `json:"u_id" db:"u_id"`
 	AdName            sql.NullString          `json:"ad_name" db:"ad_name"`
@@ -41,7 +53,6 @@ type AdData struct {
 	UpdatedAt         sql.NullString          `json:"updated_at" db:"updated_at"`
 	UEmail            string                  `json:"u_email" db:"u_email"`
 	UBalance          string                  `json:"u_balance" db:"u_balance"`
-	CpID              int64                   `json:"cp_id" db:"cp_id"`
 	CpType            int                     `json:"cp_type" db:"cp_type"`
 	CpBillingType     sql.NullString          `json:"cp_billing_type" db:"cp_billing_type"`
 	CpName            sql.NullString          `json:"cp_name" db:"cp_name"`
@@ -49,7 +60,6 @@ type AdData struct {
 	CpPlacement       SharpArray              `json:"cp_placement" db:"cp_placement"`
 	CpWfilter         SharpArray              `json:"cp_wfilter" db:"cp_wfilter"`
 	CpRetargeting     sql.NullString          `json:"cp_retargeting" db:"cp_retargeting"`
-	CpFrequency       int                     `json:"cp_frequency" db:"cp_frequency"`
 	CpSegmentID       sql.NullInt64           `json:"cp_segment_id" db:"cp_segment_id"`
 	CpAppBrand        sql.NullString          `json:"cp_app_brand" db:"cp_app_brand"`
 	CpNetProvider     sql.NullString          `json:"cp_net_provider" db:"cp_net_provider"`
@@ -82,7 +92,6 @@ type AdData struct {
 	CpKeywords        SharpArray              `json:"cp_keywords" db:"cp_keywords"`
 	CpPlatforms       SharpArray              `json:"cp_platforms" db:"cp_platforms"`
 	CpPlatformVersion SharpArray              `json:"cp_platform_version" db:"cp_platform_version"`
-	CpMaxbid          int64                   `json:"cp_maxbid" db:"cp_maxbid"`
 	CpWeeklyBudget    int                     `json:"cp_weekly_budget" db:"cp_weekly_budget"`
 	CpDailyBudget     int                     `json:"cp_daily_budget" db:"cp_daily_budget"`
 	CpTotalBudget     int                     `json:"cp_total_budget" db:"cp_total_budget"`
@@ -107,13 +116,10 @@ type AdData struct {
 	CpHourEnd         int                     `json:"cp_hour_end" db:"cp_hour_end"`
 	IsCrm             int                     `json:"is_crm" db:"is_crm"`
 	CpLock            int                     `json:"cp_lock" db:"cp_lock"`
-	CTR               float64                 `json:"ctr" db:"ctr"`
-	CPM               int64                   `json:"cpm" db:"cpm"`
-	Capping           int                     `db:"-" json:"capping"`
 }
 
 //ByCPM sort by cpm
-type ByCPM []AdData
+type ByCPM []*MinAdData
 
 func (a ByCPM) Len() int {
 	return len(a)
@@ -122,7 +128,26 @@ func (a ByCPM) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 func (a ByCPM) Less(i, j int) bool {
+	if a[i].Capping.GetSelected() != a[j].Capping.GetSelected() {
+		return !a[i].Capping.GetSelected()
+	}
 	return a[i].CPM > a[j].CPM
+}
+
+// ByCapping sort by Capping
+type ByCapping []*MinAdData
+
+func (a ByCapping) Len() int {
+	return len(a)
+}
+func (a ByCapping) Swap(i, j int) {
+	a[i], a[j] = a[j], a[i]
+}
+func (a ByCapping) Less(i, j int) bool {
+	if a[i].Capping.GetSelected() != a[j].Capping.GetSelected() {
+		return !a[i].Capping.GetSelected()
+	}
+	return a[i].Capping.GetCapping() < a[j].Capping.GetCapping()
 }
 
 // Scan convert the json array ino string slice
