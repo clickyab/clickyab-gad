@@ -17,11 +17,8 @@ func NewManager() *Manager {
 
 // Initialize aaa package
 func (m *Manager) Initialize() {
-<<<<<<< Updated upstream
-	m.AddTableWithName(Slots{},"slots").SetKeys(true,"ID")
-=======
+	m.AddTableWithName(Slots{}, "slots").SetKeys(true, "ID")
 	m.AddTableWithName(CookieProfiles{}, "cookie_profiles").SetKeys(true, "ID")
->>>>>>> Stashed changes
 }
 
 func init() {

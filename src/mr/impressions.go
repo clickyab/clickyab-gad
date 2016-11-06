@@ -22,7 +22,3 @@ type Impressions struct {
 	Time            sql.NullInt64  `json:"imp_time" db:"imp_time"`
 	Date            sql.NullInt64  `json:"imp_date" db:"imp_date"`
 }
-
-func (m *Manager) InsertImpression() (*Impressions, error) {
-	m.GetDbMap().Insert()
-}
