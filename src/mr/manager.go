@@ -17,7 +17,7 @@ func NewManager() *Manager {
 
 // Initialize aaa package
 func (m *Manager) Initialize() {
-
+	m.AddTableWithName(Slots{},"slots").SetKeys(true,"ID")
 }
 
 func init() {

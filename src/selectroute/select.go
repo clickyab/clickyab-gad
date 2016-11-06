@@ -79,7 +79,7 @@ func (tc *selectController) Select(c echo.Context) error {
 		return errors.New("domain and public id mismatch")
 	}
 
-	slotPublic, sizeNumSlice := tc.slotSize(params)
+	slotPublic, sizeNumSlice := tc.slotSize(params, website.WID)
 
 	//call context
 	m := selector.Context{
@@ -216,7 +216,7 @@ func GetAdID(ad map[int][]mr.AdData) []string {
 
 }
 
-func (tc *selectController) slotSize(params map[string][]string) ([]string, []int) {
+func (tc *selectController) slotSize(params map[string][]string, wID int64) ([]string, []int) {
 	var size = make(map[string]string)
 	var sizeNumSlice []int
 	var slotPublic []string
@@ -226,6 +226,7 @@ func (tc *selectController) slotSize(params map[string][]string) ([]string, []in
 
 		//fmt.Println(slice,len(slice))
 		if len(slice) == 2 {
+
 			slotPublic = append(slotPublic, slice[1])
 			size[slice[1]] = params[key][0]
 			//check for size
@@ -236,7 +237,30 @@ func (tc *selectController) slotSize(params map[string][]string) ([]string, []in
 		}
 
 	}
-	return slotPublic, sizeNumSlice
+
+	//query to fetch slot ID
+	slotPublicString := mr.Build(slotPublic)
+	res, _ := mr.NewManager().FetchSlots(slotPublicString, wID)
+
+	//fetch results of slot
+	var newSlot []string
+
+big:
+	for j := range slotPublic {
+		for key, _ := range res {
+			if fmt.Sprintf("%d", res[key].PublicID) == slotPublic[j] {
+				continue big
+			}
+
+		}
+		newSlot = append(newSlot, strconv.ParseInt(slotPublic[j],10,64))
+
+	}
+
+	//insert new slots into db
+
+
+	return newSlot, sizeNumSlice
 }
 
 //must be checked after connect database
@@ -251,6 +275,8 @@ func (tc *selectController) slotGroupBySize(params map[string][]string) map[stri
 			//params[key][0] = strings.Trim(params[key][0], "a")
 			//check for size
 			SizeNum, _ := config.GetSize(params[key][0])
+			//query to find slotID
+
 			size[string(slice[1])] = SizeNum
 		}
 

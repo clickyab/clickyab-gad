@@ -16,6 +16,10 @@ import (
 	"bytes"
 	"config"
 
+	"rabbit"
+	"transport"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 )
 
@@ -27,6 +31,7 @@ type SingleAd struct {
 }
 
 func (tc *selectController) Show(c echo.Context) error {
+	var imp transport.Impression
 	mega := c.Param("mega")
 	ad := c.Param("ad")
 	megaImp, err := aredis.HGetAllString("mega_"+mega, true, 2*time.Hour)
@@ -52,5 +57,11 @@ func (tc *selectController) Show(c echo.Context) error {
 		return err
 	}
 
+	go func() {
+		err := rabbit.Publish("cy.imp", imp)
+		if err != nil {
+			logrus.WithField("cy.imp", imp).Error("error in imp worker ", err)
+		}
+	}()
 	return c.HTML(200, buf.String())
 }
