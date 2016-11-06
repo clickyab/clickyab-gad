@@ -129,7 +129,9 @@ func init() {
 	//db, err := sql.Open("mysql", "clickyab_test:760f5bad06b18134ef6@tcp(46.4.116.104:3306)/clickyab?charset=utf8")
 	//Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(37.187.69.33:3306)/clickyab?charset=utf8&parseTime=true"
 	//Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(51.254.197.46:3306)/clickyab?charset=utf8&parseTime=true"
-	Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"
+	//Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"
+	//Config.Mysql.DSN = "root:cOU8W1R40f1Y0uuh!W8647697D@3uV3vbyS^TuKu@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"
+	Config.Mysql.DSN = "root:bita123@tcp(127.0.0.1:3306)/clickyab?charset=utf8&parseTime=true"
 
 	Config.Mysql.MaxConnection = 100
 	Config.Mysql.MaxIdleConnection = 10

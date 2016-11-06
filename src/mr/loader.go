@@ -114,7 +114,7 @@ func (m *Manager) FetchSlotAd(slotString string, adIDString string) ([]SlotData,
 	return res, nil
 }
 
-// Build imlode slice of string with ,
+// Build implode slice of string with ,
 func Build(slot []string) string {
 	return strings.Join(slot, ",")
 }
