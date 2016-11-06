@@ -10,7 +10,8 @@ import (
 	"redis"
 	"time"
 	"version"
-	"mr"
+
+	"github.com/Sirupsen/logrus"
 )
 
 func findMinCap(userKey string) (int, error) {
@@ -30,7 +31,23 @@ func main() {
 	models.Initialize()
 	rabbit.Initialize()
 	aredis.Initialize()
-	err:=mr.NewManager().InsertSlots([]int64{10,20,30})
-	fmt.Println(err)
+	//e := echo.New().NewContext(nil, nil)
+
+	cop := "123"
+
+	CookieProfiles, err := mr.NewManager().FetchCookieProfile(cop)
+
+	if CookieProfiles == nil {
+		//copData := mr.CookieProfiles{
+		//	Key:  cop,
+		//	IP:   net.ParseIP(e.Request().RealIP()),
+		//	Date: int64(time.Now().Unix()),
+		//}
+		CookieProfiles, err = mr.NewManager().InsertCookieProfile(cop, "192.168.1.1")
+		if err != nil {
+			logrus.Error("can not insert cop id , ", err)
+		}
+	}
+	fmt.Println(CookieProfiles)
 
 }
