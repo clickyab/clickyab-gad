@@ -2,7 +2,7 @@ package selectroute
 
 import "html/template"
 
-const SINGLE_AD = `<!DOCTYPE html>
+const singleAd = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta name="robots" content="nofollow">
@@ -29,5 +29,5 @@ const SINGLE_AD = `<!DOCTYPE html>
 </body></html>`
 
 var (
-	SingleAdTemplate = template.Must(template.New("single_ad").Parse(SINGLE_AD))
+	singleAdTemplate = template.Must(template.New("single_ad").Parse(singleAd))
 )

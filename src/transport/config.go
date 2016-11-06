@@ -1,13 +1,12 @@
 package transport
 
 const (
-	DELIMITER        = "_"
-	USER             = "U"
-	CAMPAIGN         = "CP"
-	ADVERTISE        = "AD"
-	SLOT             = "S"
-	WEBSITE          = "W"
-	FREQUENCY_CAPING = "CAP"
+	DELIMITER = "_"
+	USER      = "U"
+	CAMPAIGN  = "CP"
+	ADVERTISE = "AD"
+	SLOT      = "S"
+	WEBSITE   = "W"
 
 	FRAUD_PREFIX     = "F"
 	SUBKEY_IMP       = "I"
@@ -17,5 +16,5 @@ const (
 	AD_SLOT          = "ADS"
 	AD_WEBSITE       = "ADW"
 
-	USER_CAPPING	= "CAP"
+	USER_CAPPING = "CAP"
 )

@@ -1,28 +1,23 @@
 package selectroute
 
 import (
-	"fmt"
-
-	"redis"
-	"time"
-
-	"errors"
-	"mr"
-
 	"assert"
-
-	"strconv"
-
 	"bytes"
 	"config"
-
+	"errors"
+	"fmt"
+	"mr"
 	"rabbit"
+	"redis"
+	"strconv"
+	"time"
 	"transport"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 )
 
+// SingleAd is the single ad id
 type SingleAd struct {
 	Link   string
 	Width  string
@@ -30,7 +25,7 @@ type SingleAd struct {
 	Src    string
 }
 
-func (tc *selectController) Show(c echo.Context) error {
+func (tc *selectController) show(c echo.Context) error {
 	var imp transport.Impression
 	mega := c.Param("mega")
 	ad := c.Param("ad")
@@ -39,11 +34,11 @@ func (tc *selectController) Show(c echo.Context) error {
 	if _, ok := megaImp[fmt.Sprintf("ad_%s", ad)]; !ok {
 		return errors.New("ad not found " + ad)
 	}
-	adId, _ := strconv.ParseInt(ad, 10, 64)
-	ads, err := mr.NewManager().GetAd(adId)
+	adID, err := strconv.ParseInt(ad, 10, 64)
+	assert.Nil(err)
+	ads, err := mr.NewManager().GetAd(adID)
 
 	w, h := config.GetSizeByNum(ads.AdSize)
-	fmt.Println(h)
 	sa := SingleAd{
 		Link:   ads.AdURL.String,
 		Height: h,
@@ -52,7 +47,7 @@ func (tc *selectController) Show(c echo.Context) error {
 	}
 
 	buf := &bytes.Buffer{}
-	err = SingleAdTemplate.Execute(buf, sa)
+	err = singleAdTemplate.Execute(buf, sa)
 	if err != nil {
 		return err
 	}

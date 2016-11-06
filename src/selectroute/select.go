@@ -1,31 +1,24 @@
 package selectroute
 
 import (
+	"assert"
 	"config"
+	"encoding/json"
 	"errors"
 	"filter"
+	"fmt"
 	"middlewares"
 	"modules"
 	"mr"
+	"net"
+	"redis"
 	"regexp"
 	"selector"
+	"sort"
 	"strconv"
-
-	"fmt"
-
-	"net"
-
-	"redis"
 	"time"
-
 	"transport"
 	"utils"
-
-	"sort"
-
-	"assert"
-
-	"encoding/json"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -50,35 +43,12 @@ type selectController struct {
 
 // Select function @todo
 func (tc *selectController) Select(c echo.Context) error {
-	rd := middlewares.MustGetRequestData(c)
-
 	params := c.QueryParams()
-	publicParams, ok := params["i"]
-	if !ok {
-		return c.HTML(400, "invalid request")
-	}
-	publicID, err := strconv.Atoi(publicParams[0])
-	if err != nil {
-		return c.HTML(400, "invalid request")
-	}
-	domain, ok := params["d"]
-	if !ok {
-		return c.HTML(400, "invalid request")
-	}
-	//fetch website and set in Context
-	website, err := tc.FetchWebsite(publicID)
-	if err != nil {
-		return c.HTML(400, "invalid request")
-	}
-	country, err := tc.FetchCountry(rd.IP)
-	if err != nil {
-		logrus.Warn(err)
-	}
-	//check if the website domain is valid
-	if website.WDomain.Valid && website.WDomain.String != domain[0] {
-		return errors.New("domain and public id mismatch")
-	}
 
+	rd, website, country, err := tc.getDataFromCtx(c)
+	if err != nil {
+		return err
+	}
 	slotPublic, sizeNumSlice := tc.slotSize(params, website.WID)
 
 	//call context
@@ -92,20 +62,14 @@ func (tc *selectController) Select(c echo.Context) error {
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
 	filteredAds = getCapping(c, m.CopID, sizeNumSlice, filteredAds)
 
-	if website.WFloorCpm.Int64 < config.Config.Clickyab.MinCPMFloor {
-		website.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloor
-	}
-
 	var (
-		minCapFloor int
-		winnerAd    = make(map[string]*mr.MinAdData)
-		show        = make(map[string]string)
-		slotSize    = tc.slotGroupBySize(params)
+		winnerAd = make(map[string]*mr.MinAdData)
+		show     = make(map[string]string)
+		slotSize = tc.slotGroupBySize(params)
 	)
-
 	for slotID := range slotSize {
 		var exceedFloor []*mr.MinAdData
-		minCapFloor = 0
+		minCapFloor := 0
 		for _, adData := range filteredAds[slotSize[slotID]] {
 
 			adData.CTR, _ = CalculateCtr(
@@ -134,27 +98,39 @@ func (tc *selectController) Select(c echo.Context) error {
 		ef := mr.ByCPM(exceedFloor)
 		sort.Sort(ef)
 		exceedFloor = []*mr.MinAdData(ef)
-		//sort.Sort(mr.ByCPM(exceedFloor))
-		//sort.Sort(mr.BySelected(exceedFloor))
 
-		var secondCPM = website.WFloorCpm.Int64
-		if len(exceedFloor) > 1 && exceedFloor[0].Capping.GetSelected() == exceedFloor[1].Capping.GetSelected() {
-			secondCPM = exceedFloor[1].CPM
-		}
-
+		secondCPM := tc.getSecoundCPM(website.WFloorCpm.Int64, exceedFloor)
 		exceedFloor[0].WinnerBid = utils.WinnerBid(secondCPM, exceedFloor[0].CTR)
 		exceedFloor[0].Capping.IncView(1)
 		winnerAd[slotID] = exceedFloor[0]
-		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d", m.Proto, m.Url, "show", m.MegaImp, exceedFloor[0].AdID)
+		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d", m.Proto, m.URL, "show", m.MegaImp, exceedFloor[0].AdID)
 
 		assert.Nil(storeCapping(m.CopID, exceedFloor[0].CpID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
 
 	}
+	err = tc.addMegaKey(rd, website, winnerAd)
+	assert.Nil(err)
+	b, _ := json.MarshalIndent(show, "\t", "\t")
+	result := "renderFarm(" + string(b) + ");"
+	return c.HTML(200, result)
+}
 
+func (tc *selectController) getSecoundCPM(floorCPM int64, exceedFloor []*mr.MinAdData) int64 {
+	var secondCPM = floorCPM
+	if len(exceedFloor) > 1 && exceedFloor[0].Capping.GetSelected() == exceedFloor[1].Capping.GetSelected() {
+		secondCPM = exceedFloor[1].CPM
+	}
+
+	return secondCPM
+}
+
+func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.WebsiteData, winnerAd map[string]*mr.MinAdData) error {
 	// add mega imp
 	ip, err := utils.IP2long(rd.IP)
-	assert.Nil(err)
+	if err != nil {
+		return err
+	}
 	tmp := []interface{}{
 		"IP",
 		ip,
@@ -170,13 +146,43 @@ func (tc *selectController) Select(c echo.Context) error {
 		tmp = append(tmp, fmt.Sprintf("ad_%d", winnerAd[i].AdID), winnerAd[i].WinnerBid)
 	}
 
-	assert.Nil(aredis.HMSet(
+	return aredis.HMSet(
 		"mega_"+rd.MegaImp, true, time.Hour,
 		tmp...,
-	))
-	b, err := json.MarshalIndent(show, "\t", "\t")
-	result := "console.log('milad');renderFarm(" + string(b) + ");"
-	return c.HTML(200, result)
+	)
+}
+
+func (tc *selectController) getDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.WebsiteData, *mr.Country2Info, error) {
+	rd := middlewares.MustGetRequestData(c)
+
+	params := c.QueryParams()
+	publicParams, ok := params["i"]
+	if !ok {
+		return nil, nil, nil, c.HTML(400, "invalid request")
+	}
+	publicID, err := strconv.Atoi(publicParams[0])
+	if err != nil {
+		return nil, nil, nil, c.HTML(400, "invalid request")
+	}
+	domain, ok := params["d"]
+	if !ok {
+		return nil, nil, nil, c.HTML(400, "invalid request")
+	}
+	//fetch website and set in Context
+	website, err := tc.FetchWebsite(publicID)
+	if err != nil {
+		return nil, nil, nil, c.HTML(400, "invalid request")
+	}
+	country, err := tc.FetchCountry(rd.IP)
+	if err != nil {
+		logrus.Warn(err)
+	}
+	//check if the website domain is valid
+	if website.WDomain.Valid && website.WDomain.String != domain[0] {
+		return nil, nil, nil, errors.New("domain and public id mismatch")
+	}
+
+	return rd, website, country, nil
 }
 
 //FetchWebsite website and set in Context
@@ -184,6 +190,9 @@ func (tc *selectController) FetchWebsite(publicID int) (*mr.WebsiteData, error) 
 	website, err := mr.NewManager().FetchWebsite(publicID)
 	if err != nil {
 		return nil, err
+	}
+	if website.WFloorCpm.Int64 < config.Config.Clickyab.MinCPMFloor {
+		website.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloor
 	}
 	return website, err
 }
@@ -247,7 +256,7 @@ func (tc *selectController) slotSize(params map[string][]string, wID int64) ([]s
 
 big:
 	for j := range slotPublic {
-		for key, _ := range res {
+		for key := range res {
 			if fmt.Sprintf("%d", res[key].PublicID) == slotPublic[j] {
 				continue big
 			}
@@ -258,7 +267,6 @@ big:
 	}
 
 	//insert new slots into db
-
 
 	return newSlot, sizeNumSlice
 }

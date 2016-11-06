@@ -2,7 +2,8 @@ package mr
 
 import "database/sql"
 
-type Impressions struct {
+// Impression is the single impression record
+type Impression struct {
 	ID              int64          `json:"imp_id" db:"imp_id"`
 	WebsiteID       int64          `json:"w_id" db:"w_id"`
 	WP              sql.NullInt64  `json:"wp_id" db:"wp_id"`
