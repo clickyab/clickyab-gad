@@ -3,34 +3,34 @@ package mr
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 	"time"
+	"transport"
 )
 
-// Impression is the single impression record
-type Impression struct {
-	ID              int64          `json:"imp_id" db:"imp_id"`
-	WebsiteID       sql.NullInt64  `json:"w_id" db:"w_id"`
-	WP              sql.NullInt64  `json:"wp_id" db:"wp_id"`
-	AppID           sql.NullInt64  `json:"app_id" db:"app_id"`
-	AdID            sql.NullInt64  `json:"ad_id" db:"ad_id"`
-	CopID           sql.NullInt64  `json:"cop_id" db:"cop_id"`
-	CaID            sql.NullInt64  `json:"ca_id" db:"ca_id"`
-	IP              sql.NullString `json:"imp_ipaddress" db:"imp_ipaddress"`
-	ReferralAddress sql.NullString `json:"imp_referaddress" db:"imp_referaddress"`
-	ParentURL       sql.NullString `json:"imp_parenturl" db:"imp_parenturl"`
-	URL             sql.NullString `json:"imp_url" db:"imp_url"`
-	WinnerBid       sql.NullInt64  `json:"imp_winnerbid" db:"imp_winnerbid"`
-	Status          sql.NullInt64  `json:"imp_status" db:"imp_status"`
-	Cookie          sql.NullInt64  `json:"imp_cookie" db:"imp_cookie"`
-	Alexa           sql.NullInt64  `json:"imp_alexa" db:"imp_alexa"`
-	Flash           sql.NullInt64  `json:"imp_flash" db:"imp_flash"`
-	Time            sql.NullInt64  `json:"imp_time" db:"imp_time"`
-	Date            sql.NullInt64  `json:"imp_date" db:"imp_date"`
-}
+//// Impression is the single impression record
+//type Impression struct {
+//	ID              int64          `json:"imp_id" db:"imp_id"`
+//	WebsiteID       sql.NullInt64  `json:"w_id" db:"w_id"`
+//	WP              sql.NullInt64  `json:"wp_id" db:"wp_id"`
+//	AppID           sql.NullInt64  `json:"app_id" db:"app_id"`
+//	AdID            sql.NullInt64  `json:"ad_id" db:"ad_id"`
+//	CopID           sql.NullInt64  `json:"cop_id" db:"cop_id"`
+//	CaID            sql.NullInt64  `json:"ca_id" db:"ca_id"`
+//	IP              sql.NullString `json:"imp_ipaddress" db:"imp_ipaddress"`
+//	ReferralAddress sql.NullString `json:"imp_referaddress" db:"imp_referaddress"`
+//	ParentURL       sql.NullString `json:"imp_parenturl" db:"imp_parenturl"`
+//	URL             sql.NullString `json:"imp_url" db:"imp_url"`
+//	WinnerBid       sql.NullInt64  `json:"imp_winnerbid" db:"imp_winnerbid"`
+//	Status          sql.NullInt64  `json:"imp_status" db:"imp_status"`
+//	Cookie          sql.NullInt64  `json:"imp_cookie" db:"imp_cookie"`
+//	Alexa           sql.NullInt64  `json:"imp_alexa" db:"imp_alexa"`
+//	Flash           sql.NullInt64  `json:"imp_flash" db:"imp_flash"`
+//	Time            time.Time      `json:"imp_time" db:"imp_time"`
+//	Date            int            `json:"imp_date" db:"imp_date"`
+//}
 
 // InsertImpression insert into impression table
-func (m *Manager) InsertImpression(imp Impression) (int64, error) {
+func (m *Manager) InsertImpression(imp *transport.Impression) error {
 	query := fmt.Sprintf(`INSERT INTO impressions%s (
 							w_id,wp_id,app_id,
 							ad_id,cop_id,ca_id,
@@ -44,18 +44,32 @@ func (m *Manager) InsertImpression(imp Impression) (int64, error) {
 							?,?,?,
 							?,?,?,
 							?,?,?,
-							%s,%s
-							)`, time.Now().Format("20060102"), strconv.Itoa(int(time.Now().Unix())), time.Now().Format("20060102"))
-
+							?,?
+							)`, time.Now().Format("20060102"))
+	wid := sql.NullInt64{}
+	if imp.Web != nil {
+		wid.Valid = true
+		wid.Int64 = imp.Web.WebsiteID
+	}
+	appID := sql.NullInt64{}
+	if imp.App != nil {
+		appID.Valid = true
+		appID.Int64 = imp.App.AppID
+	}
 	res, err := m.GetDbMap().Exec(query,
-		imp.WebsiteID, imp.WP, imp.AppID,
-		imp.AdID, imp.CopID, imp.CaID,
-		imp.IP, imp.ReferralAddress, imp.ParentURL,
-		imp.URL, imp.WinnerBid, imp.Status,
-		imp.Cookie, imp.Alexa, imp.Flash,
+		wid, 0, appID,
+		imp.AdID, imp.CopID, imp.CampaignAdID,
+		imp.IP.String(), imp.ReferralAddress, imp.ParentURL,
+		imp.URL, imp.WinnerBID, imp.Status,
+		imp.Cookie, 0, 0,
+		imp.Time.Unix(), imp.Time.Format("20060102"),
 	)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return res.LastInsertId()
+	imp.ID, err = res.LastInsertId()
+	if err != nil {
+		return err
+	}
+	return nil
 }

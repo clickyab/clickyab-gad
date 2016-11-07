@@ -121,11 +121,11 @@ func Build(slot []string) string {
 }
 
 //ToNullString invalidates a sql.NullString if empty, validates if not empty
-func ToNullString(s string) sql.NullString {
+func toNullString(s string) sql.NullString {
 	return sql.NullString{String: s, Valid: s != ""}
 }
 
 //ToNullInt64 validates a sql.NullInt64
-func ToNullInt64(s int64) sql.NullInt64 {
+func toNullInt64(s int64) sql.NullInt64 {
 	return sql.NullInt64{Int64: s, Valid: true}
 }

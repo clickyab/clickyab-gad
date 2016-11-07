@@ -60,7 +60,7 @@ func (tc *selectController) selectAd(c echo.Context) error {
 		Country:     country,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	filteredAds = getCapping(c, m.CopID, sizeNumSlice, filteredAds)
+	filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
 
 	var (
 		winnerAd = make(map[string]*mr.MinAdData)
@@ -103,7 +103,7 @@ func (tc *selectController) selectAd(c echo.Context) error {
 		exceedFloor[0].WinnerBid = utils.WinnerBid(secondCPM, exceedFloor[0].CTR)
 		exceedFloor[0].Capping.IncView(1)
 		winnerAd[slotID] = exceedFloor[0]
-		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d", m.Proto, m.URL, "show", m.MegaImp, exceedFloor[0].AdID)
+		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d?tid=%s", rd.Proto, rd.URL, "show", rd.MegaImp, exceedFloor[0].AdID, rd.TID)
 
 		assert.Nil(storeCapping(m.CopID, exceedFloor[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
@@ -131,23 +131,24 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 	if err != nil {
 		return err
 	}
+	// TODO : get interface from redis?
 	tmp := []interface{}{
 		"IP",
-		ip,
+		fmt.Sprintf("%d", ip),
 		"UA",
 		rd.UserAgent,
 		"WS",
-		website.WID,
+		fmt.Sprintf("%d", website.WID),
 		"T",
-		time.Now().Unix(),
+		fmt.Sprintf("%d", time.Now().Unix()),
 	}
 
 	for i := range winnerAd {
-		tmp = append(tmp, fmt.Sprintf("ad_%d", winnerAd[i].AdID), winnerAd[i].WinnerBid)
+		tmp = append(tmp, fmt.Sprintf("ad_%d", winnerAd[i].AdID), fmt.Sprintf("%d", winnerAd[i].WinnerBid))
 	}
 
 	return aredis.HMSet(
-		fmt.Sprintf("%s%s%s",transport.MEGA,transport.DELIMITER,rd.MegaImp), true, time.Hour,
+		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp), true, time.Hour,
 		tmp...,
 	)
 }

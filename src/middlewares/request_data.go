@@ -32,6 +32,7 @@ type RequestData struct {
 	Proto          string
 	MegaImp        string
 	CopID          string
+	TID            string
 }
 
 const requestDataToken = "__request_data__"
@@ -57,7 +58,11 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Referrer = ctx.Request().Referer()
 		e.Method = ctx.Request().Method()
 		e.MegaImp = <-utils.ID
-		e.CopID = utils.CreateCopID(e.UserAgent, e.IP)
+
+		if e.TID = ctx.Param("tid"); e.TID == "" {
+			e.TID = utils.CreateCopID(e.UserAgent, e.IP)
+		}
+		e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
 
 		ctx.Set(requestDataToken, e)
 		return next(ctx)

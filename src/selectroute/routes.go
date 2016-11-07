@@ -17,4 +17,5 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	))
 	e.Get("/select", tc.selectAd)
 	e.Get("/show/:mega/:wid/:ad", tc.show)
+	e.Get("/click/:imp/:data", tc.click)
 }

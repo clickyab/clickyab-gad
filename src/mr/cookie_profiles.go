@@ -1,7 +1,9 @@
 package mr
 
 import (
+	"assert"
 	"database/sql"
+	"net"
 	"time"
 )
 
@@ -38,10 +40,10 @@ func (m *Manager) FetchCookieProfile(key string) (*CookieProfile, error) {
 }
 
 // InsertCookieProfile create a new cookie profile and return it
-func (m *Manager) InsertCookieProfile(cop, ip string) (*CookieProfile, error) {
+func (m *Manager) InsertCookieProfile(cop, ip net.IP) (*CookieProfile, error) {
 
-	ipNullString := ToNullString(ip)
-	date := ToNullInt64(time.Now().Unix())
+	ipNullString := toNullString(ip.String())
+	date := toNullInt64(time.Now().Unix())
 	co := &CookieProfile{
 		Key:  cop,
 		IP:   ipNullString,
@@ -52,4 +54,15 @@ func (m *Manager) InsertCookieProfile(cop, ip string) (*CookieProfile, error) {
 		return nil, err
 	}
 	return co, nil
+}
+
+// CreateCookieProfile try to select/create a cookie profile
+func (m *Manager) CreateCookieProfile(key string, ip net.IP) *CookieProfile {
+	res, err := m.FetchCookieProfile(key)
+	if err != nil {
+		res, err = m.InsertCookieProfile(key, ip.String())
+		assert.Nil(err)
+	}
+
+	return res
 }
