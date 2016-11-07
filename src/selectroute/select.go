@@ -284,13 +284,13 @@ func (_ selectController) slotGroupBySize(params map[string][]string) map[string
 func (_ selectController) calculateCTR(cpID int64, adID int64, wID int64, slotPublicID string) (float64, string) {
 	day := 2
 	final := make(map[string]int)
-	for c := range config.Config.Clickyab.CtrConst {
+	for c := range config.Config.Clickyab.CTRConst {
 		key := bestCTRKey(c, adID, slotPublicID, cpID, wID)
 		result, err := aredis.SumHMGetField(key, day, "i", "c")
 		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
-			final[config.Config.Clickyab.CtrConst[c]] = 0
+			final[config.Config.Clickyab.CTRConst[c]] = 0
 		} else {
-			return utils.Ctr(result["i"], result["c"]), config.Config.Clickyab.CtrConst[c]
+			return utils.Ctr(result["i"], result["c"]), config.Config.Clickyab.CTRConst[c]
 		}
 	}
 	return config.Config.Clickyab.DefaultCTR, "default"
@@ -298,7 +298,7 @@ func (_ selectController) calculateCTR(cpID int64, adID int64, wID int64, slotPu
 
 func bestCTRKey(c int, adID int64, slotPublicID string, cpID int64, wID int64) string {
 	var key string
-	switch config.Config.Clickyab.CtrConst[c] {
+	switch config.Config.Clickyab.CTRConst[c] {
 	case transport.AD_SLOT:
 
 		key = fmt.Sprintf("%s%s%d%s%s%s",

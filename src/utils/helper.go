@@ -114,6 +114,6 @@ func IncKeyDaily(key, subKey string, count int) (int64, error) {
 		subKey,
 		count,
 		true,
-		config.Config.Clickyab.DailyImpExpireTime)
+		config.Config.Clickyab.DailyImpExpire)
 	return res, err
 }

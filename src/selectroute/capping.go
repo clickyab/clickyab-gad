@@ -65,7 +65,7 @@ func storeCapping(copID string, cpID int64) error {
 		fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, cpID),
 		1,
 		true,
-		config.Config.Clickyab.DailyCapExpireTime,
+		config.Config.Clickyab.DailyCapExpire,
 	)
 	return err
 }
