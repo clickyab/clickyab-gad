@@ -12,6 +12,10 @@ import (
 	"github.com/streadway/amqp"
 )
 
+type validator interface {
+	Validate() bool
+}
+
 // goodFunc verifies that the function satisfies the signature, represented as a slice of types.
 // The last type is the single result type; the others are the input types.
 // A final type of nil means any result type is accepted.
@@ -124,6 +128,13 @@ bigLoop:
 				assert.Nil(job.Reject(false))
 				break
 			}
+			if v, ok := cp.(validator); ok {
+				if !v.Validate() {
+					_ = job.Reject(false)
+					logrus.Warn("Validation failed")
+				}
+			}
+
 			input := []reflect.Value{reflect.ValueOf(cp).Elem()}
 			waiter.Add(1)
 			go func() {
