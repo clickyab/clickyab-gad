@@ -137,7 +137,7 @@ bigLoop:
 				}()
 
 				out := fn.Call(input)
-				if out[1].Interface().(error) == nil {
+				if out[1].Interface() == nil || out[1].Interface().(error) == nil {
 					assert.Nil(job.Ack(false))
 				} else {
 					assert.Nil(job.Nack(false, out[0].Interface().(bool)))

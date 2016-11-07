@@ -363,6 +363,5 @@ func bestCTRKey(c int, adID int64, slotPublicID string, cpID int64, wID int64) s
 }
 
 func init() {
-
 	modules.Register(&selectController{})
 }
