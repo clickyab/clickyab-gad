@@ -17,4 +17,6 @@ const (
 	AD_WEBSITE       = "ADW"
 
 	USER_CAPPING = "CAP"
+	IMP = "IMP"
+	MEGA = "MEGA"
 )

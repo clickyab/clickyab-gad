@@ -33,6 +33,7 @@ var (
 		filter.CheckNetwork,
 		filter.CheckCategory,
 		filter.CheckCountry,
+		filter.CheckForVideo,
 	)
 
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
@@ -146,7 +147,7 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 	}
 
 	return aredis.HMSet(
-		"mega_"+rd.MegaImp, true, time.Hour,
+		fmt.Sprintf("%s%s%s",transport.MEGA,transport.DELIMITER,rd.MegaImp), true, time.Hour,
 		tmp...,
 	)
 }

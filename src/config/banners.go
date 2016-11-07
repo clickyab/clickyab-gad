@@ -25,6 +25,8 @@ var sizes = map[string]int{
 	"128x128":  18,
 }
 
+var videoSize = []int{3,4,9,16,14,17}
+
 // GetSize return the size of a banner in clickyab std
 func GetSize(size string) (int, error) {
 	s, ok := sizes[size]
@@ -45,4 +47,14 @@ func GetSizeByNum(num int) (string, string) {
 		}
 	}
 	return "", ""
+}
+
+// CheckIfBannerIsVideo check if the banner suitable for video
+func CheckIfBannerIsVideo(size int) bool{
+	for i := range videoSize{
+		if videoSize[i]==size{
+			return true
+		}
+	}
+	return false;
 }
