@@ -10,8 +10,6 @@ import (
 	"redis"
 	"time"
 	"version"
-
-	"github.com/Sirupsen/logrus"
 )
 
 func findMinCap(userKey string) (int, error) {
@@ -33,21 +31,26 @@ func main() {
 	aredis.Initialize()
 	//e := echo.New().NewContext(nil, nil)
 
-	cop := "123"
-
-	CookieProfiles, err := mr.NewManager().FetchCookieProfile(cop)
-
-	if CookieProfiles == nil {
-		//copData := mr.CookieProfiles{
-		//	Key:  cop,
-		//	IP:   net.ParseIP(e.Request().RealIP()),
-		//	Date: int64(time.Now().Unix()),
-		//}
-		CookieProfiles, err = mr.NewManager().InsertCookieProfile(cop, "192.168.1.1")
-		if err != nil {
-			logrus.Error("can not insert cop id , ", err)
-		}
+	i := mr.ToNullInt64
+	s := mr.ToNullString
+	imp := mr.Impression{
+		AdID:            i(123),
+		Alexa:           i(1),
+		AppID:           i(12),
+		Cookie:          i(1),
+		CopID:           i(345345),
+		Flash:           i(0),
+		CaID:            i(345),
+		WebsiteID:       i(234),
+		IP:              s("23dfg4"),
+		ParentURL:       s("asdasdasd"),
+		ReferralAddress: s("sdfwr4e"),
+		Status:          i(0),
+		URL:             s("asdas"),
+		WinnerBid:       i(32),
+		WP:              i(1),
 	}
-	fmt.Println(CookieProfiles)
+	res, err := mr.NewManager().InsertImpression(imp)
+	fmt.Println(res, err)
 
 }
