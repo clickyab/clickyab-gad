@@ -9,9 +9,9 @@ import (
 // Context type @todo
 type Context struct {
 	middlewares.RequestData
-	Size []int
-	mr.WebsiteData
-	mr.Country2Info
+	Size       []int
+	Website    *mr.WebsiteData
+	Country    *mr.Country2Info
 	SlotPublic []string
 }
 

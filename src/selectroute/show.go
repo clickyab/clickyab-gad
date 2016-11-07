@@ -23,6 +23,7 @@ type SingleAd struct {
 	Width  string
 	Height string
 	Src    string
+	Tiny   bool
 }
 
 func (tc *selectController) show(c echo.Context) error {
@@ -44,6 +45,7 @@ func (tc *selectController) show(c echo.Context) error {
 		Height: h,
 		Width:  w,
 		Src:    ads.AdImg.String,
+		Tiny:   false,
 	}
 
 	buf := &bytes.Buffer{}

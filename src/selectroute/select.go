@@ -42,7 +42,7 @@ type selectController struct {
 }
 
 // Select function @todo
-func (tc *selectController) Select(c echo.Context) error {
+func (tc *selectController) selectAd(c echo.Context) error {
 	params := c.QueryParams()
 
 	rd, website, country, err := tc.getDataFromCtx(c)
@@ -50,14 +50,13 @@ func (tc *selectController) Select(c echo.Context) error {
 		return err
 	}
 	slotPublic, sizeNumSlice := tc.slotSize(params, website.WID)
-
 	//call context
 	m := selector.Context{
-		RequestData:  *rd,
-		WebsiteData:  *website,
-		Size:         sizeNumSlice,
-		SlotPublic:   slotPublic,
-		Country2Info: *country,
+		RequestData: *rd,
+		Website:     website,
+		Size:        sizeNumSlice,
+		SlotPublic:  slotPublic,
+		Country:     country,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
 	filteredAds = getCapping(c, m.CopID, sizeNumSlice, filteredAds)
@@ -186,7 +185,7 @@ func (tc *selectController) getDataFromCtx(c echo.Context) (*middlewares.Request
 }
 
 //FetchWebsite website and check if the minimum floor is applied
-func (_ selectController) fetchWebsite(publicID int) (*mr.WebsiteData, error) {
+func (selectController) fetchWebsite(publicID int) (*mr.WebsiteData, error) {
 	website, err := mr.NewManager().FetchWebsite(publicID)
 	if err != nil {
 		return nil, err
@@ -198,7 +197,7 @@ func (_ selectController) fetchWebsite(publicID int) (*mr.WebsiteData, error) {
 }
 
 //FetchCountry find country and set context
-func (_ selectController) fetchCountry(c net.IP) (*mr.Country2Info, error) {
+func (selectController) fetchCountry(c net.IP) (*mr.Country2Info, error) {
 	var country mr.Country2Info
 	ip, err := mr.NewManager().GetLocation(c)
 	if err != nil || !ip.CountryName.Valid {
@@ -212,7 +211,7 @@ func (_ selectController) fetchCountry(c net.IP) (*mr.Country2Info, error) {
 
 }
 
-func (_ selectController) slotSize(params map[string][]string, wID int64) ([]string, []int) {
+func (selectController) slotSize(params map[string][]string, wID int64) ([]string, []int) {
 	var size = make(map[string]string)
 	var sizeNumSlice []int
 	var slotPublic []string
@@ -259,7 +258,7 @@ big:
 }
 
 //must be checked after connect database
-func (_ selectController) slotGroupBySize(params map[string][]string) map[string]int {
+func (selectController) slotGroupBySize(params map[string][]string) map[string]int {
 
 	var size = make(map[string]int)
 	//var realSize int
@@ -281,7 +280,7 @@ func (_ selectController) slotGroupBySize(params map[string][]string) map[string
 }
 
 // CalculateCtr calculate ctr
-func (_ selectController) calculateCTR(cpID int64, adID int64, wID int64, slotPublicID string) (float64, string) {
+func (selectController) calculateCTR(cpID int64, adID int64, wID int64, slotPublicID string) (float64, string) {
 	day := 2
 	final := make(map[string]int)
 	for c := range config.Config.Clickyab.CTRConst {

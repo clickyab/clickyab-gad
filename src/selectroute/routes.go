@@ -13,6 +13,6 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 			Browse: true,
 		},
 	))
-	e.Get("/select", tc.Select)
+	e.Get("/select", tc.selectAd)
 	e.Get("/show/:mega/:ad", tc.show)
 }

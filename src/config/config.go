@@ -87,6 +87,7 @@ type AppConfig struct {
 	}
 
 	Clickyab struct {
+		MaxLoadFail      int           `onion:"max_load_fail"`
 		DefaultCTR       float64       `onion:"default_ctr"`
 		CTRConst         []string      `onion:"ctr_const"`
 		MinImp           int64         `onion:"min_imp"`
@@ -100,51 +101,52 @@ type AppConfig struct {
 
 func defaultLayer() onion.Layer {
 	d := onion.NewDefaultLayer()
-	d.SetDefault("site", "gad.loc")
-	d.SetDefault("mount_point", "/")
-	d.SetDefault("devel_mode", true)
-	d.SetDefault("cors", true)
-	d.SetDefault("max_cpu_available", runtime.NumCPU())
-	d.SetDefault("proto", "http")
-	d.SetDefault("port", ":80")
-	d.SetDefault("time_zone", "Asia/Tehran")
+	assert.Nil(d.SetDefault("site", "gad.loc"))
+	assert.Nil(d.SetDefault("mount_point", "/"))
+	assert.Nil(d.SetDefault("devel_mode", true))
+	assert.Nil(d.SetDefault("cors", true))
+	assert.Nil(d.SetDefault("max_cpu_available", runtime.NumCPU()))
+	assert.Nil(d.SetDefault("proto", "http"))
+	assert.Nil(d.SetDefault("port", ":80"))
+	assert.Nil(d.SetDefault("time_zone", "Asia/Tehran"))
 	p, err := expand.Path("/statics")
 	assert.Nil(err)
-	d.SetDefault("static_root", p)
+	assert.Nil(d.SetDefault("static_root", p))
 
-	d.SetDefault("redis.size", 10)
-	d.SetDefault("redis.network", "tcp")
-	d.SetDefault("redis.address", ":6379")
+	assert.Nil(d.SetDefault("redis.size", 10))
+	assert.Nil(d.SetDefault("redis.network", "tcp"))
+	assert.Nil(d.SetDefault("redis.address", ":6379"))
 
 	// TODO : move it to clickyab section
-	d.SetDefault("redis.days", 2)
+	assert.Nil(d.SetDefault("redis.days", 2))
 
 	// TODO :  make sure ?parseTime=true is always set!
-	d.SetDefault("mysql.dsn", "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true")
-	d.SetDefault("mysql.max_connection", 30)
-	d.SetDefault("mysql.max_idle_connection", 5)
+	assert.Nil(d.SetDefault("mysql.dsn", "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"))
+	assert.Nil(d.SetDefault("mysql.max_connection", 30))
+	assert.Nil(d.SetDefault("mysql.max_idle_connection", 5))
 
-	d.SetDefault("amqp.publisher", 30)
-	d.SetDefault("amqp.exchange", "cy")
-	d.SetDefault("amqp.dsn", "amqp://server:bita123@127.0.0.1:5672/")
-	d.SetDefault("amqp.confirmlen", 50)
+	assert.Nil(d.SetDefault("amqp.publisher", 30))
+	assert.Nil(d.SetDefault("amqp.exchange", "cy"))
+	assert.Nil(d.SetDefault("amqp.dsn", "amqp://server:bita123@127.0.0.1:5672/"))
+	assert.Nil(d.SetDefault("amqp.confirmlen", 50))
 
-	d.SetDefault("page.per_page", 10)
-	d.SetDefault("page.max_per_page", 100)
-	d.SetDefault("page.min_per_page", 1)
+	assert.Nil(d.SetDefault("page.per_page", 10))
+	assert.Nil(d.SetDefault("page.max_per_page", 100))
+	assert.Nil(d.SetDefault("page.min_per_page", 1))
 
-	d.SetDefault("select.date", 0)
-	d.SetDefault("select.hour", 1)
-	d.SetDefault("select.balance", 50000)
+	assert.Nil(d.SetDefault("select.date", 0))
+	assert.Nil(d.SetDefault("select.hour", 1))
+	assert.Nil(d.SetDefault("select.balance", 50000))
 
-	d.SetDefault("clickyab.default_ctr", 0.1)
-	d.SetDefault("clickyab.ctr_const", []string{transport.AD_SLOT, transport.AD_WEBSITE, transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT})
-	d.SetDefault("clickyab.min_imp", 1000)
-	d.SetDefault("clickyab.min_frequency", 2)
-	d.SetDefault("clickyab.daily_imp_expire", "72h")
-	d.SetDefault("clickyab.daily_click_expire", "72h")
-	d.SetDefault("clickyab.daily_cap_expire", "72h")
-	d.SetDefault("clickyab.min_cpm_floor", 150)
+	assert.Nil(d.SetDefault("clickyab.default_ctr", 0.1))
+	assert.Nil(d.SetDefault("clickyab.ctr_const", []string{transport.AD_SLOT, transport.AD_WEBSITE, transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT}))
+	assert.Nil(d.SetDefault("clickyab.min_imp", 1000))
+	assert.Nil(d.SetDefault("clickyab.min_frequency", 2))
+	assert.Nil(d.SetDefault("clickyab.daily_imp_expire", "72h"))
+	assert.Nil(d.SetDefault("clickyab.daily_click_expire", "72h"))
+	assert.Nil(d.SetDefault("clickyab.daily_cap_expire", "72h"))
+	assert.Nil(d.SetDefault("clickyab.min_cpm_floor", 150))
+	assert.Nil(d.SetDefault("clickyab.max_load_fail", 3))
 
 	return d
 }

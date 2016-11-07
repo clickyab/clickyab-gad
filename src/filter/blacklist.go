@@ -11,7 +11,7 @@ func CheckBlackList(c *selector.Context, in mr.AdData) bool {
 		return true
 	}
 	for _, v := range in.CampaignWebsiteFilter {
-		if v == c.WID {
+		if v == c.Website.WID {
 			return false
 		}
 	}

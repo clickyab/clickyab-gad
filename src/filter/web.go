@@ -9,9 +9,7 @@ import (
 func CheckNetwork(c *selector.Context, in mr.AdData) bool {
 	if c.Mobile {
 		return in.CampaignNetwork == 1
-	}
-	if !c.Mobile {
+	} else {
 		return in.CampaignNetwork == 0
 	}
-	return false
 }

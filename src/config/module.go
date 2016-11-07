@@ -1,6 +1,7 @@
 package config
 
 import (
+	"assert"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -35,7 +36,7 @@ func Initialize() {
 		logrus.Warn(err)
 	}
 
-	o.AddLayer(defaultLayer())
+	assert.Nil(o.AddLayer(defaultLayer()))
 	if err = o.AddLayer(onion.NewFileLayer("/etc/" + organization + "/" + appName + ".yaml")); err == nil {
 
 		logrus.Infof("loading config from %s", "/etc/"+organization+"/"+appName+".yaml")

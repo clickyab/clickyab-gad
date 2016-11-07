@@ -37,7 +37,7 @@ func GetSize(size string) (int, error) {
 
 // GetSizeByNum return the size
 func GetSizeByNum(num int) (string, string) {
-	// TODO
+	// TODO : better way / no loop please
 	for i, s := range sizes {
 		if s == num {
 			a := strings.Split(i, "x")
