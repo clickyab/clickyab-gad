@@ -59,7 +59,7 @@ func (tc *selectController) Select(c echo.Context) error {
 		SlotPublic:   slotPublic,
 		Country2Info: *country,
 	}
-	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector, 3)
+	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
 	filteredAds = getCapping(c, m.CopID, sizeNumSlice, filteredAds)
 
 	var (
@@ -72,13 +72,13 @@ func (tc *selectController) Select(c echo.Context) error {
 		minCapFloor := 0
 		for _, adData := range filteredAds[slotSize[slotID]] {
 
-			adData.CTR, _ = CalculateCtr(
-				adData.CpID,
+			adData.CTR, _ = tc.calculateCTR(
+				adData.CampaignID,
 				adData.AdID,
 				website.WID,
 				slotID,
 			)
-			adData.CPM = utils.Cpm(adData.CpMaxbid, adData.CTR)
+			adData.CPM = utils.Cpm(adData.CampaignMaxBid, adData.CTR)
 			//exceed cpm floor
 			if adData.CPM >= website.WFloorCpm.Int64 {
 				if len(exceedFloor) == 0 {
@@ -105,7 +105,7 @@ func (tc *selectController) Select(c echo.Context) error {
 		winnerAd[slotID] = exceedFloor[0]
 		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d", m.Proto, m.URL, "show", m.MegaImp, exceedFloor[0].AdID)
 
-		assert.Nil(storeCapping(m.CopID, exceedFloor[0].CpID))
+		assert.Nil(storeCapping(m.CopID, exceedFloor[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
 
 	}
@@ -169,11 +169,11 @@ func (tc *selectController) getDataFromCtx(c echo.Context) (*middlewares.Request
 		return nil, nil, nil, c.HTML(400, "invalid request")
 	}
 	//fetch website and set in Context
-	website, err := tc.FetchWebsite(publicID)
+	website, err := tc.fetchWebsite(publicID)
 	if err != nil {
 		return nil, nil, nil, c.HTML(400, "invalid request")
 	}
-	country, err := tc.FetchCountry(rd.IP)
+	country, err := tc.fetchCountry(rd.IP)
 	if err != nil {
 		logrus.Warn(err)
 	}
@@ -185,8 +185,8 @@ func (tc *selectController) getDataFromCtx(c echo.Context) (*middlewares.Request
 	return rd, website, country, nil
 }
 
-//FetchWebsite website and set in Context
-func (tc *selectController) FetchWebsite(publicID int) (*mr.WebsiteData, error) {
+//FetchWebsite website and check if the minimum floor is applied
+func (_ selectController) fetchWebsite(publicID int) (*mr.WebsiteData, error) {
 	website, err := mr.NewManager().FetchWebsite(publicID)
 	if err != nil {
 		return nil, err
@@ -198,34 +198,21 @@ func (tc *selectController) FetchWebsite(publicID int) (*mr.WebsiteData, error) 
 }
 
 //FetchCountry find country and set context
-func (tc *selectController) FetchCountry(c net.IP) (*mr.Country2Info, error) {
+func (_ selectController) fetchCountry(c net.IP) (*mr.Country2Info, error) {
 	var country mr.Country2Info
 	ip, err := mr.NewManager().GetLocation(c)
 	if err != nil || !ip.CountryName.Valid {
-		return &country, errors.New("Country not found")
+		return nil, errors.New("Country not found")
 	}
 	country, err = mr.NewManager().ConvertCountry2Info(ip.CountryName.String)
 	if err != nil {
-		return &country, errors.New("Country not found")
+		return nil, errors.New("Country not found")
 	}
 	return &country, nil
 
 }
 
-// GetAdID return ad ids as []string
-func GetAdID(ad map[int][]mr.AdData) []string {
-	var adIDBanner []string
-	for _, adData := range ad {
-		for adSliceData := range adData {
-
-			adIDBanner = append(adIDBanner, strconv.FormatInt(adData[adSliceData].AdID, 10))
-		}
-	}
-	return adIDBanner
-
-}
-
-func (tc *selectController) slotSize(params map[string][]string, wID int64) ([]string, []int) {
+func (_ selectController) slotSize(params map[string][]string, wID int64) ([]string, []int) {
 	var size = make(map[string]string)
 	var sizeNumSlice []int
 	var slotPublic []string
@@ -272,7 +259,7 @@ big:
 }
 
 //must be checked after connect database
-func (tc *selectController) slotGroupBySize(params map[string][]string) map[string]int {
+func (_ selectController) slotGroupBySize(params map[string][]string) map[string]int {
 
 	var size = make(map[string]int)
 	//var realSize int
@@ -294,11 +281,11 @@ func (tc *selectController) slotGroupBySize(params map[string][]string) map[stri
 }
 
 // CalculateCtr calculate ctr
-func CalculateCtr(cpID int64, adID int64, wID int64, slotPublicID string) (float64, string) {
+func (_ selectController) calculateCTR(cpID int64, adID int64, wID int64, slotPublicID string) (float64, string) {
 	day := 2
 	final := make(map[string]int)
 	for c := range config.Config.Clickyab.CtrConst {
-		key := switchCTR(c, adID, slotPublicID, cpID, wID)
+		key := bestCTRKey(c, adID, slotPublicID, cpID, wID)
 		result, err := aredis.SumHMGetField(key, day, "i", "c")
 		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
 			final[config.Config.Clickyab.CtrConst[c]] = 0
@@ -309,7 +296,7 @@ func CalculateCtr(cpID int64, adID int64, wID int64, slotPublicID string) (float
 	return config.Config.Clickyab.DefaultCTR, "default"
 }
 
-func switchCTR(c int, adID int64, slotPublicID string, cpID int64, wID int64) string {
+func bestCTRKey(c int, adID int64, slotPublicID string, cpID int64, wID int64) string {
 	var key string
 	switch config.Config.Clickyab.CtrConst[c] {
 	case transport.AD_SLOT:

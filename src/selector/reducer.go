@@ -36,7 +36,7 @@ func Mix(f ...FilterFunc) FilterFunc {
 
 // Apply get the data and then call filter on each of them concurrently, the
 // result is the accepted items
-func Apply(ctx *Context, in []mr.AdData, ff FilterFunc, cc int) map[int][]*mr.MinAdData {
+func Apply(ctx *Context, in []mr.AdData, ff FilterFunc) map[int][]*mr.MinAdData {
 	//if cc < 1 {
 	//	cc = 1
 	//}

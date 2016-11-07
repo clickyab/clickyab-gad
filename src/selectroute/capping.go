@@ -34,17 +34,17 @@ func getCapping(c echo.Context, copID string, sizeNumSlice []int, filteredAds ma
 				"%s%s%d",
 				transport.CAMPAIGN,
 				transport.DELIMITER,
-				filteredAds[sizeNumSlice[i]][ad].CpID,
+				filteredAds[sizeNumSlice[i]][ad].CampaignID,
 			)]
 
-			if filteredAds[sizeNumSlice[i]][ad].CpFrequency <= 0 {
-				filteredAds[sizeNumSlice[i]][ad].CpFrequency = config.Config.Clickyab.MinFrequency
+			if filteredAds[sizeNumSlice[i]][ad].CampaignFrequency <= 0 {
+				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency = config.Config.Clickyab.MinFrequency
 			}
 			filteredAds[sizeNumSlice[i]][ad].Capping = mr.NewCapping(
 				c,
-				filteredAds[sizeNumSlice[i]][ad].CpID,
+				filteredAds[sizeNumSlice[i]][ad].CampaignID,
 				view,
-				filteredAds[sizeNumSlice[i]][ad].CpFrequency,
+				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency,
 			)
 			if userMinView == 0 {
 				userMinView = view
