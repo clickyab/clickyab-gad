@@ -61,7 +61,7 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 		imp.AdID, imp.CopID, imp.CampaignAdID,
 		imp.IP.String(), imp.ReferralAddress, imp.ParentURL,
 		imp.URL, imp.WinnerBID, imp.Status,
-		imp.Cookie, 0, 0,
+		0, 0, 0,
 		imp.Time.Unix(), imp.Time.Format("20060102"),
 	)
 	if err != nil {

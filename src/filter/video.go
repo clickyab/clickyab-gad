@@ -8,5 +8,5 @@ import (
 
 // CheckForVideo check if the banner size exists in the request
 func CheckForVideo(c *selector.Context, in mr.AdData) bool {
-	return config.CheckIfBannerIsVideo(in.AdSize)
+	return config.CheckIfBannerIsVideo(in)
 }

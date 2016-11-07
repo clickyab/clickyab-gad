@@ -41,9 +41,13 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 	megaImp, err := aredis.HGetAllString("mega_"+mega, true, 2*time.Hour)
 	assert.Nil(err)
-	if _, ok := megaImp[fmt.Sprintf("ad_%s", ad)]; !ok {
+	var winnerBid string
+	var winnerFinalBid int64
+	var ok bool
+	if winnerBid, ok = megaImp[fmt.Sprintf("ad_%s", ad)]; !ok {
 		return errors.New("ad not found " + ad)
 	}
+	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
 	adID, err := strconv.ParseInt(ad, 10, 64)
 	assert.Nil(err)
 	ads, err := mr.NewManager().GetAd(adID)
@@ -62,7 +66,7 @@ func (tc *selectController) show(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	imp := tc.fillImp(suspicious)
+	imp := tc.fillImp(c, suspicious, ads, winnerFinalBid)
 
 	go func() {
 		mr.NewManager().InsertImpression(imp)
@@ -102,8 +106,25 @@ func (tc *selectController) show(c echo.Context) error {
 	return c.HTML(200, buf.String())
 }
 
-func (selectController) fillImp(sus bool) transport.Impression {
+func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid int64) transport.Impression {
+	rd := middlewares.MustGetRequestData(ctx)
 	return transport.Impression{
-		Suspicious: sus,
+		Suspicious:   sus,
+		IP:           rd.IP,
+		AdID:         ctx.Param("ad"),
+		CopID:        rd.CopID,
+		CampaignAdID: ads.CampaignAdID,
+
+		URL:        rd.URL,
+		CampaignID: ads.CampaignID,
+		UserAgent:  rd.UserAgent,
+		Time:       time.Now(),
+		WinnerBID:  winnerBid,
+		Status:     0,
+		Web: &transport.WebSiteImp{
+			Referrer:  ctx.Request().Referer(),
+			ParentURL: rd.Parent,
+			SlotID:    ctx.Request().URL().QueryParam("s"),
+		},
 	}
 }

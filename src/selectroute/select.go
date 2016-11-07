@@ -103,7 +103,7 @@ func (tc *selectController) selectAd(c echo.Context) error {
 		exceedFloor[0].WinnerBid = utils.WinnerBid(secondCPM, exceedFloor[0].CTR)
 		exceedFloor[0].Capping.IncView(1)
 		winnerAd[slotID] = exceedFloor[0]
-		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d?tid=%s", rd.Proto, rd.URL, "show", rd.MegaImp, exceedFloor[0].AdID, rd.TID)
+		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d?tid=%s&ref=%s&s=%s", rd.Proto, rd.URL, "show", rd.MegaImp, exceedFloor[0].AdID, rd.TID,rd.Parent,slotID)
 
 		assert.Nil(storeCapping(m.CopID, exceedFloor[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?

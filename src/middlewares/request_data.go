@@ -33,6 +33,7 @@ type RequestData struct {
 	MegaImp        string
 	CopID          string
 	TID            string
+	Parent         string
 }
 
 const requestDataToken = "__request_data__"
@@ -58,8 +59,9 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Referrer = ctx.Request().Referer()
 		e.Method = ctx.Request().Method()
 		e.MegaImp = <-utils.ID
+		e.Parent=ctx.Request().URL().QueryParam("ref")
 
-		if e.TID = ctx.Param("tid"); e.TID == "" {
+		if e.TID = ctx.Request().URL().QueryParam("tid"); e.TID == "" {
 			e.TID = utils.CreateCopID(e.UserAgent, e.IP)
 		}
 		e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
