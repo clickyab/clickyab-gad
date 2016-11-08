@@ -118,8 +118,8 @@ func IncKeyDaily(key, subKey string, count int) (int64, error) {
 	return res, err
 }
 
-// StringInSlice check if the value exists in the slice
-func StringInSlice(a interface{}, list []interface{}) bool {
+// InSlice check if the value exists in the slice
+func InSlice(a interface{}, list []interface{}) bool {
 	for _, b := range list {
 		if b == a {
 			return true

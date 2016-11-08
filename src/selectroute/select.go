@@ -33,7 +33,6 @@ var (
 		filter.CheckNetwork,
 		filter.CheckCategory,
 		filter.CheckCountry,
-		filter.CheckForVideo,
 	)
 
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
@@ -66,6 +65,7 @@ func (tc *selectController) selectAd(c echo.Context) error {
 		winnerAd = make(map[string]*mr.MinAdData)
 		show     = make(map[string]string)
 		slotSize = tc.slotGroupBySize(params)
+		video    bool
 	)
 	for slotID := range slotSize {
 		var exceedFloor []*mr.MinAdData
@@ -80,7 +80,7 @@ func (tc *selectController) selectAd(c echo.Context) error {
 			)
 			adData.CPM = utils.Cpm(adData.CampaignMaxBid, adData.CTR)
 			//exceed cpm floor
-			if adData.CPM >= website.WFloorCpm.Int64 {
+			if adData.CPM >= website.WFloorCpm.Int64 && (!video || adData.AdType != config.AdTypeVideo) {
 				if len(exceedFloor) == 0 {
 					minCapFloor = adData.Capping.GetCapping()
 				}
@@ -88,6 +88,7 @@ func (tc *selectController) selectAd(c echo.Context) error {
 				//minimum capping
 				if adData.Capping.GetCapping() <= minCapFloor && adData.WinnerBid == 0 {
 					exceedFloor = append(exceedFloor, adData)
+
 				}
 			}
 		}
@@ -103,7 +104,8 @@ func (tc *selectController) selectAd(c echo.Context) error {
 		exceedFloor[0].WinnerBid = utils.WinnerBid(secondCPM, exceedFloor[0].CTR)
 		exceedFloor[0].Capping.IncView(1)
 		winnerAd[slotID] = exceedFloor[0]
-		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d?tid=%s&ref=%s&s=%s", rd.Proto, rd.URL, "show", rd.MegaImp, exceedFloor[0].AdID, rd.TID,rd.Parent,slotID)
+		video = video || exceedFloor[0].AdType == config.AdTypeVideo
+		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d?tid=%s&ref=%s&s=%s", rd.Proto, rd.URL, "show", rd.MegaImp, exceedFloor[0].AdID, rd.TID, rd.Parent, slotID)
 
 		assert.Nil(storeCapping(m.CopID, exceedFloor[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?

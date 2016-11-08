@@ -24,6 +24,7 @@ type MinAdData struct {
 	WinnerBid         int64            `json:"winner_bid" db:"-"`
 	CampaignMaxBid    int64            `json:"cp_maxbid" db:"cp_maxbid"`
 	CampaignID        int64            `json:"cp_id" db:"cp_id"`
+	AdType            int              `json:"ad_type" db:"ad_type"`
 }
 
 // CampaignData is a single campaign data
@@ -95,20 +96,20 @@ type CampaignData struct {
 type AdData struct {
 	MinAdData
 	CampaignData
-	AdSize          int                     `json:"ad_size" db:"ad_size"`
-	UserID          int64                   `json:"u_id" db:"u_id"`
-	AdName          sql.NullString          `json:"ad_name" db:"ad_name"`
-	AdURL           sql.NullString          `json:"ad_url" db:"ad_url"`
-	AdCode          sql.NullString          `json:"ad_code" db:"ad_code"`
-	AdTitle         sql.NullString          `json:"ad_title" db:"ad_title"`
-	AdBody          sql.NullString          `json:"ad_body" db:"ad_body"`
-	AdImg           sql.NullString          `json:"ad_img" db:"ad_img"`
-	AdStatus        int                     `json:"ad_status" db:"ad_status"`
-	AdRejectReason  sql.NullString          `json:"ad_reject_reason" db:"ad_reject_reason"`
-	AdCTR           float64                 `json:"ad_ctr" db:"ad_ctr"`
-	AdConversion    int                     `json:"ad_conv" db:"ad_conv"`
-	AdTime          int                     `json:"ad_time" db:"ad_time"`
-	AdType          int                     `json:"ad_type" db:"ad_type"`
+	AdSize         int            `json:"ad_size" db:"ad_size"`
+	UserID         int64          `json:"u_id" db:"u_id"`
+	AdName         sql.NullString `json:"ad_name" db:"ad_name"`
+	AdURL          sql.NullString `json:"ad_url" db:"ad_url"`
+	AdCode         sql.NullString `json:"ad_code" db:"ad_code"`
+	AdTitle        sql.NullString `json:"ad_title" db:"ad_title"`
+	AdBody         sql.NullString `json:"ad_body" db:"ad_body"`
+	AdImg          sql.NullString `json:"ad_img" db:"ad_img"`
+	AdStatus       int            `json:"ad_status" db:"ad_status"`
+	AdRejectReason sql.NullString `json:"ad_reject_reason" db:"ad_reject_reason"`
+	AdCTR          float64        `json:"ad_ctr" db:"ad_ctr"`
+	AdConversion   int            `json:"ad_conv" db:"ad_conv"`
+	AdTime         int            `json:"ad_time" db:"ad_time"`
+
 	AdMainText      sql.NullString          `json:"ad_mainText" db:"ad_mainText"`
 	AdDefineText    sql.NullString          `json:"ad_defineText" db:"ad_defineText"`
 	AdTextColor     sql.NullString          `json:"ad_textColor" db:"ad_textColor"`

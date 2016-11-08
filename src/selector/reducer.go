@@ -3,6 +3,7 @@ package selector
 import (
 	"mr"
 
+	"config"
 	"middlewares"
 )
 
@@ -55,7 +56,13 @@ func Apply(ctx *Context, in []mr.AdData, ff FilterFunc) map[int][]*mr.MinAdData 
 		if ff(ctx, in[i]) {
 			//res = append(res, in[i])
 			n := in[i].MinAdData
-			m[in[i].AdSize] = append(m[in[i].AdSize], &n)
+			if n.AdType == config.AdTypeVideo {
+				for _, j := range config.GetVideoSize() {
+					m[j] = append(m[j], &n)
+				}
+			} else {
+				m[in[i].AdSize] = append(m[in[i].AdSize], &n)
+			}
 
 		}
 		/*}(i)

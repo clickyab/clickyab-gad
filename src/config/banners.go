@@ -3,8 +3,6 @@ package config
 import (
 	"fmt"
 	"strings"
-	"mr"
-	"utils"
 )
 
 var sizes = map[string]int{
@@ -26,6 +24,8 @@ var sizes = map[string]int{
 	"48x320":   17,
 	"128x128":  18,
 }
+
+const AdTypeVideo = 3
 
 var videoSize = []int{3, 4, 9, 16, 14, 17}
 
@@ -51,13 +51,17 @@ func GetSizeByNum(num int) (string, string) {
 	return "", ""
 }
 
-// CheckIfBannerIsVideo check if the banner suitable for video
-func CheckIfBannerIsVideo(in mr.AdData) bool {
-	valid:=true
-	if in.CampaignNetwork==2{
-		valid=utils.StringInSlice(in.AdID,videoSize)
-		return valid
+// InVideoSize check if the size is available for video
+func InVideoSize(size int) bool {
+	for i := range videoSize {
+		if videoSize[i] == size {
+			return true
+		}
 	}
-	return valid
+	return false
+}
 
+// GetVideoSize return all video sizes
+func GetVideoSize() []int {
+	return videoSize
 }
