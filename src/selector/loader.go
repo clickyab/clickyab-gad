@@ -30,7 +30,7 @@ func interval() {
 		l, err := manager.LoadAds()
 		if err != nil {
 			//oh crap, failed. can we tolerate this?
-			if fail > config.Config.Clickyab.MaxLoadFail { // TODO Read from config
+			if fail > config.Config.Clickyab.MaxLoadFail {
 				assert.Nil(err, fmt.Sprintf("more than %s time failed to load data", fail))
 			}
 			fail++

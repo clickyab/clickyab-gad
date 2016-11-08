@@ -24,7 +24,7 @@ func getCappingKey(copID int64) string {
 	)
 }
 
-func getCapping(c echo.Context, copID int64, sizeNumSlice []int, filteredAds map[int][]*mr.MinAdData) map[int][]*mr.MinAdData {
+func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.MinAdData) map[int][]*mr.MinAdData {
 	var userMinView int
 
 	results, _ := aredis.HGetAll(getCappingKey(copID), true, 72*time.Hour)

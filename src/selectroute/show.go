@@ -17,6 +17,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
+	"net/http"
 )
 
 // SingleAd is the single ad id
@@ -33,32 +34,35 @@ func (tc *selectController) show(c echo.Context) error {
 	var suspicious bool
 	mega := c.Param("mega")
 	ad := c.Param("ad")
+	adID, err := strconv.ParseInt(ad, 10, 64)
+	assert.Nil(err)
 	WID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
 	assert.Nil(err)
 	if err != nil {
 		// TODO : check error
 		suspicious = true
 	}
-	megaImp, err := aredis.HGetAllString("mega_"+mega, true, 2*time.Hour)
+	megaImp, err := aredis.HGetAllString(transport.MEGA+transport.DELIMITER+mega, false, 0)
 	assert.Nil(err)
 	var winnerBid string
 	var winnerFinalBid int64
 	var ok bool
-	if winnerBid, ok = megaImp[fmt.Sprintf("ad_%s", ad)]; !ok {
+	if winnerBid, ok = megaImp[fmt.Sprintf("%s%s%s",transport.ADVERTISE, transport.DELIMITER, ad)]; !ok {
 		return errors.New("ad not found " + ad)
 	}
 	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
-	adID, err := strconv.ParseInt(ad, 10, 64)
-	assert.Nil(err)
-	ads, err := mr.NewManager().GetAd(adID)
 
+	ads, err := mr.NewManager().GetAd(adID)
+	if err != nil {
+		return c.String(http.StatusNotFound, "not found")
+	}
 	w, h := config.GetSizeByNum(ads.AdSize)
 	sa := SingleAd{
 		Link:   ads.AdURL.String,
 		Height: h,
 		Width:  w,
 		Src:    ads.AdImg.String,
-		Tiny:   false,
+		Tiny:   true,
 	}
 
 	buf := &bytes.Buffer{}

@@ -44,15 +44,20 @@ func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slot, error) {
 }
 
 // InsertSlots create as many slots you want
-func (m *Manager) InsertSlots(slotsPublic ...int64) error {
+func (m *Manager) InsertSlots(slotsPublic ...int64) ([]Slot, error) {
 	var slot []interface{}
 	for s := range slotsPublic {
 		slot = append(slot, &Slot{PublicID: slotsPublic[s]})
 	}
 	err := m.GetDbMap().Insert(slot...)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	var result = make([]Slot, len(slot))
+	for i := range slot {
+		result[i] = *slot[i].(*Slot)
+	}
+	return result, nil
 
 }

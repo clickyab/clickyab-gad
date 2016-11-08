@@ -50,7 +50,6 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Proto = ctx.Request().Scheme()
 		name, version := ua.Browser()
 		e.Browser = name
-		e.UserAgent = ctx.Request().UserAgent()
 		e.BrowserVersion = version
 		e.Os = ua.OS()
 		e.Mobile = ua.Mobile()
