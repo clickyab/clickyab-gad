@@ -15,9 +15,10 @@ import (
 
 	"middlewares"
 
+	"net/http"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
-	"net/http"
 )
 
 // SingleAd is the single ad id
@@ -27,6 +28,15 @@ type SingleAd struct {
 	Height string
 	Src    string
 	Tiny   bool
+}
+
+// VideoAd the video add
+type VideoAd struct {
+	Link   string
+	Src    string
+	Tiny   bool
+	Width  string
+	Height string
 }
 
 func (tc *selectController) show(c echo.Context) error {
@@ -47,26 +57,18 @@ func (tc *selectController) show(c echo.Context) error {
 	var winnerBid string
 	var winnerFinalBid int64
 	var ok bool
-	if winnerBid, ok = megaImp[fmt.Sprintf("%s%s%s",transport.ADVERTISE, transport.DELIMITER, ad)]; !ok {
+	if winnerBid, ok = megaImp[fmt.Sprintf("%s%s%s", transport.ADVERTISE, transport.DELIMITER, ad)]; !ok {
 		return errors.New("ad not found " + ad)
 	}
 	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
+
 
 	ads, err := mr.NewManager().GetAd(adID)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	w, h := config.GetSizeByNum(ads.AdSize)
-	sa := SingleAd{
-		Link:   ads.AdURL.String,
-		Height: h,
-		Width:  w,
-		Src:    ads.AdImg.String,
-		Tiny:   true,
-	}
 
-	buf := &bytes.Buffer{}
-	err = singleAdTemplate.Execute(buf, sa)
+	ads,err,buf:=tc.makeAdData(c,ads)
 	if err != nil {
 		return err
 	}
@@ -136,4 +138,30 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid
 			SlotID:    slot,
 		},
 	}
+}
+
+// makeAdData
+func (tc *selectController) makeAdData(c echo.Context,ads mr.Ad) (mr.Ad,error,bytes.Buffer) {
+	buf := &bytes.Buffer{}
+	var res interface{}
+	switch ads.AdType {
+	case 1:
+	case 2:
+	case 3:
+		res=tc.makeVideoAdData(ads)
+		return ads,videoAdTemplate.Execute(buf, res),buf
+
+	}
+}
+
+func (tc *selectController) makeVideoAdData(ad mr.Ad) VideoAd{
+	w, h := config.GetSizeByNum(ad.AdSize)
+	sa := VideoAd{
+		Link:   ad.AdURL.String,
+		Height: h,
+		Width:  w,
+		Src:    ad.AdImg.String,
+		Tiny:   true,
+	}
+	return sa
 }

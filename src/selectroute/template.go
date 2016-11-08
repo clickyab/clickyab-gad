@@ -30,6 +30,9 @@ const singleAd = `<!DOCTYPE html>
 <br style="clear: both;"/>
 </body></html>`
 
+const videoAD=``
+
 var (
 	singleAdTemplate = template.Must(template.New("single_ad").Parse(singleAd))
+	videoAdTemplate = template.Must(template.New("video_ad").Parse(videoAD))
 )
