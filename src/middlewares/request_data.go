@@ -31,7 +31,7 @@ type RequestData struct {
 	URL            string
 	Proto          string
 	MegaImp        string
-	CopID          string
+	CopID          int64
 	TID            string
 	Parent         string
 }
@@ -59,7 +59,7 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Referrer = ctx.Request().Referer()
 		e.Method = ctx.Request().Method()
 		e.MegaImp = <-utils.ID
-		e.Parent=ctx.Request().URL().QueryParam("ref")
+		e.Parent = ctx.Request().URL().QueryParam("ref")
 
 		if e.TID = ctx.Request().URL().QueryParam("tid"); e.TID == "" {
 			e.TID = utils.CreateCopID(e.UserAgent, e.IP)

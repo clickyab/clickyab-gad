@@ -47,19 +47,28 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 							?,?
 							)`, time.Now().Format("20060102"))
 	wid := sql.NullInt64{}
+	refer := sql.NullString{}
+	parent := sql.NullString{}
 	if imp.Web != nil {
 		wid.Valid = true
 		wid.Int64 = imp.Web.WebsiteID
+
+		refer.Valid = imp.Web.Referrer != ""
+		refer.String = imp.Web.Referrer
+
+		parent.Valid = imp.Web.ParentURL != ""
+		parent.String = imp.Web.ParentURL
 	}
 	appID := sql.NullInt64{}
 	if imp.App != nil {
 		appID.Valid = true
 		appID.Int64 = imp.App.AppID
 	}
+
 	res, err := m.GetDbMap().Exec(query,
 		wid, 0, appID,
 		imp.AdID, imp.CopID, imp.CampaignAdID,
-		imp.IP.String(), imp.ReferralAddress, imp.ParentURL,
+		imp.IP.String(), refer, parent,
 		imp.URL, imp.WinnerBID, imp.Status,
 		0, 0, 0,
 		imp.Time.Unix(), imp.Time.Format("20060102"),

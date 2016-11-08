@@ -69,7 +69,7 @@ func (tc *selectController) show(c echo.Context) error {
 	imp := tc.fillImp(c, suspicious, ads, winnerFinalBid)
 
 	go func() {
-		mr.NewManager().InsertImpression(imp)
+		assert.Nil(mr.NewManager().InsertImpression(&imp))
 		//validate
 		res, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, mega), true, 2*time.Hour)
 		if err != nil {
@@ -108,15 +108,20 @@ func (tc *selectController) show(c echo.Context) error {
 
 func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid int64) transport.Impression {
 	rd := middlewares.MustGetRequestData(ctx)
+	adID, err := strconv.ParseInt(ctx.Param("ad"), 10, 0)
+	assert.Nil(err)
+	// TODO : Slot is not a big deal. but check this later
+	slot, _ := strconv.ParseInt(ctx.Request().URL().QueryParam("s"), 10, 0)
+
 	return transport.Impression{
 		Suspicious:   sus,
 		IP:           rd.IP,
-		AdID:         ctx.Param("ad"),
+		AdID:         adID,
 		CopID:        rd.CopID,
-		CampaignAdID: ads.CampaignAdID,
+		CampaignAdID: ads.CampaignAdID.Int64,
 
 		URL:        rd.URL,
-		CampaignID: ads.CampaignID,
+		CampaignID: ads.CampaignID.Int64,
 		UserAgent:  rd.UserAgent,
 		Time:       time.Now(),
 		WinnerBID:  winnerBid,
@@ -124,7 +129,7 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid
 		Web: &transport.WebSiteImp{
 			Referrer:  ctx.Request().Referer(),
 			ParentURL: rd.Parent,
-			SlotID:    ctx.Request().URL().QueryParam("s"),
+			SlotID:    slot,
 		},
 	}
 }

@@ -40,7 +40,7 @@ func (m *Manager) FetchCookieProfile(key string) (*CookieProfile, error) {
 }
 
 // InsertCookieProfile create a new cookie profile and return it
-func (m *Manager) InsertCookieProfile(cop, ip net.IP) (*CookieProfile, error) {
+func (m *Manager) InsertCookieProfile(cop string, ip net.IP) (*CookieProfile, error) {
 
 	ipNullString := toNullString(ip.String())
 	date := toNullInt64(time.Now().Unix())
@@ -60,7 +60,7 @@ func (m *Manager) InsertCookieProfile(cop, ip net.IP) (*CookieProfile, error) {
 func (m *Manager) CreateCookieProfile(key string, ip net.IP) *CookieProfile {
 	res, err := m.FetchCookieProfile(key)
 	if err != nil {
-		res, err = m.InsertCookieProfile(key, ip.String())
+		res, err = m.InsertCookieProfile(key, ip)
 		assert.Nil(err)
 	}
 

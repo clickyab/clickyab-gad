@@ -25,6 +25,7 @@ var sizes = map[string]int{
 	"128x128":  18,
 }
 
+// AdTypeVideo is the ad type video
 const AdTypeVideo = 3
 
 var videoSize = []int{3, 4, 9, 16, 14, 17}

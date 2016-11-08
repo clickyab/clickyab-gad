@@ -2,6 +2,7 @@ package main
 
 import (
 	"assert"
+	"fmt"
 	"strconv"
 	"transport"
 	"utils"
@@ -13,7 +14,7 @@ func impWorker(in *transport.Impression) (bool, error) {
 		prefix = transport.FRAUD_PREFIX
 	}
 	var err error
-	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.USER, in.CopID), prefix+transport.SUBKEY_IMP, 1)
+	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.USER, fmt.Sprintf("%d", in.CopID)), prefix+transport.SUBKEY_IMP, 1)
 	assert.Nil(err)
 
 	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.CAMPAIGN, strconv.FormatInt(in.CampaignID, 10)), prefix+transport.SUBKEY_IMP, 1)

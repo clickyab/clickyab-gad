@@ -65,32 +65,14 @@ func (tc *selectController) selectAd(c echo.Context) error {
 		winnerAd = make(map[string]*mr.MinAdData)
 		show     = make(map[string]string)
 		slotSize = tc.slotGroupBySize(params)
-		video    bool
+		video    bool // once set, never unset it again
 	)
+	// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 	for slotID := range slotSize {
 		var exceedFloor []*mr.MinAdData
 		minCapFloor := 0
 		for _, adData := range filteredAds[slotSize[slotID]] {
-
-			adData.CTR, _ = tc.calculateCTR(
-				adData.CampaignID,
-				adData.AdID,
-				website.WID,
-				slotID,
-			)
-			adData.CPM = utils.Cpm(adData.CampaignMaxBid, adData.CTR)
-			//exceed cpm floor
-			if adData.CPM >= website.WFloorCpm.Int64 && (!video || adData.AdType != config.AdTypeVideo) {
-				if len(exceedFloor) == 0 {
-					minCapFloor = adData.Capping.GetCapping()
-				}
-
-				//minimum capping
-				if adData.Capping.GetCapping() <= minCapFloor && adData.WinnerBid == 0 {
-					exceedFloor = append(exceedFloor, adData)
-
-				}
-			}
+			tc.doBid(adData, website, slotID, &exceedFloor, video, &minCapFloor)
 		}
 		if len(exceedFloor) == 0 {
 			// TODO : send a warning, log it or anything else:)
@@ -116,6 +98,28 @@ func (tc *selectController) selectAd(c echo.Context) error {
 	b, _ := json.MarshalIndent(show, "\t", "\t")
 	result := "renderFarm(" + string(b) + ");"
 	return c.HTML(200, result)
+}
+
+func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData, slotID string, exceedFloor *[]*mr.MinAdData, video bool, minCapFloor *int) {
+	adData.CTR, _ = tc.calculateCTR(
+		adData.CampaignID,
+		adData.AdID,
+		website.WID,
+		slotID,
+	)
+	adData.CPM = utils.Cpm(adData.CampaignMaxBid, adData.CTR)
+	//exceed cpm floor
+	if adData.CPM >= website.WFloorCpm.Int64 && (!video || adData.AdType != config.AdTypeVideo) {
+		if len(*exceedFloor) == 0 {
+			*minCapFloor = adData.Capping.GetCapping()
+		}
+
+		//minimum capping
+		if adData.Capping.GetCapping() <= *minCapFloor && adData.WinnerBid == 0 {
+			*exceedFloor = append(*exceedFloor, adData)
+
+		}
+	}
 }
 
 func (tc *selectController) getSecoundCPM(floorCPM int64, exceedFloor []*mr.MinAdData) int64 {

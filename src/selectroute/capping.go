@@ -13,9 +13,9 @@ import (
 	"github.com/labstack/echo"
 )
 
-func getCappingKey(copID string) string {
+func getCappingKey(copID int64) string {
 	return fmt.Sprintf(
-		"%s%s%s%s%s",
+		"%s%s%d%s%s",
 		transport.USER_CAPPING,
 		transport.DELIMITER,
 		copID,
@@ -24,7 +24,7 @@ func getCappingKey(copID string) string {
 	)
 }
 
-func getCapping(c echo.Context, copID string, sizeNumSlice []int, filteredAds map[int][]*mr.MinAdData) map[int][]*mr.MinAdData {
+func getCapping(c echo.Context, copID int64, sizeNumSlice []int, filteredAds map[int][]*mr.MinAdData) map[int][]*mr.MinAdData {
 	var userMinView int
 
 	results, _ := aredis.HGetAll(getCappingKey(copID), true, 72*time.Hour)
@@ -59,7 +59,7 @@ func getCapping(c echo.Context, copID string, sizeNumSlice []int, filteredAds ma
 	return filteredAds
 }
 
-func storeCapping(copID string, cpID int64) error {
+func storeCapping(copID int64, cpID int64) error {
 	_, err := aredis.IncHash(
 		getCappingKey(copID),
 		fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, cpID),
