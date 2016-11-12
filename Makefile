@@ -85,10 +85,11 @@ run-experiment: experiment
 	$(BIN)/experiment
 
 mysql-setup: needroot
-	echo 'UPDATE user SET plugin="";' | mysql mysql
-	echo 'UPDATE user SET password=PASSWORD("$(DBPASS)") WHERE user="$(DB_USER)";' | mysql mysql
-	echo 'FLUSH PRIVILEGES;' | mysql mysql
-	echo 'CREATE DATABASE $(DB_NAME);' | mysql -u $(DB_USER) -p$(DBPASS)
+	echo 'UPDATE user SET plugin="";' | mysql mysql | true
+	echo 'UPDATE user SET password=PASSWORD("$(DBPASS)") WHERE user="$(DB_USER)";' | mysql mysql | true
+	echo 'FLUSH PRIVILEGES;' | mysql mysql | true
+	echo 'DROP DATABASE IF EXISTS $(DB_NAME); CREATE DATABASE $(DB_NAME);' | mysql -u $(DB_USER) -p$(DBPASS)
+	mysql -u $(DB_USER) -p$(DBPASS) -c $(DB_NAME) <$(ROOT)/db/structure.sql
 
 rabbitmq-setup: needroot
 	[ "1" -eq "$(shell rabbitmq-plugins enable rabbitmq_management | grep 'Plugin configuration unchanged' | wc -l)" ] || (rabbitmqctl stop_app && rabbitmqctl start_app)

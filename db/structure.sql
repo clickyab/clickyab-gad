@@ -97,7 +97,7 @@ CREATE TABLE apps
     app_today_ctr INT(11) DEFAULT '0',
     app_today_imps INT(11) DEFAULT '0',
     app_today_clicks INT(11) DEFAULT '0',
-    app_date INT(11) DEFAULT '0' COMMENT 'Date('Ymd')',
+    app_date INT(11) DEFAULT '0' ,
     app_cat VARCHAR(255),
     app_notapprovedreason VARCHAR(255),
     created_at TIMESTAMP DEFAULT '0000-00-00 00:00:00',
@@ -127,7 +127,7 @@ CREATE TABLE apps_bak
     app_today_ctr INT(11) DEFAULT '0',
     app_today_imps INT(11) DEFAULT '0',
     app_today_clicks INT(11) DEFAULT '0',
-    app_date INT(11) DEFAULT '0' COMMENT 'Date('Ymd')',
+    app_date INT(11) DEFAULT '0',
     app_cat VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT '0000-00-00 00:00:00',
     updated_at TIMESTAMP DEFAULT '0000-00-00 00:00:00'
@@ -145,7 +145,7 @@ CREATE INDEX ab_id ON apps_brand_models (ab_id);
 CREATE TABLE apps_brands
 (
     ab_id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    ab_brand VARCHAR(255),
+    ab_brand VARCHAR(100),
     ab_show TINYINT(4) DEFAULT '1',
     ab_count INT(12) DEFAULT '0'
 );
@@ -153,7 +153,7 @@ CREATE UNIQUE INDEX ab_brand ON apps_brands (ab_brand);
 CREATE TABLE apps_carriers
 (
     ac_id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    ac_carrier VARCHAR(255),
+    ac_carrier VARCHAR(100),
     ac_show TINYINT(4) DEFAULT '1',
     ac_count INT(12) DEFAULT '0'
 );
@@ -170,7 +170,7 @@ CREATE TABLE apps_install
 CREATE TABLE apps_langs
 (
     al_id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    al_lang VARCHAR(255),
+    al_lang VARCHAR(125),
     al_show TINYINT(4) DEFAULT '1',
     al_count INT(12)
 );
@@ -185,7 +185,7 @@ CREATE TABLE apps_market
 CREATE TABLE apps_networks
 (
     an_id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    an_network VARCHAR(255),
+    an_network VARCHAR(100),
     an_show TINYINT(4) DEFAULT '1',
     an_count INT(12) DEFAULT '0'
 );
@@ -209,11 +209,7 @@ CREATE TABLE audit_log
     target_type VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    CONSTRAINT audit_log_role_id_foreign FOREIGN KEY (role_id) REFERENCES roles (id),
-    CONSTRAINT audit_log_user_id_foreign FOREIGN KEY (user_id) REFERENCES users (u_id),
-    CONSTRAINT audit_log_impersonator_foreign FOREIGN KEY (impersonator) REFERENCES users (u_id),
-    CONSTRAINT audit_log_for_who_foreign FOREIGN KEY (for_who) REFERENCES users (u_id)
+    updated_at TIMESTAMP
 );
 CREATE INDEX audit_log_action_index ON audit_log (action);
 CREATE INDEX audit_log_for_who_foreign ON audit_log (for_who);
@@ -227,8 +223,7 @@ CREATE TABLE audit_log_details
     audit_id INT(10) unsigned NOT NULL,
     data TEXT,
     created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    CONSTRAINT audit_log_details_audit_id_foreign FOREIGN KEY (audit_id) REFERENCES audit_log (id) ON DELETE CASCADE
+    updated_at TIMESTAMP
 );
 CREATE INDEX audit_log_details_audit_id_foreign ON audit_log_details (audit_id);
 CREATE TABLE billing
@@ -989,7 +984,7 @@ CREATE TABLE list_city
 CREATE TABLE list_locations
 (
     location_id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    location_name TEXT,
+    location_name VARCHAR (100),
     location_name_persian TEXT,
     location_master MEDIUMINT(6) DEFAULT '0',
     location_select TINYINT(1) DEFAULT '0'
@@ -1292,7 +1287,7 @@ CREATE TABLE unsubscribe
 CREATE TABLE users
 (
     u_id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    u_email VARCHAR(250),
+    u_email VARCHAR(100),
     u_password VARCHAR(255),
     u_access_key VARCHAR(200),
     u_profile_type TINYINT(1) DEFAULT '0',
@@ -1351,7 +1346,7 @@ CREATE INDEX u_email_2 ON users (u_email, u_password);
 CREATE TABLE users_bak2
 (
     u_id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    u_email VARCHAR(250),
+    u_email VARCHAR(100),
     u_password VARCHAR(255),
     u_access_key VARCHAR(200),
     u_profile_type TINYINT(1) DEFAULT '0',
@@ -1409,7 +1404,7 @@ CREATE INDEX u_email_2 ON users_bak2 (u_email, u_password);
 CREATE TABLE users_log
 (
     ul_id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    ul_email VARCHAR(255) NOT NULL,
+    ul_email VARCHAR(100) NOT NULL,
     ul_password VARCHAR(255),
     ul_access_key VARCHAR(200),
     ul_profile_type TINYINT(1) DEFAULT '0',
