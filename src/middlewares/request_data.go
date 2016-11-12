@@ -61,7 +61,7 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Parent = ctx.Request().URL().QueryParam("ref")
 
 		if e.TID = ctx.Request().URL().QueryParam("tid"); e.TID == "" {
-			e.TID = utils.CreateCopID(e.UserAgent, e.IP)
+			e.TID = utils.CreateCopID(e.UserAgent, e.IP, config.Config.Clickyab.CopLen)
 		}
 		e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
 

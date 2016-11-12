@@ -226,7 +226,7 @@ func (selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
 
 func (selectController) slotSize(params map[string][]string, wID int64) (map[string]slotData, map[string]int) {
 	var size = make(map[string]string)
-	var sizeNumSlice map[string]int
+	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
 
 	for key := range params {

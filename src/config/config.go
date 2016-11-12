@@ -99,6 +99,7 @@ type AppConfig struct {
 		DailyClickExpire time.Duration `onion:"daily_click_expire"`
 		DailyCapExpire   time.Duration `onion:"daily_cap_expire"`
 		MinCPMFloor      int64         `onion:"min_cpm_floor"`
+		CopLen           int           `onion:"cop_len"`
 	}
 }
 
@@ -126,7 +127,7 @@ func defaultLayer() onion.Layer {
 
 	// TODO :  make sure ?parseTime=true is always set!
 	assert.Nil(d.SetDefault("mysql.rdsn", "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-1.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"))
-	assert.Nil(d.SetDefault("mysql.wdsn", "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-1.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"))
+	assert.Nil(d.SetDefault("mysql.wdsn", "root:bita123@tcp(127.0.0.1:3306)/clickyab?charset=utf8&parseTime=true"))
 	assert.Nil(d.SetDefault("mysql.max_connection", 30))
 	assert.Nil(d.SetDefault("mysql.max_idle_connection", 5))
 
@@ -152,6 +153,7 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.daily_cap_expire", "72h"))
 	assert.Nil(d.SetDefault("clickyab.min_cpm_floor", 150))
 	assert.Nil(d.SetDefault("clickyab.max_load_fail", 3))
+	assert.Nil(d.SetDefault("clickyab.cop_len", 10))
 
 	return d
 }

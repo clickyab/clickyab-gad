@@ -63,6 +63,7 @@ func (m *Manager) CreateCookieProfile(key string, ip net.IP) *CookieProfile {
 	if err != nil {
 		res, err = m.InsertCookieProfile(key, ip)
 		assert.Nil(err)
+
 	}
 
 	return res

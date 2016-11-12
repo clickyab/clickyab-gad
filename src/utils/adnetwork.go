@@ -31,8 +31,10 @@ func WinnerBid(cpm int64, ctr float64) int64 {
 }
 
 // CreateCopID create COP ID
-func CreateCopID(useragent string, ip net.IP) string {
+func CreateCopID(useragent string, ip net.IP, l int) string {
 	h := sha1.New()
 	_, _ = h.Write([]byte(useragent))
-	return fmt.Sprintf("%x", h.Sum([]byte(ip)))
+	_, _ = h.Write([]byte(ip))
+	fmt.Println(fmt.Sprintf("%x", h.Sum(nil)),l)
+	return fmt.Sprintf("%x", h.Sum(nil))[:l]
 }
