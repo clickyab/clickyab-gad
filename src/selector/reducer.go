@@ -3,16 +3,17 @@ package selector
 import (
 	"mr"
 
+	"config"
 	"middlewares"
 )
 
 // Context type @todo
 type Context struct {
 	middlewares.RequestData
-	Size []int
-	mr.WebsiteData
-	mr.Country2Info
-	SlotPublic []string
+	// TODO : its better to have a unique size array
+	Size    map[string]int
+	Website *mr.WebsiteData
+	Country *mr.CountryInfo
 }
 
 // FilterFunc is the type use to filter the
@@ -31,39 +32,22 @@ func Mix(f ...FilterFunc) FilterFunc {
 	}
 }
 
-// ReduceFunc is not needed since the data type is simple and known at compile time
-//type ReduceFunc func ([]mr.AdData, []mr.AdData) []mr.AdData
-
 // Apply get the data and then call filter on each of them concurrently, the
 // result is the accepted items
-func Apply(ctx *Context, in []mr.AdData, ff FilterFunc, cc int) map[int][]*mr.MinAdData {
-	//if cc < 1 {
-	//	cc = 1
-	//}
-	//wg := sync.WaitGroup{}
-	//wg.Add(len(in))
-	//sem := make(chan struct{}, cc)
-	//res := make([]mr.AdData, 0, len(in))
+func Apply(ctx *Context, in []mr.AdData, ff FilterFunc) map[int][]*mr.MinAdData {
 	m := make(map[int][]*mr.MinAdData)
 	for i := range in {
-		/*sem <- struct{}{}
-		go func(j int) {
-			defer func() {
-				wg.Done()
-				<-sem
-			}()*/
 		if ff(ctx, in[i]) {
-			//res = append(res, in[i])
 			n := in[i].MinAdData
-			m[in[i].AdSize] = append(m[in[i].AdSize], &n)
+			if n.AdType == config.AdTypeVideo {
+				for _, j := range config.GetVideoSize() {
+					m[j] = append(m[j], &n)
+				}
+			} else {
+				m[in[i].AdSize] = append(m[in[i].AdSize], &n)
+			}
 
 		}
-		/*}(i)
-		}
-
-		wg.Wait()*/
 	}
-
-	//fmt.Println(res)
 	return m
 }

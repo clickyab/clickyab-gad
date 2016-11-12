@@ -1,12 +1,14 @@
 package mr
 
 import (
+	"assert"
 	"database/sql"
+	"net"
 	"time"
 )
 
-// cookie_profiles struct table
-type CookieProfiles struct {
+// CookieProfile cookie_profiles struct table
+type CookieProfile struct {
 	ID      int64          `json:"cop_id" db:"cop_id"`
 	Key     string         `json:"cop_key" db:"cop_key"`
 	Email   sql.NullString `json:"cop_email" db:"cop_email"`
@@ -22,8 +24,8 @@ type CookieProfiles struct {
 }
 
 // FetchCookieProfile get data from table cookie
-func (m *Manager) FetchCookieProfile(key string) (*CookieProfiles, error) {
-	var res = CookieProfiles{}
+func (m *Manager) FetchCookieProfile(key string) (*CookieProfile, error) {
+	var res = CookieProfile{}
 	query := `SELECT * FROM cookie_profiles WHERE cop_key = ?  LIMIT 1`
 	err := m.GetDbMap().SelectOne(
 		&res,
@@ -37,11 +39,12 @@ func (m *Manager) FetchCookieProfile(key string) (*CookieProfiles, error) {
 	return &res, nil
 }
 
-func (m *Manager) InsertCookieProfile(cop, ip string) (*CookieProfiles, error) {
+// InsertCookieProfile create a new cookie profile and return it
+func (m *Manager) InsertCookieProfile(cop string, ip net.IP) (*CookieProfile, error) {
 
-	ipNullString := ToNullString(ip)
-	date := ToNullInt64(time.Now().Unix())
-	co := &CookieProfiles{
+	ipNullString := toNullString(ip.String())
+	date := toNullInt64(time.Now().Unix())
+	co := &CookieProfile{
 		Key:  cop,
 		IP:   ipNullString,
 		Date: date,
@@ -51,4 +54,15 @@ func (m *Manager) InsertCookieProfile(cop, ip string) (*CookieProfiles, error) {
 		return nil, err
 	}
 	return co, nil
+}
+
+// CreateCookieProfile try to select/create a cookie profile
+func (m *Manager) CreateCookieProfile(key string, ip net.IP) *CookieProfile {
+	res, err := m.FetchCookieProfile(key)
+	if err != nil {
+		res, err = m.InsertCookieProfile(key, ip)
+		assert.Nil(err)
+	}
+
+	return res
 }

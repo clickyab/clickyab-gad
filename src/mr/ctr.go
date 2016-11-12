@@ -10,9 +10,9 @@ import (
 
 //CalculateCTR calculate ctr
 func CalculateCTR(ad AdData) float64 {
-	maxBid := ad.CpMaxbid
+	maxBid := ad.CampaignMaxBid
 	fmt.Println(maxBid)
-	ctrCalculateConst := config.Config.Clickyab.CtrConst
+	ctrCalculateConst := config.Config.Clickyab.CTRConst
 	for m := range ctrCalculateConst {
 		switch ctrCalculateConst[m] {
 		case transport.AD_SLOT:

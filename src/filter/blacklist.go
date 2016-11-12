@@ -7,11 +7,11 @@ import (
 
 // CheckBlackList filter blacklist
 func CheckBlackList(c *selector.Context, in mr.AdData) bool {
-	if len(in.CpWfilter) == 0 {
+	if len(in.CampaignWebsiteFilter) == 0 {
 		return true
 	}
-	for _, v := range in.CpWfilter {
-		if v == c.WID {
+	for _, v := range in.CampaignWebsiteFilter {
+		if v == c.Website.WID {
 			return false
 		}
 	}

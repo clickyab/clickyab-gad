@@ -4,8 +4,8 @@ import (
 	"database/sql"
 )
 
-//Country2Info struct country info
-type Country2Info struct {
+//CountryInfo struct country info
+type CountryInfo struct {
 	ID        int64          `id:"id" db:"id"`
 	Iso       string         `json:"iso" db:"iso"`
 	Name      string         `json:"name" db:"name"`
@@ -16,9 +16,9 @@ type Country2Info struct {
 }
 
 //ConvertCountry2Info get data country from string
-func (m *Manager) ConvertCountry2Info(name string) (Country2Info, error) {
-	var country Country2Info
-	query := `SELECT * FROM country WHERE nicename = ? LIMIT 1`
+func (m *Manager) ConvertCountry2Info(name string) (CountryInfo, error) {
+	var country CountryInfo
+	query := `SELECT * FROM country WHERE iso = ? LIMIT 1`
 	err := m.GetDbMap().SelectOne(
 		&country,
 		query,

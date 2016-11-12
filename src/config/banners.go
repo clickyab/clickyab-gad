@@ -25,6 +25,11 @@ var sizes = map[string]int{
 	"128x128":  18,
 }
 
+// AdTypeVideo is the ad type video
+const AdTypeVideo = 3
+
+var videoSize = []int{3, 4, 9, 16, 14, 17}
+
 // GetSize return the size of a banner in clickyab std
 func GetSize(size string) (int, error) {
 	s, ok := sizes[size]
@@ -37,7 +42,7 @@ func GetSize(size string) (int, error) {
 
 // GetSizeByNum return the size
 func GetSizeByNum(num int) (string, string) {
-	// TODO
+	// TODO : better way / no loop please
 	for i, s := range sizes {
 		if s == num {
 			a := strings.Split(i, "x")
@@ -45,4 +50,19 @@ func GetSizeByNum(num int) (string, string) {
 		}
 	}
 	return "", ""
+}
+
+// InVideoSize check if the size is available for video
+func InVideoSize(size int) bool {
+	for i := range videoSize {
+		if videoSize[i] == size {
+			return true
+		}
+	}
+	return false
+}
+
+// GetVideoSize return all video sizes
+func GetVideoSize() []int {
+	return videoSize
 }

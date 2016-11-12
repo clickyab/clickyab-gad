@@ -13,9 +13,9 @@ import (
 	"github.com/labstack/echo"
 )
 
-func getCappingKey(copID string) string {
+func getCappingKey(copID int64) string {
 	return fmt.Sprintf(
-		"%s%s%s%s%s",
+		"%s%s%d%s%s",
 		transport.USER_CAPPING,
 		transport.DELIMITER,
 		copID,
@@ -24,7 +24,7 @@ func getCappingKey(copID string) string {
 	)
 }
 
-func getCapping(c echo.Context, copID string, sizeNumSlice []int, filteredAds map[int][]*mr.MinAdData) map[int][]*mr.MinAdData {
+func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.MinAdData) map[int][]*mr.MinAdData {
 	var userMinView int
 
 	results, _ := aredis.HGetAll(getCappingKey(copID), true, 72*time.Hour)
@@ -34,17 +34,17 @@ func getCapping(c echo.Context, copID string, sizeNumSlice []int, filteredAds ma
 				"%s%s%d",
 				transport.CAMPAIGN,
 				transport.DELIMITER,
-				filteredAds[sizeNumSlice[i]][ad].CpID,
+				filteredAds[sizeNumSlice[i]][ad].CampaignID,
 			)]
 
-			if filteredAds[sizeNumSlice[i]][ad].CpFrequency <= 0 {
-				filteredAds[sizeNumSlice[i]][ad].CpFrequency = config.Config.Clickyab.MinFrequency
+			if filteredAds[sizeNumSlice[i]][ad].CampaignFrequency <= 0 {
+				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency = config.Config.Clickyab.MinFrequency
 			}
 			filteredAds[sizeNumSlice[i]][ad].Capping = mr.NewCapping(
 				c,
-				filteredAds[sizeNumSlice[i]][ad].CpID,
+				filteredAds[sizeNumSlice[i]][ad].CampaignID,
 				view,
-				filteredAds[sizeNumSlice[i]][ad].CpFrequency,
+				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency,
 			)
 			if userMinView == 0 {
 				userMinView = view
@@ -59,13 +59,13 @@ func getCapping(c echo.Context, copID string, sizeNumSlice []int, filteredAds ma
 	return filteredAds
 }
 
-func storeCapping(copID string, cpID int64) error {
+func storeCapping(copID int64, cpID int64) error {
 	_, err := aredis.IncHash(
 		getCappingKey(copID),
 		fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, cpID),
 		1,
 		true,
-		config.Config.Clickyab.DailyCapExpireTime,
+		config.Config.Clickyab.DailyCapExpire,
 	)
 	return err
 }

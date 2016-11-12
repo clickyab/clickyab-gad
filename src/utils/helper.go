@@ -114,18 +114,16 @@ func IncKeyDaily(key, subKey string, count int) (int64, error) {
 		subKey,
 		count,
 		true,
-		config.Config.Clickyab.DailyImpExpireTime)
+		config.Config.Clickyab.DailyImpExpire)
 	return res, err
 }
 
-//Bubblesort
-func BubbleSort(arr []int) []int {
-	for i := 1; i < len(arr); i++ {
-		for j := 0; j < len(arr)-i; j++ {
-			if arr[j] > arr[j+1] {
-				arr[j], arr[j+1] = arr[j+1], arr[j]
-			}
+// InSlice check if the value exists in the slice
+func InSlice(a interface{}, list []interface{}) bool {
+	for _, b := range list {
+		if b == a {
+			return true
 		}
 	}
-	return arr
+	return false
 }

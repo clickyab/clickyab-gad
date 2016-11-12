@@ -28,11 +28,12 @@ type RequestData struct {
 	Method         string
 	Referrer       string
 	Mobile         bool
-	Url            string
-	Proto            string
-
-	MegaImp string
-	CopID   string
+	URL            string
+	Proto          string
+	MegaImp        string
+	CopID          int64
+	TID            string
+	Parent         string
 }
 
 const requestDataToken = "__request_data__"
@@ -45,11 +46,10 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.IP = net.ParseIP(ctx.Request().RealIP())
 		e.UserAgent = ctx.Request().UserAgent()
 		ua := user_agent.New(ctx.Request().UserAgent())
-		e.Url = ctx.Request().Host()
+		e.URL = ctx.Request().Host()
 		e.Proto = ctx.Request().Scheme()
 		name, version := ua.Browser()
 		e.Browser = name
-		e.UserAgent = ctx.Request().UserAgent()
 		e.BrowserVersion = version
 		e.Os = ua.OS()
 		e.Mobile = ua.Mobile()
@@ -58,7 +58,12 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Referrer = ctx.Request().Referer()
 		e.Method = ctx.Request().Method()
 		e.MegaImp = <-utils.ID
-		e.CopID = utils.CreateCopID(e.UserAgent, e.IP)
+		e.Parent = ctx.Request().URL().QueryParam("ref")
+
+		if e.TID = ctx.Request().URL().QueryParam("tid"); e.TID == "" {
+			e.TID = utils.CreateCopID(e.UserAgent, e.IP)
+		}
+		e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
 
 		ctx.Set(requestDataToken, e)
 		return next(ctx)

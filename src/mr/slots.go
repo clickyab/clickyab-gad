@@ -8,12 +8,13 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-type Slots struct {
+// Slot is the slots table
+type Slot struct {
 	ID               int64          `json:"slot_id" db:"slot_id"`
 	PublicID         int64          `json:"slot_pubilc_id" db:"slot_pubilc_id"`
 	Name             sql.NullString `json:"slot_name" db:"slot_name"`
 	Size             sql.NullString `json:"slot_size" db:"slot_size"`
-	WID              int            `json:"w_id" db:"w_id"`
+	WID              int64          `json:"w_id" db:"w_id"`
 	AppID            int64          `json:"app_id" db:"app_id"`
 	AvgDailyImps     int64          `json:"slot_avg_daily_imps" db:"slot_avg_daily_imps"`
 	AvgDailyClicks   int64          `json:"slot_avg_daily_clicks" db:"slot_avg_daily_clicks"`
@@ -24,8 +25,9 @@ type Slots struct {
 	UpdatedAt        mysql.NullTime `json:"updated_at" db:"updated_at"`
 }
 
-func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slots, error) {
-	var res []Slots
+// FetchSlots fetch all slots
+func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slot, error) {
+	var res []Slot
 
 	query := fmt.Sprintf(`SELECT * FROM slots WHERE slot_pubilc_id IN (%s) AND w_id = ?`, publicID)
 
@@ -41,15 +43,21 @@ func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slots, error) {
 	return res, nil
 }
 
-func (m *Manager) InsertSlots(slotsPublic []int64) error {
+// InsertSlots create as many slots you want
+func (m *Manager) InsertSlots(wID int64, slotsPublic ...int64) ([]Slot, error) {
 	var slot []interface{}
-	for s:= range slotsPublic{
-		slot=append(slot,&Slots{PublicID:slotsPublic[s]})
+	for s := range slotsPublic {
+		slot = append(slot, &Slot{PublicID: slotsPublic[s], WID: wID})
 	}
 	err := m.GetDbMap().Insert(slot...)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	var result = make([]Slot, len(slot))
+	for i := range slot {
+		result[i] = *slot[i].(*Slot)
+	}
+	return result, nil
 
 }

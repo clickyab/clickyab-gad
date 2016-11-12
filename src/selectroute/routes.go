@@ -1,6 +1,8 @@
 package selectroute
 
 import (
+	"config"
+
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
@@ -9,10 +11,11 @@ import (
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.Use(middleware.StaticWithConfig(
 		middleware.StaticConfig{
-			Root:   "/home/develop/gad/showjs",
+			Root:   config.Config.StaticRoot,
 			Browse: true,
 		},
 	))
-	e.Get("/select", tc.Select)
-	e.Get("/show/:mega/:ad", tc.Show)
+	e.Get("/select", tc.selectAd)
+	e.Get("/show/:mega/:wid/:ad", tc.show)
+	e.Get("/click/:imp/:data", tc.click)
 }

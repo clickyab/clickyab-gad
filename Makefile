@@ -22,7 +22,7 @@ export DB_NAME?=clickyab
 export RUSER?=$(APPNAME)
 export RPASS?=$(DEFAULT_PASS)
 export WORK_DIR=$(ROOT)/tmp
-export LINTERCMD=$(LINTER) --deadline=100s --disable-all --enable=structcheck --enable=deadcode --enable=gocyclo --enable=ineffassign --enable=dupl --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=interfacer --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell
+export LINTERCMD=$(LINTER) --deadline=100s --disable-all --enable=structcheck --enable=deadconde --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell
 
 
 .PHONY: all gb clean

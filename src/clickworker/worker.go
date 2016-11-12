@@ -2,7 +2,6 @@ package main
 
 import (
 	"assert"
-	"errors"
 	"fmt"
 	"strconv"
 	"transport"
@@ -11,12 +10,6 @@ import (
 
 // error means Ack/Nack the boolean maens only when error is not nil, and means re-queue
 func clickWorker(in *transport.Click) (bool, error) {
-
-	if !in.Validate() {
-		return false, errors.New("invalid")
-	}
-
-	// check for user lock
 
 	// increment click to user
 	prefix := ""

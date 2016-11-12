@@ -1,9 +1,12 @@
 package config
 
 import (
+	"assert"
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/fzerorubigd/onion.v2"
@@ -33,6 +36,7 @@ func Initialize() {
 		logrus.Warn(err)
 	}
 
+	assert.Nil(o.AddLayer(defaultLayer()))
 	if err = o.AddLayer(onion.NewFileLayer("/etc/" + organization + "/" + appName + ".yaml")); err == nil {
 
 		logrus.Infof("loading config from %s", "/etc/"+organization+"/"+appName+".yaml")
@@ -43,7 +47,6 @@ func Initialize() {
 	if err = o.AddLayer(onion.NewFileLayer(dir + "/configs/" + appName + ".yaml")); err == nil {
 		logrus.Infof("loading config from %s", dir+"/configs/"+appName+".yaml")
 	}
-
 	for i := range all {
 		nL := all[i].Initialize(o)
 		for l := range nL {
@@ -51,13 +54,15 @@ func Initialize() {
 		}
 	}
 
-	o.AddLazyLayer(extraenv.NewExtraEnvLayer("cyrest"))
-
+	o.AddLazyLayer(extraenv.NewExtraEnvLayer("GAD"))
 	o.GetStruct("", &Config)
+	// TODO {fzerorubigd}: Onion does not support slice in struct mapping
+	Config.Clickyab.CTRConst = o.GetStringSlice("clickyab.ctr_const")
 
 	for i := range all {
 		all[i].Loaded()
 	}
+
 }
 
 // SetConfigParameter try to set the config parameter for the logrus base on config
@@ -69,6 +74,18 @@ func SetConfigParameter() {
 	} else {
 		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: false, DisableColors: true})
 		logrus.SetLevel(logrus.WarnLevel)
+	}
+
+	numcpu := Config.MaxCPUAvailable
+	if numcpu < 1 || numcpu > runtime.NumCPU() {
+		numcpu = runtime.NumCPU()
+	}
+
+	runtime.GOMAXPROCS(numcpu)
+
+	// Set global timezone
+	if l, err := time.LoadLocation(Config.TimeZone); err == nil {
+		time.Local = l
 	}
 }
 

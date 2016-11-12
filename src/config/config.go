@@ -1,13 +1,15 @@
 package config
 
 import (
+	"assert"
 	"runtime"
 
 	"time"
 
 	"transport"
 
-	"github.com/Sirupsen/logrus"
+	"fmt"
+
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"
 	_ "gopkg.in/fzerorubigd/onion.v2/yamlloader" // config need this to load yaml file
@@ -42,8 +44,8 @@ type AppConfig struct {
 		Size     int
 		Network  string
 		Address  string
-		Password string //Daily Statistic TimeOut Expiration
-		Days     int
+		Password string
+		Days     int //Daily Statistic TimeOut Expiration TODO : the worst position for this
 	}
 
 	Mysql struct {
@@ -87,86 +89,67 @@ type AppConfig struct {
 	}
 
 	Clickyab struct {
-		DefaultCTR           float64
-		CtrConst             []string
-		MinImp               int64
-		MinFrequency         int
-		DailyImpExpireTime   time.Duration
-		DailyClickExpireTime time.Duration
-		DailyCapExpireTime   time.Duration
-		MinCPMFloor          int64
+		MaxLoadFail      int           `onion:"max_load_fail"`
+		DefaultCTR       float64       `onion:"default_ctr"`
+		CTRConst         []string      `onion:"ctr_const"`
+		MinImp           int64         `onion:"min_imp"`
+		MinFrequency     int           `onion:"min_frequency"`
+		DailyImpExpire   time.Duration `onion:"daily_imp_expire"`
+		DailyClickExpire time.Duration `onion:"daily_click_expire"`
+		DailyCapExpire   time.Duration `onion:"daily_cap_expire"`
+		MinCPMFloor      int64         `onion:"min_cpm_floor"`
 	}
 }
 
-func init() {
-	var err error
+func defaultLayer() onion.Layer {
+	d := onion.NewDefaultLayer()
+	assert.Nil(d.SetDefault("site", "gad.loc"))
+	assert.Nil(d.SetDefault("mount_point", "/"))
+	assert.Nil(d.SetDefault("devel_mode", true))
+	assert.Nil(d.SetDefault("cors", true))
+	assert.Nil(d.SetDefault("max_cpu_available", runtime.NumCPU()))
+	assert.Nil(d.SetDefault("proto", "http"))
+	assert.Nil(d.SetDefault("port", ":80"))
+	assert.Nil(d.SetDefault("time_zone", "Asia/Tehran"))
+	p, err := expand.Path("$HOME/gad/statics")
+	assert.Nil(err)
+	assert.Nil(d.SetDefault("static_root", p))
+	fmt.Println(p)
 
-	Config.Site = "gad.loc"
-	Config.MountPoint = "/"
-	Config.DevelMode = true
-	Config.CORS = true
-	Config.MaxCPUAvailable = runtime.NumCPU()
-	Config.Proto = "http"
-	Config.Port = ":80"
-	Config.StaticRoot, err = expand.Path("/statics")
-	if err != nil {
-		logrus.Panic(err)
-	}
+	assert.Nil(d.SetDefault("redis.size", 10))
+	assert.Nil(d.SetDefault("redis.network", "tcp"))
+	assert.Nil(d.SetDefault("redis.address", ":6379"))
 
-	Config.Redis.Size = 10
-	Config.Redis.Network = "tcp"
-	Config.Redis.Address = ":6379"
-	Config.Clickyab.DailyClickExpireTime = 72 * time.Hour
-	//Config.Redis.Password = ""
-	Config.Clickyab.DailyClickExpireTime = 72 * time.Hour
-	Config.Clickyab.DailyCapExpireTime = 72 * time.Hour
-	Config.Redis.Days = 2
+	// TODO : move it to clickyab section
+	assert.Nil(d.SetDefault("redis.days", 2))
 
-	// TODO : make sure ?parseTime=true is always set!
-	//[username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
-	//Config.Mysql.DSN = "novid:x4WT4a2o86oR1lup@tcp(5.9.150.114:3312)/clickyab?parseTime=true"
+	// TODO :  make sure ?parseTime=true is always set!
+	assert.Nil(d.SetDefault("mysql.dsn", "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"))
+	assert.Nil(d.SetDefault("mysql.max_connection", 30))
+	assert.Nil(d.SetDefault("mysql.max_idle_connection", 5))
 
-	//db, err := sql.Open("mysql", "clickyab_test:760f5bad06b18134ef6@tcp(46.4.116.104:3306)/clickyab?charset=utf8")
-	//Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(37.187.69.33:3306)/clickyab?charset=utf8&parseTime=true"
-	//Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(51.254.197.46:3306)/clickyab?charset=utf8&parseTime=true"
-	//Config.Mysql.DSN = "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"
-	Config.Mysql.DSN = "root:cOU8W1R40f1Y0uuh!W8647697D@3uV3vbyS^TuKu@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"
-	//Config.Mysql.DSN = "root:bita123@tcp(127.0.0.1:3306)/clickyab?charset=utf8&parseTime=true"
+	assert.Nil(d.SetDefault("amqp.publisher", 30))
+	assert.Nil(d.SetDefault("amqp.exchange", "cy"))
+	assert.Nil(d.SetDefault("amqp.dsn", "amqp://server:bita123@127.0.0.1:5672/"))
+	assert.Nil(d.SetDefault("amqp.confirmlen", 50))
 
-	Config.Mysql.MaxConnection = 100
-	Config.Mysql.MaxIdleConnection = 10
-	Config.Page.PerPage = 10
-	Config.Page.MaxPerPage = 100
-	Config.Page.MinPerPage = 1
+	assert.Nil(d.SetDefault("page.per_page", 10))
+	assert.Nil(d.SetDefault("page.max_per_page", 100))
+	assert.Nil(d.SetDefault("page.min_per_page", 1))
 
-	Config.Select.Date = 0
-	Config.Select.Hour = 1
-	Config.Select.Balance = 50000
+	assert.Nil(d.SetDefault("select.date", 0))
+	assert.Nil(d.SetDefault("select.hour", 1))
+	assert.Nil(d.SetDefault("select.balance", 50000))
 
-	Config.TimeZone = "Asia/Tehran"
+	assert.Nil(d.SetDefault("clickyab.default_ctr", 0.1))
+	assert.Nil(d.SetDefault("clickyab.ctr_const", []string{transport.AD_SLOT, transport.AD_WEBSITE, transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT}))
+	assert.Nil(d.SetDefault("clickyab.min_imp", 1000))
+	assert.Nil(d.SetDefault("clickyab.min_frequency", 2))
+	assert.Nil(d.SetDefault("clickyab.daily_imp_expire", "72h"))
+	assert.Nil(d.SetDefault("clickyab.daily_click_expire", "72h"))
+	assert.Nil(d.SetDefault("clickyab.daily_cap_expire", "72h"))
+	assert.Nil(d.SetDefault("clickyab.min_cpm_floor", 150))
+	assert.Nil(d.SetDefault("clickyab.max_load_fail", 3))
 
-	Config.AMQP.Publisher = 30
-	Config.AMQP.Exchange = "cy"
-	Config.AMQP.DSN = "amqp://server:bita123@127.0.0.1:5672/"
-	Config.AMQP.ConfirmLen = 100
-
-	Config.Redmine.APIKey = "5d29e2039762e19fbfe3db72b013bf356b3ed072"
-	Config.Redmine.URL = "https://redmine.azmoona.com/"
-	Config.Redmine.ProjectID = 1
-	Config.Redmine.Active = false
-	Config.Redmine.NewIssueTypeID = 4
-
-	Config.Slack.Channel = "#app"
-	Config.Slack.Username = "azmoona"
-	Config.Slack.WebHookURL = "https://hooks.slack.com/services/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"
-	Config.Slack.Active = false
-
-	Config.Clickyab.DefaultCTR = 0.2
-
-	Config.Clickyab.CtrConst = []string{transport.AD_SLOT, transport.AD_WEBSITE, transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT}
-
-	Config.Clickyab.MinImp = 1000
-	Config.Clickyab.MinFrequency = 2
-	Config.Clickyab.MinCPMFloor = 150
-
+	return d
 }

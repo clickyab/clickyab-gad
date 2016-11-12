@@ -30,12 +30,14 @@ type Ad struct {
 	AdHashAttribute sql.NullString          `json:"ad_hash_attribute" db:"ad_hash_attribute"`
 	CreatedAt       sql.NullString          `json:"created_at" db:"created_at"`
 	UpdatedAt       sql.NullString          `json:"updated_at" db:"updated_at"`
+	CampaignAdID    sql.NullInt64           `db:"ca_id" json:"ca_id"`
+	CampaignID      sql.NullInt64           `db:"cp_id" json:"cp_id"`
 }
 
 //GetAd get data ad from id
 func (m *Manager) GetAd(id int64) (Ad, error) {
 	var Ads Ad
-	query := `SELECT * FROM ads WHERE ad_id = ? LIMIT 1`
+	query := `SELECT ads.*,campaigns_ads.ca_id,campaigns_ads.cp_id FROM ads LEFT JOIN campaigns_ads ON ads.ad_id = campaigns_ads.ad_id WHERE ad_id = ? LIMIT 1`
 	err := m.GetDbMap().SelectOne(
 		&Ads,
 		query,
