@@ -2,6 +2,7 @@ package mr
 
 import (
 	"config"
+	"database/sql"
 	"fmt"
 	"strings"
 	"time"
@@ -28,7 +29,7 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	 cp_weekly_budget, cp_daily_budget, cp_total_budget, cp_weekly_spend, cp_total_spend,
 	 cp_today_spend, cp_clicks, cp_ctr, cp_imps, cp_cpm, cp_cpa, cp_cpc, cp_conv, cp_conv_rate,
 	 cp_revenue, cp_roi, cp_start, cp_end, cp_status, cp_lastupdate, cp_hour_start, cp_hour_end,
-	 is_crm, cp_lock,? as ctr,? * cp_maxbid * 10  as cpm
+	 is_crm, cp_lock
 	 	FROM campaigns AS C
 	 	LEFT JOIN campaigns_ads AS CA ON C.cp_id=CA.cp_id
 		LEFT JOIN ads AS A ON A.ad_id=CA.ad_id
@@ -41,8 +42,6 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	_, err := m.GetDbMap().Select(
 		&res,
 		query,
-		config.Config.DefaultCTR,
-		config.Config.DefaultCTR,
 		u,
 		u,
 		h,
@@ -116,7 +115,17 @@ func (m *Manager) FetchSlotAd(slotString string, adIDString string) ([]SlotData,
 	return res, nil
 }
 
-// Build imlode slice of string with ,
+// Build implode slice of string with ,
 func Build(slot []string) string {
 	return strings.Join(slot, ",")
+}
+
+//ToNullString invalidates a sql.NullString if empty, validates if not empty
+func ToNullString(s string) sql.NullString {
+	return sql.NullString{String: s, Valid: s != ""}
+}
+
+//ToNullInt64 validates a sql.NullInt64
+func ToNullInt64(s int64) sql.NullInt64 {
+	return sql.NullInt64{Int64: s, Valid: true}
 }
