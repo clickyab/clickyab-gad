@@ -30,7 +30,35 @@ const singleAd = `<!DOCTYPE html>
 <br style="clear: both;"/>
 </body></html>`
 
-const videoAD=``
+const videoAD=`<div id="video_advertise">
+    <video width="{{ .Width }}" height="{{ .Height }}" autoplay controls muted>
+        <source src="{{ .Src }}" type="video/mp4">
+    </video></div>
+<script>
+    function unwrap(wrapper) {
+        // place childNodes in document fragment
+        var docFrag = document.createDocumentFragment();
+        while (wrapper.firstChild) {
+            var child = wrapper.removeChild(wrapper.firstChild);
+            docFrag.appendChild(child);
+        }
+
+        // replace wrapper with document fragment
+        wrapper.parentNode.replaceChild(docFrag, wrapper);
+    }
+    var link = "{{ .Link }}";
+    org_html = document.getElementById("video_advertise").innerHTML;
+    appendHtmlLink = "<a id='a_advertise' target='_blank' href='"+ link +"'>" + org_html + "</a>";
+    var FinalElementHtml = document.getElementById("video_advertise").innerHTML = appendHtmlLink;
+    document.getElementById("video_advertise").addEventListener("click", function () {
+        var linkElement = document.getElementById('a_advertise');
+        if (typeof(linkElement) != 'undefined' && linkElement != null)
+        {
+            unwrap(document.getElementById('a_advertise'));
+        }
+
+    });
+</script>`
 
 var (
 	singleAdTemplate = template.Must(template.New("single_ad").Parse(singleAd))

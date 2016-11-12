@@ -18,7 +18,7 @@ type CountryInfo struct {
 //ConvertCountry2Info get data country from string
 func (m *Manager) ConvertCountry2Info(name string) (CountryInfo, error) {
 	var country CountryInfo
-	query := `SELECT * FROM country WHERE nicename = ? LIMIT 1`
+	query := `SELECT * FROM country WHERE iso = ? LIMIT 1`
 	err := m.GetDbMap().SelectOne(
 		&country,
 		query,

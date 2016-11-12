@@ -14,7 +14,7 @@ type Slot struct {
 	PublicID         int64          `json:"slot_pubilc_id" db:"slot_pubilc_id"`
 	Name             sql.NullString `json:"slot_name" db:"slot_name"`
 	Size             sql.NullString `json:"slot_size" db:"slot_size"`
-	WID              int            `json:"w_id" db:"w_id"`
+	WID              int64          `json:"w_id" db:"w_id"`
 	AppID            int64          `json:"app_id" db:"app_id"`
 	AvgDailyImps     int64          `json:"slot_avg_daily_imps" db:"slot_avg_daily_imps"`
 	AvgDailyClicks   int64          `json:"slot_avg_daily_clicks" db:"slot_avg_daily_clicks"`
@@ -44,10 +44,10 @@ func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slot, error) {
 }
 
 // InsertSlots create as many slots you want
-func (m *Manager) InsertSlots(slotsPublic ...int64) ([]Slot, error) {
+func (m *Manager) InsertSlots(wID int64, slotsPublic ...int64) ([]Slot, error) {
 	var slot []interface{}
 	for s := range slotsPublic {
-		slot = append(slot, &Slot{PublicID: slotsPublic[s]})
+		slot = append(slot, &Slot{PublicID: slotsPublic[s], WID: wID})
 	}
 	err := m.GetDbMap().Insert(slot...)
 	if err != nil {
