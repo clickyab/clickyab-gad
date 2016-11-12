@@ -65,7 +65,7 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 		appID.Int64 = imp.App.AppID
 	}
 
-	res, err := m.GetDbMap().Exec(query,
+	res, err := m.GetWDbMap().Exec(query,
 		wid, 0, appID,
 		imp.AdID, imp.CopID, imp.CampaignAdID,
 		imp.IP.String(), refer, parent,

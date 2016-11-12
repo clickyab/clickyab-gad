@@ -13,10 +13,12 @@ import (
 )
 
 var (
-	dbmap *gorp.DbMap
-	db    *sql.DB
-	once  = sync.Once{}
-	all   []utils.Initializer
+	rdbmap *gorp.DbMap
+	wdbmap *gorp.DbMap
+	rdb    *sql.DB
+	wdb    *sql.DB
+	once   = sync.Once{}
+	all    []utils.Initializer
 )
 
 type gorpLogger struct {
@@ -30,23 +32,35 @@ func (g gorpLogger) Printf(format string, v ...interface{}) {
 func Initialize() {
 	once.Do(func() {
 		var err error
-		db, err = sql.Open("mysql", config.Config.Mysql.DSN)
+		rdb, err = sql.Open("mysql", config.Config.Mysql.RDSN)
 		assert.Nil(err)
 
-		db.SetMaxIdleConns(config.Config.Mysql.MaxIdleConnection)
-		db.SetMaxOpenConns(config.Config.Mysql.MaxConnection)
-		err = db.Ping()
+		wdb, err = sql.Open("mysql", config.Config.Mysql.WDSN)
 		assert.Nil(err)
 
-		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{}}
+		rdb.SetMaxIdleConns(config.Config.Mysql.MaxIdleConnection)
+		rdb.SetMaxOpenConns(config.Config.Mysql.MaxConnection)
+		wdb.SetMaxIdleConns(config.Config.Mysql.MaxIdleConnection)
+		wdb.SetMaxOpenConns(config.Config.Mysql.MaxConnection)
+
+		err = rdb.Ping()
+		assert.Nil(err)
+
+		err = wdb.Ping()
+		assert.Nil(err)
+
+		rdbmap = &gorp.DbMap{Db: rdb, Dialect: gorp.MySQLDialect{}}
+		wdbmap = &gorp.DbMap{Db: wdb, Dialect: gorp.MySQLDialect{}}
 
 		if config.Config.DevelMode {
 			logger := gorpLogger{}
-			dbmap.TraceOn("[db]", logger)
+			rdbmap.TraceOn("[rdb]", logger)
+			wdbmap.TraceOn("[wdb]", logger)
 		} else {
-			dbmap.TraceOff()
+			rdbmap.TraceOff()
+			wdbmap.TraceOff()
 		}
-		common.Initialize(db, dbmap)
+		common.Initialize(rdb, rdbmap, wdb, wdbmap)
 		for i := range all {
 			all[i].Initialize()
 

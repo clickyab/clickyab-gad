@@ -56,7 +56,7 @@ func (tc *selectController) selectAd(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	slotSize,sizeNumSlice := tc.slotSize(params, website.WID)
+	slotSize, sizeNumSlice := tc.slotSize(params, website.WID)
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -224,7 +224,7 @@ func (selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
 
 }
 
-func (selectController) slotSize(params map[string][]string, wID int64) ( map[string]slotData , map[string]int) {
+func (selectController) slotSize(params map[string][]string, wID int64) (map[string]slotData, map[string]int) {
 	var size = make(map[string]string)
 	var sizeNumSlice map[string]int
 	var slotPublic []string
@@ -275,13 +275,13 @@ func (selectController) slotSize(params map[string][]string, wID int64) ( map[st
 		}
 	}
 
-	if len(newSlots)>0 {
-		insertedSlots, err := mr.NewManager().InsertSlots(newSlots...)
+	if len(newSlots) > 0 {
+		insertedSlots, err := mr.NewManager().InsertSlots(wID, newSlots...)
 		if err == nil {
 			for i := range insertedSlots {
 				p := fmt.Sprintf("%d", insertedSlots[i].PublicID)
 				answer[p] = slotData{
-					ID:insertedSlots[i].ID,
+					ID:       insertedSlots[i].ID,
 					PublicID: p,
 					SlotSize: sizeNumSlice[p],
 				}

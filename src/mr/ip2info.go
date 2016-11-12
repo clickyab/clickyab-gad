@@ -19,7 +19,7 @@ type CountryInfo struct {
 func (m *Manager) ConvertCountry2Info(name string) (CountryInfo, error) {
 	var country CountryInfo
 	query := `SELECT * FROM country WHERE iso = ? LIMIT 1`
-	err := m.GetDbMap().SelectOne(
+	err := m.GetRDbMap().SelectOne(
 		&country,
 		query,
 		name,
