@@ -62,13 +62,12 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
 
-
 	ads, err := mr.NewManager().GetAd(adID)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
 
-	ads,err,buf:=tc.makeAdData(c,ads)
+	res, err := tc.makeAdData(c, ads)
 	if err != nil {
 		return err
 	}
@@ -109,7 +108,7 @@ func (tc *selectController) show(c echo.Context) error {
 		}
 
 	}()
-	return c.HTML(200, buf.String())
+	return c.HTML(200, res)
 }
 
 func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid int64) transport.Impression {
@@ -141,20 +140,19 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid
 }
 
 // makeAdData
-func (tc *selectController) makeAdData(c echo.Context,ads mr.Ad) (mr.Ad,error,bytes.Buffer) {
+func (tc *selectController) makeAdData(c echo.Context, ads mr.Ad) (string, error) {
 	buf := &bytes.Buffer{}
-	var res interface{}
-	switch ads.AdType {
-	case 1:
-	case 2:
-	case 3:
-		res=tc.makeVideoAdData(ads)
-		return ads,videoAdTemplate.Execute(buf, res),buf
 
+	res := tc.makeVideoAdData(ads)
+	if err := videoAdTemplate.Execute(buf, res); err != nil {
+		return "", err
 	}
+
+	return buf.String(), nil
+
 }
 
-func (tc *selectController) makeVideoAdData(ad mr.Ad) VideoAd{
+func (tc *selectController) makeVideoAdData(ad mr.Ad) VideoAd {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	sa := VideoAd{
 		Link:   ad.AdURL.String,

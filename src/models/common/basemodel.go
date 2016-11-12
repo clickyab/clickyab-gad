@@ -4,21 +4,28 @@ import (
 	"database/sql"
 	"errors"
 
+	"config"
+
 	"github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql" // Make sure postgres is included in any build
 	"gopkg.in/gorp.v1"
 )
 
 var (
-	dbmap *gorp.DbMap
-	db    *sql.DB
+	rdbmap *gorp.DbMap
+	rdb    *sql.DB
+
+	wdbmap *gorp.DbMap
+	wdb    *sql.DB
 )
 
 // Manager is a base manager for transaction model
 type Manager struct {
-	tx    *gorp.Transaction
-	dbmap *gorp.DbMap
-	db    *sql.DB
+	tx     *gorp.Transaction
+	rdbmap *gorp.DbMap
+	rdb    *sql.DB
+	wdbmap *gorp.DbMap
+	wdb    *sql.DB
 
 	transaction bool
 }
@@ -35,7 +42,7 @@ func (m *Manager) Begin() error {
 		logrus.Panic("already in transaction")
 	}
 	m.sureDbMap()
-	m.tx, err = m.dbmap.Begin()
+	m.tx, err = m.wdbmap.Begin()
 	if err == nil {
 		m.transaction = true
 	}
@@ -72,27 +79,54 @@ func (m *Manager) Rollback() error {
 }
 
 func (m *Manager) sureDbMap() {
-	if m.dbmap == nil {
-		m.dbmap = dbmap
+	if m.rdbmap == nil || m.wdbmap == nil {
+		m.rdbmap = rdbmap
+		m.wdbmap = wdbmap
 	}
 }
 
-// GetDbMap is for getting the current dbmap
-func (m *Manager) GetDbMap() gorp.SqlExecutor {
+// GetRDbMap is for getting the current dbmap
+func (m *Manager) GetRDbMap() gorp.SqlExecutor {
 	if m.transaction {
 		return m.tx
 	}
 	m.sureDbMap()
-	return m.dbmap
+	return m.rdbmap
 }
 
-// GetSQLDB return the raw connection to database
-func (m *Manager) GetSQLDB() *sql.DB {
-	if m.db == nil {
-		m.db = db
+// GetRSQLDB return the raw connection to database
+func (m *Manager) GetRSQLDB() *sql.DB {
+	if m.rdb == nil {
+		m.rdb = rdb
 	}
 
-	return m.db
+	return m.rdb
+}
+
+// GetWDbMap is for getting the current dbmap
+func (m *Manager) GetWDbMap() gorp.SqlExecutor {
+	if m.transaction {
+		return m.tx
+	}
+	m.sureDbMap()
+	return m.wdbmap
+}
+
+// GetWSQLDB return the raw connection to database
+func (m *Manager) GetWSQLDB() *sql.DB {
+	if m.wdb == nil {
+		m.wdb = wdb
+	}
+
+	return m.wdb
+}
+
+// GetProperDBMap try to get the current writer for development mode
+func (m *Manager) GetProperDBMap() gorp.SqlExecutor {
+	if config.Config.DevelMode {
+		return m.GetWDbMap()
+	}
+	return m.GetRDbMap()
 }
 
 // Hijack try to hijack into a transaction
@@ -120,33 +154,37 @@ func (m *Manager) Hijack(ts gorp.SqlExecutor) error {
 // existing *TableMap is returned
 func (m *Manager) AddTable(i interface{}) *gorp.TableMap {
 	m.sureDbMap()
-	return m.dbmap.AddTable(i)
+	return m.wdbmap.AddTable(i)
 }
 
 // AddTableWithName has the same behavior as AddTable, but sets
 // table.TableName to name.
 func (m *Manager) AddTableWithName(i interface{}, name string) *gorp.TableMap {
 	m.sureDbMap()
-	return m.dbmap.AddTableWithName(i, name)
+	return m.wdbmap.AddTableWithName(i, name)
 }
 
 // AddTableWithNameAndSchema has the same behavior as AddTable, but sets
 // table.TableName to name.
 func (m *Manager) AddTableWithNameAndSchema(i interface{}, schema string, name string) *gorp.TableMap {
 	m.sureDbMap()
-	return m.dbmap.AddTableWithNameAndSchema(i, schema, name)
+	return m.wdbmap.AddTableWithNameAndSchema(i, schema, name)
 }
 
 // TruncateTables try to truncate tables , useful for tests
 func (m *Manager) TruncateTables(tbl string) error {
 	m.sureDbMap()
 	q := "TRUNCATE " + tbl
-	_, err := m.dbmap.Exec(q)
+	_, err := m.wdbmap.Exec(q)
 	return err
 }
 
 // Initialize the module
-func Initialize(d *sql.DB, dbm *gorp.DbMap) {
-	dbmap = dbm
-	db = d
+func Initialize(rd *sql.DB, rdbm *gorp.DbMap, wd *sql.DB, wdbm *gorp.DbMap) {
+	rdbmap = rdbm
+	rdb = rd
+
+	wdbmap = wdbm
+	wdb = wd
+
 }

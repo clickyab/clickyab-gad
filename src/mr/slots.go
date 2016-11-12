@@ -31,7 +31,7 @@ func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slot, error) {
 
 	query := fmt.Sprintf(`SELECT * FROM slots WHERE slot_pubilc_id IN (%s) AND w_id = ?`, publicID)
 
-	_, err := m.GetDbMap().Select(
+	_, err := m.GetProperDBMap().Select(
 		&res,
 		query,
 		wID,
@@ -49,7 +49,7 @@ func (m *Manager) InsertSlots(wID int64, slotsPublic ...int64) ([]Slot, error) {
 	for s := range slotsPublic {
 		slot = append(slot, &Slot{PublicID: slotsPublic[s], WID: wID})
 	}
-	err := m.GetDbMap().Insert(slot...)
+	err := m.GetWDbMap().Insert(slot...)
 	if err != nil {
 		return nil, err
 	}

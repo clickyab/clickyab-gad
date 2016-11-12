@@ -39,7 +39,7 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 				AND cp_hour_start <= ? AND cp_hour_end >= ?
 				AND U.u_balance >= ?`
 
-	_, err := m.GetDbMap().Select(
+	_, err := m.GetRDbMap().Select(
 		&res,
 		query,
 		u,
@@ -61,7 +61,7 @@ func (m *Manager) FetchWebsite(publicID int) (*WebsiteData, error) {
 
 	query := `SELECT * FROM websites WHERE w_pub_id = ?  LIMIT 1`
 
-	err := m.GetDbMap().SelectOne(
+	err := m.GetRDbMap().SelectOne(
 		&res,
 		query,
 		publicID,
@@ -79,7 +79,7 @@ func (m *Manager) FetchRegion() (*RegionData, error) {
 
 	query := `SELECT * FROM list_locations`
 
-	_, err := m.GetDbMap().Select(
+	_, err := m.GetRDbMap().Select(
 		&res,
 		query,
 	)
@@ -103,7 +103,7 @@ func (m *Manager) FetchSlotAd(slotString string, adIDString string) ([]SlotData,
 	WHERE slots.slot_pubilc_id IN (%s)
 	 AND slots_ads.ad_id IN (%s)
 	 AND slots_ads.sla_lastupdate = ?`, slotString, adIDString)
-	_, err := m.GetDbMap().Select(
+	_, err := m.GetRDbMap().Select(
 		&res,
 		query,
 		time.Now().AddDate(0, 0, -1).Format("20060102"),

@@ -49,7 +49,8 @@ type AppConfig struct {
 	}
 
 	Mysql struct {
-		DSN               string `onion:"dsn"`
+		RDSN              string `onion:"rdsn"`
+		WDSN              string `onion:"wdsn"`
 		MaxConnection     int    `onion:"max_connection"`
 		MaxIdleConnection int    `onion:"max_idle_connection"`
 	}
@@ -124,7 +125,8 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("redis.days", 2))
 
 	// TODO :  make sure ?parseTime=true is always set!
-	assert.Nil(d.SetDefault("mysql.dsn", "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-2.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"))
+	assert.Nil(d.SetDefault("mysql.rdsn", "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-1.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"))
+	assert.Nil(d.SetDefault("mysql.wdsn", "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-1.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"))
 	assert.Nil(d.SetDefault("mysql.max_connection", 30))
 	assert.Nil(d.SetDefault("mysql.max_idle_connection", 5))
 

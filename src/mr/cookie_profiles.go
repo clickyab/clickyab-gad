@@ -27,7 +27,8 @@ type CookieProfile struct {
 func (m *Manager) FetchCookieProfile(key string) (*CookieProfile, error) {
 	var res = CookieProfile{}
 	query := `SELECT * FROM cookie_profiles WHERE cop_key = ?  LIMIT 1`
-	err := m.GetDbMap().SelectOne(
+
+	err := m.GetProperDBMap().SelectOne(
 		&res,
 		query,
 		key,
@@ -49,7 +50,7 @@ func (m *Manager) InsertCookieProfile(cop string, ip net.IP) (*CookieProfile, er
 		IP:   ipNullString,
 		Date: date,
 	}
-	err := m.GetDbMap().Insert(co)
+	err := m.GetWDbMap().Insert(co)
 	if err != nil {
 		return nil, err
 	}

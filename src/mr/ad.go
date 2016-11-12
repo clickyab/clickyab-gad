@@ -38,7 +38,7 @@ type Ad struct {
 func (m *Manager) GetAd(id int64) (Ad, error) {
 	var Ads Ad
 	query := `SELECT ads.*,campaigns_ads.ca_id,campaigns_ads.cp_id FROM ads LEFT JOIN campaigns_ads ON ads.ad_id = campaigns_ads.ad_id WHERE ad_id = ? LIMIT 1`
-	err := m.GetDbMap().SelectOne(
+	err := m.GetRDbMap().SelectOne(
 		&Ads,
 		query,
 		id,
