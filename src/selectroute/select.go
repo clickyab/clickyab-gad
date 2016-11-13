@@ -92,7 +92,7 @@ func (tc *selectController) selectAd(c echo.Context) error {
 		exceedFloor[0].Capping.IncView(1)
 		winnerAd[slotID] = exceedFloor[0]
 		video = video || exceedFloor[0].AdType == config.AdTypeVideo
-		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, "show", rd.MegaImp, exceedFloor[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
+		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, "show", rd.MegaImp, website.WID,exceedFloor[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
 
 		assert.Nil(storeCapping(m.CopID, exceedFloor[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
@@ -155,7 +155,7 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 	}
 
 	for i := range winnerAd {
-		tmp = append(tmp, fmt.Sprintf("ad_%d", winnerAd[i].AdID), fmt.Sprintf("%d", winnerAd[i].WinnerBid))
+		tmp = append(tmp, fmt.Sprintf("%s%s%d",transport.ADVERTISE,transport.DELIMITER,winnerAd[i].AdID), fmt.Sprintf("%d", winnerAd[i].WinnerBid))
 	}
 
 	return aredis.HMSet(

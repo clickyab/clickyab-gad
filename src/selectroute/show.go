@@ -52,6 +52,7 @@ func (tc *selectController) show(c echo.Context) error {
 		// TODO : check error
 		suspicious = true
 	}
+
 	megaImp, err := aredis.HGetAllString(transport.MEGA+transport.DELIMITER+mega, false, 0)
 	assert.Nil(err)
 	var winnerBid string
@@ -61,12 +62,14 @@ func (tc *selectController) show(c echo.Context) error {
 		return errors.New("ad not found " + ad)
 	}
 	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
-
 	ads, err := mr.NewManager().GetAd(adID)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
-
+	/*funcMap := template.FuncMap {
+		"tempID": rand.Intn(10000),
+	}
+	tpl := template.Must(template.New("main").Funcs(funcMap).ParseGlob("*.html")*/
 	res, err := tc.makeAdData(c, ads)
 	if err != nil {
 		return err
@@ -98,7 +101,7 @@ func (tc *selectController) show(c echo.Context) error {
 			"T",
 			time.Now().Unix(),
 		}
-		err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%d", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, ad), true, 2*time.Hour, tmp...)
+		err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%s", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, ad), true, 2*time.Hour, tmp...)
 		if err != nil {
 			logrus.WithField("cy.imp", imp).Error("error in imp worker ", err)
 		}
@@ -142,11 +145,22 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid
 // makeAdData
 func (tc *selectController) makeAdData(c echo.Context, ads mr.Ad) (string, error) {
 	buf := &bytes.Buffer{}
+	switch ads.AdType {
+	case mr.SingleAdType:
+		fmt.Println("single")
+		res := tc.makeSingleAdData(ads)
+		if err := singleAdTemplate.Execute(buf, res); err != nil {
+			return "", err
+		}
+	case mr.VideoAdType:
+		fmt.Println("video")
+		res := tc.makeVideoAdData(ads)
+		if err := videoAdTemplate.Execute(buf, res); err != nil {
+			return "", err
+		}
 
-	res := tc.makeVideoAdData(ads)
-	if err := videoAdTemplate.Execute(buf, res); err != nil {
-		return "", err
 	}
+
 
 	return buf.String(), nil
 
@@ -155,6 +169,18 @@ func (tc *selectController) makeAdData(c echo.Context, ads mr.Ad) (string, error
 func (tc *selectController) makeVideoAdData(ad mr.Ad) VideoAd {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	sa := VideoAd{
+		Link:   ad.AdURL.String,
+		Height: h,
+		Width:  w,
+		Src:    ad.AdImg.String,
+		Tiny:   true,
+	}
+	return sa
+}
+
+func (tc *selectController) makeSingleAdData(ad mr.Ad) SingleAd {
+	w, h := config.GetSizeByNum(ad.AdSize)
+	sa := SingleAd{
 		Link:   ad.AdURL.String,
 		Height: h,
 		Width:  w,
