@@ -154,15 +154,18 @@ func (tc *selectController) makeAdData(c echo.Context, ads mr.Ad) (string, error
 	buf := &bytes.Buffer{}
 	switch ads.AdType {
 	case mr.SingleAdType:
-		fmt.Println("single")
 		res := tc.makeSingleAdData(ads)
 		if err := singleAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
 	case mr.VideoAdType:
-		fmt.Println("video")
 		res := tc.makeVideoAdData(ads)
 		if err := videoAdTemplate.Execute(buf, res); err != nil {
+			return "", err
+		}
+	case mr.DynamicAdType:
+		res := GetTemplate("", ads.AdSize)
+		if err := res.Execute(buf, ads.AdAttribute); err != nil {
 			return "", err
 		}
 
