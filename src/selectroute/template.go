@@ -30,7 +30,7 @@ const singleAd = `<!DOCTYPE html>
 <br style="clear: both;"/>
 </body></html>`
 
-const videoAD=`<!DOCTYPE html>
+const videoAD = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta name="robots" content="nofollow">
@@ -85,5 +85,5 @@ const videoAD=`<!DOCTYPE html>
 
 var (
 	singleAdTemplate = template.Must(template.New("single_ad").Parse(singleAd))
-	videoAdTemplate = template.Must(template.New("video_ad").Parse(videoAD))
+	videoAdTemplate  = template.Must(template.New("video_ad").Parse(videoAD))
 )
