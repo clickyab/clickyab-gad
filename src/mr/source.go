@@ -25,6 +25,7 @@ type MinAdData struct {
 	CampaignMaxBid    int64            `json:"cp_maxbid" db:"cp_maxbid"`
 	CampaignID        int64            `json:"cp_id" db:"cp_id"`
 	AdType            int              `json:"ad_type" db:"ad_type"`
+	SlotID            int64              `json:"slot_id" db:"-"`
 }
 
 // CampaignData is a single campaign data

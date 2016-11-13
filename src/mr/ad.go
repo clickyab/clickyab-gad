@@ -5,6 +5,9 @@ import (
 	"models/common"
 )
 
+const SingleAdType  = 0
+const VideoAdType  = 3
+
 //Ad struct ad info
 type Ad struct {
 	AdID            int64                   `json:"ad_id" db:"ad_id"`
@@ -37,7 +40,7 @@ type Ad struct {
 //GetAd get data ad from id
 func (m *Manager) GetAd(id int64) (Ad, error) {
 	var Ads Ad
-	query := `SELECT ads.*,campaigns_ads.ca_id,campaigns_ads.cp_id FROM ads LEFT JOIN campaigns_ads ON ads.ad_id = campaigns_ads.ad_id WHERE ad_id = ? LIMIT 1`
+	query := `SELECT ads.*,campaigns_ads.ca_id,campaigns_ads.cp_id FROM ads LEFT JOIN campaigns_ads ON ads.ad_id = campaigns_ads.ad_id WHERE ads.ad_id = ? LIMIT 1`
 	err := m.GetRDbMap().SelectOne(
 		&Ads,
 		query,

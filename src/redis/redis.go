@@ -147,8 +147,7 @@ func IncHash(key string, hash string, value int, touch bool, expire time.Duratio
 	r := Pool.Get()
 	defer func() { assert.Nil(r.Close()) }()
 
-	res, err := r.Do("HINCRBY", key, hash, value)
-	data, err := redis.Int64(res, err)
+	data, err := redis.Int64(r.Do("HINCRBY", key, hash, value))
 	if err != nil {
 		return 0, err
 	}

@@ -23,7 +23,7 @@ type Impression struct {
 	ID           int64  `json:"id"`
 	IP           net.IP `json:"ip"`
 	AdID         int64  `json:"adid"`
-	CopID        int64  `json:"adid"`
+	CopID        int64  `json:"copid"`
 	CampaignAdID int64  `json:"caid"`
 
 	URL        string    `json:"url"`
