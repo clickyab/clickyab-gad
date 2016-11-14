@@ -140,7 +140,6 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.MinAd
 }
 
 func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.WebsiteData, winnerAd map[string]*mr.MinAdData) error {
-	debug.PrintStack()
 	// add mega imp
 	ip, err := utils.IP2long(rd.IP)
 	if err != nil {
