@@ -143,7 +143,7 @@ func RemoveKey(key string) error {
 }
 
 // IncHash try to inc hash
-func IncHash(key string, hash string, value int, touch bool, expire time.Duration) (int64, error) {
+func IncHash(key string, hash string, value int, expire time.Duration) (int64, error) {
 	r := Pool.Get()
 	defer func() { assert.Nil(r.Close()) }()
 
@@ -151,10 +151,8 @@ func IncHash(key string, hash string, value int, touch bool, expire time.Duratio
 	if err != nil {
 		return 0, err
 	}
-	if touch {
-		_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))
-		assert.Nil(err)
-	}
+	_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))
+	assert.Nil(err)
 	return data, nil
 }
 
@@ -199,7 +197,7 @@ func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, 
 	return final, nil
 }
 
-func HMSet(key string, touch bool, expire time.Duration, fields ...interface{}) error {
+func HMSet(key string, expire time.Duration, fields ...interface{}) error {
 	r := Pool.Get()
 	defer func() { assert.Nil(r.Close()) }()
 
@@ -213,9 +211,7 @@ func HMSet(key string, touch bool, expire time.Duration, fields ...interface{}) 
 	if err != nil {
 		return err
 	}
-	if touch {
-		_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))
-		assert.Nil(err)
-	}
+	_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))
+	assert.Nil(err)
 	return nil
 }

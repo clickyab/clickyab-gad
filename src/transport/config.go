@@ -18,5 +18,6 @@ const (
 
 	USER_CAPPING = "CAP"
 	IMP = "IMP"
+	CLICK = "C"
 	MEGA = "MEGA"
 )

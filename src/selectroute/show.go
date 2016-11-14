@@ -5,16 +5,15 @@ import (
 	"bytes"
 	"config"
 	"fmt"
+	"middlewares"
 	"mr"
+	"net/http"
 	"rabbit"
 	"redis"
 	"strconv"
 	"time"
 	"transport"
-
-	"middlewares"
-
-	"net/http"
+	"utils"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -68,7 +67,9 @@ func (tc *selectController) show(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	res, err := tc.makeAdData(c, ads)
+	rand := <-utils.ID
+	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s", rd.Proto, rd.URL, websiteID, mega, adID, rand)
+	res, err := tc.makeAdData(c, ads, url)
 	if err != nil {
 		return err
 	}
@@ -76,17 +77,22 @@ func (tc *selectController) show(c echo.Context) error {
 	assert.Nil(err)
 	imp := tc.fillImp(c, suspicious, ads, winnerFinalBid, websiteID, slotID)
 
-	go tc.callWorker(websiteID, slotID, adID, mega, imp, rd)
+	go tc.callWorker(websiteID, slotID, adID, mega, rand, imp, rd)
 	return c.HTML(200, res)
 }
 
-func (selectController) callWorker(WID int64, slotID int64, adID int64, mega string, imp transport.Impression, rd *middlewares.RequestData) {
-	assert.Nil(mr.NewManager().InsertImpression(&imp))
+func (selectController) callWorker(WID int64, slotID int64, adID int64, mega string, rand string, imp transport.Impression, rd *middlewares.RequestData) {
+	m := mr.NewManager()
+	var err error
+	imp.SlaID, err = m.InsertSlotAd(slotID, adID)
+	if err != nil {
+		// not important error
+		logrus.Warn(err)
+	}
+	assert.Nil(m.InsertImpression(&imp))
 	//validate
 	res, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, mega), true, 2*time.Hour)
-	if err != nil {
-
-	}
+	assert.Nil(err)
 
 	//check ip
 	wID, _ := strconv.ParseInt(res["WS"], 10, 64)
@@ -94,6 +100,7 @@ func (selectController) callWorker(WID int64, slotID int64, adID int64, mega str
 		imp.Suspicious = true
 	}
 
+	// TODO : Use constant not strings
 	//set mega ip in redis
 	tmp := []interface{}{
 		"IP",
@@ -107,9 +114,18 @@ func (selectController) callWorker(WID int64, slotID int64, adID int64, mega str
 		"S",
 		slotID,
 		"IMPR",
-		fmt.Sprintf("%d", imp.ID),
+		imp.ID,
+		"RND",
+		rand,
+		"WIN",
+		imp.WinnerBID,
+		"CPADID",
+		imp.CampaignAdID,
+		"SLAID",
+		imp.SlaID,
 	}
-	err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%d", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, adID), true, 2*time.Hour, tmp...)
+	// TODO : Config time
+	err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%d", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, adID), 2*time.Hour, tmp...)
 	if err != nil {
 		logrus.WithField("cy.imp", imp).Error("error in hmset", err)
 	}
@@ -147,21 +163,22 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid
 }
 
 // makeAdData
-func (tc *selectController) makeAdData(c echo.Context, ads mr.Ad) (string, error) {
+func (tc *selectController) makeAdData(c echo.Context, ads mr.Ad, url string) (string, error) {
 	buf := &bytes.Buffer{}
 	switch ads.AdType {
 	case mr.SingleAdType:
-		res := tc.makeSingleAdData(ads)
+		res := tc.makeSingleAdData(ads, url)
 		if err := singleAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
 	case mr.VideoAdType:
-		res := tc.makeVideoAdData(ads)
+		res := tc.makeVideoAdData(ads, url)
 		if err := videoAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
 	case mr.DynamicAdType:
 		res := getTemplate("", ads.AdSize)
+		ads.AdAttribute.Link = url
 		if err := res.Execute(buf, ads.AdAttribute); err != nil {
 			return "", err
 		}
@@ -172,10 +189,10 @@ func (tc *selectController) makeAdData(c echo.Context, ads mr.Ad) (string, error
 
 }
 
-func (tc *selectController) makeVideoAdData(ad mr.Ad) VideoAd {
+func (tc *selectController) makeVideoAdData(ad mr.Ad, url string) VideoAd {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	sa := VideoAd{
-		Link:   ad.AdURL.String,
+		Link:   url,
 		Height: h,
 		Width:  w,
 		Src:    ad.AdImg.String,
@@ -184,10 +201,10 @@ func (tc *selectController) makeVideoAdData(ad mr.Ad) VideoAd {
 	return sa
 }
 
-func (tc *selectController) makeSingleAdData(ad mr.Ad) SingleAd {
+func (tc *selectController) makeSingleAdData(ad mr.Ad, url string) SingleAd {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	sa := SingleAd{
-		Link:   ad.AdURL.String,
+		Link:   url,
 		Height: h,
 		Width:  w,
 		Src:    ad.AdImg.String,
