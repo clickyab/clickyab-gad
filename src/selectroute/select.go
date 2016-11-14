@@ -20,9 +20,10 @@ import (
 	"transport"
 	"utils"
 
+	"runtime/debug"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
-	"runtime/debug"
 )
 
 var (
@@ -94,7 +95,7 @@ func (tc *selectController) selectAd(c echo.Context) error {
 		winnerAd[slotID] = exceedFloor[0]
 		winnerAd[slotID].SlotID = slotSize[slotID].ID
 		video = video || exceedFloor[0].AdType == config.AdTypeVideo
-		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, "show", rd.MegaImp, website.WID,exceedFloor[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
+		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, "show", rd.MegaImp, website.WID, exceedFloor[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
 
 		assert.Nil(storeCapping(m.CopID, exceedFloor[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
@@ -158,8 +159,8 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 	}
 
 	for i := range winnerAd {
-		tmp = append(tmp, fmt.Sprintf("%s%s%d",transport.ADVERTISE,transport.DELIMITER,winnerAd[i].AdID), fmt.Sprintf("%d", winnerAd[i].WinnerBid))
-		tmp = append(tmp, fmt.Sprintf("%s%s%d",transport.SLOT,transport.DELIMITER,winnerAd[i].AdID),fmt.Sprintf("%d", winnerAd[i].SlotID))
+		tmp = append(tmp, fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, winnerAd[i].AdID), fmt.Sprintf("%d", winnerAd[i].WinnerBid))
+		tmp = append(tmp, fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, winnerAd[i].AdID), fmt.Sprintf("%d", winnerAd[i].SlotID))
 	}
 
 	return aredis.HMSet(
@@ -228,7 +229,7 @@ func (selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
 
 }
 
-func (selectController) slotSize(params map[string][]string, wID int64) (map[string]slotData, map[string]int) {
+func (tc selectController) slotSize(params map[string][]string, wID int64) (map[string]slotData, map[string]int) {
 	var size = make(map[string]string)
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
@@ -279,21 +280,31 @@ func (selectController) slotSize(params map[string][]string, wID int64) (map[str
 		}
 	}
 
+	insertedSlots := tc.insertNewSlots(wID, newSlots...)
+	for i := range insertedSlots {
+		answer[i] = slotData{
+			ID:       insertedSlots[i],
+			PublicID: i,
+			SlotSize: sizeNumSlice[i],
+		}
+	}
+
+	return answer, sizeNumSlice
+}
+
+func (selectController) insertNewSlots(wID int64, newSlots ...int64) map[string]int64 {
+	result := make(map[string]int64)
 	if len(newSlots) > 0 {
 		insertedSlots, err := mr.NewManager().InsertSlots(wID, newSlots...)
 		if err == nil {
 			for i := range insertedSlots {
 				p := fmt.Sprintf("%d", insertedSlots[i].PublicID)
-				answer[p] = slotData{
-					ID:       insertedSlots[i].ID,
-					PublicID: p,
-					SlotSize: sizeNumSlice[p],
-				}
+				result[p] = insertedSlots[i].ID
 			}
 		}
 	}
 
-	return answer, sizeNumSlice
+	return result
 }
 
 // CalculateCtr calculate ctr

@@ -14,7 +14,7 @@ func impWorker(in *transport.Impression) (bool, error) {
 		prefix = transport.FRAUD_PREFIX
 	}
 	var err error
-	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.USER, in.CopID), prefix+transport.SUBKEY_IMP, 1)
+	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.USER, strconv.FormatInt(in.CopID, 10)), prefix+transport.SUBKEY_IMP, 1)
 	assert.Nil(err)
 
 	// increment click to campaign

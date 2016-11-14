@@ -2,10 +2,10 @@ package mr
 
 import (
 	"assert"
+	"config"
 	"database/sql"
 	"net"
 	"time"
-	"config"
 )
 
 // CookieProfile cookie_profiles struct table
@@ -60,7 +60,7 @@ func (m *Manager) InsertCookieProfile(cop string, ip net.IP) (*CookieProfile, er
 
 // CreateCookieProfile try to select/create a cookie profile
 func (m *Manager) CreateCookieProfile(key string, ip net.IP) *CookieProfile {
-	key=key[:config.Config.Clickyab.CopLen]
+	key = key[:config.Config.Clickyab.CopLen]
 	res, err := m.FetchCookieProfile(key)
 	if err != nil {
 		res, err = m.InsertCookieProfile(key, ip)

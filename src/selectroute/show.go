@@ -45,7 +45,7 @@ func (tc *selectController) show(c echo.Context) error {
 	ad := c.Param("ad")
 	adID, err := strconv.ParseInt(ad, 10, 64)
 	assert.Nil(err)
-	WID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
+	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
 
 	//TODO :validate Wid compare to us
 
@@ -68,58 +68,55 @@ func (tc *selectController) show(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	/*funcMap := template.FuncMap {
-		"tempID": rand.Intn(10000),
-	}
-	tpl := template.Must(template.New("main").Funcs(funcMap).ParseGlob("*.html")*/
 	res, err := tc.makeAdData(c, ads)
 	if err != nil {
 		return err
 	}
 	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, adID)], 10, 64)
 	assert.Nil(err)
-	imp := tc.fillImp(c, suspicious, ads, winnerFinalBid, WID, slotID)
+	imp := tc.fillImp(c, suspicious, ads, winnerFinalBid, websiteID, slotID)
 
-	go func() {
-		assert.Nil(mr.NewManager().InsertImpression(&imp))
-		//validate
-		res, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, mega), true, 2*time.Hour)
-		if err != nil {
-
-		}
-
-		//check ip
-		wID, _ := strconv.ParseInt(res["WS"], 10, 64)
-		if res["IP"] != rd.IP.String() || res["UA"] != rd.UserAgent || wID != WID {
-			imp.Suspicious = true
-		}
-
-		//set mega ip in redis
-		tmp := []interface{}{
-			"IP",
-			rd.IP,
-			"UA",
-			rd.UserAgent,
-			"WS",
-			WID,
-			"T",
-			time.Now().Unix(),
-			"S",
-			slotID,
-			"IMPR",
-			fmt.Sprintf("%d", imp.ID),
-		}
-		err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%s", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, ad), true, 2*time.Hour, tmp...)
-		if err != nil {
-			logrus.WithField("cy.imp", imp).Error("error in hmset", err)
-		}
-		err = rabbit.Publish("cy.imp", imp)
-		if err != nil {
-			logrus.WithField("cy.imp", imp).Error("error in  publishing job", err)
-		}
-
-	}()
+	go tc.callWorker(websiteID, slotID, adID, mega, imp, rd)
 	return c.HTML(200, res)
+}
+
+func (selectController) callWorker(WID int64, slotID int64, adID int64, mega string, imp transport.Impression, rd *middlewares.RequestData) {
+	assert.Nil(mr.NewManager().InsertImpression(&imp))
+	//validate
+	res, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, mega), true, 2*time.Hour)
+	if err != nil {
+
+	}
+
+	//check ip
+	wID, _ := strconv.ParseInt(res["WS"], 10, 64)
+	if res["IP"] != rd.IP.String() || res["UA"] != rd.UserAgent || wID != WID {
+		imp.Suspicious = true
+	}
+
+	//set mega ip in redis
+	tmp := []interface{}{
+		"IP",
+		rd.IP,
+		"UA",
+		rd.UserAgent,
+		"WS",
+		WID,
+		"T",
+		time.Now().Unix(),
+		"S",
+		slotID,
+		"IMPR",
+		fmt.Sprintf("%d", imp.ID),
+	}
+	err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%d", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, adID), true, 2*time.Hour, tmp...)
+	if err != nil {
+		logrus.WithField("cy.imp", imp).Error("error in hmset", err)
+	}
+	err = rabbit.Publish("cy.imp", imp)
+	if err != nil {
+		logrus.WithField("cy.imp", imp).Error("error in  publishing job", err)
+	}
 }
 
 func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid int64, websiteID int64, slotID int64) transport.Impression {
@@ -164,7 +161,7 @@ func (tc *selectController) makeAdData(c echo.Context, ads mr.Ad) (string, error
 			return "", err
 		}
 	case mr.DynamicAdType:
-		res := GetTemplate("", ads.AdSize)
+		res := getTemplate("", ads.AdSize)
 		if err := res.Execute(buf, ads.AdAttribute); err != nil {
 			return "", err
 		}
