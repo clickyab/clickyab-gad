@@ -1,6 +1,9 @@
 package mr
 
-import "database/sql"
+import (
+	"database/sql"
+	"transport"
+)
 
 // Click data table clicks
 type Click struct {
@@ -24,4 +27,57 @@ type Click struct {
 	OS              sql.NullInt64  `json:"c_os" db:"c_os"`
 	Time            sql.NullInt64  `json:"imp_time" db:"imp_time"`
 	Date            sql.NullInt64  `json:"imp_date" db:"imp_date"`
+}
+
+func (m *Manager) InsertClick(imp *transport.Click) error {
+	query := `INSERT INTO clicks (
+							c_winnerbid,w_id,app_id,
+							wp_id,cp_id,ca_id,
+							slot_id,sla_id,ad_id,cop_id,imp_id,c_status,c_ip,c_referaddress,c_parenturl,
+							c_fast,imp_winnerbid,imp_status,
+							imp_cookie,imp_alexa,imp_flash,
+							imp_time,imp_date
+							) VALUES (
+							?,?,?,
+							?,?,?,
+							?,?,?,
+							?,?,?,
+							?,?,?,
+							?,?
+							)`
+	wid := sql.NullInt64{}
+	refer := sql.NullString{}
+	parent := sql.NullString{}
+	if imp.Web != nil {
+		wid.Valid = true
+		wid.Int64 = imp.Web.WebsiteID
+
+		refer.Valid = imp.Web.Referrer != ""
+		refer.String = imp.Web.Referrer
+
+		parent.Valid = imp.Web.ParentURL != ""
+		parent.String = imp.Web.ParentURL
+	}
+	appID := sql.NullInt64{}
+	if imp.App != nil {
+		appID.Valid = true
+		appID.Int64 = imp.App.AppID
+	}
+
+	res, err := m.GetWDbMap().Exec(query,
+		wid, 0, appID,
+		imp.AdID, imp.CopID, imp.CampaignAdID,
+		imp.IP.String(), refer, parent,
+		imp.URL, imp.WinnerBID, imp.Status,
+		0, 0, 0,
+		imp.Time.Unix(), imp.Time.Format("20060102"),
+	)
+	if err != nil {
+		return err
+	}
+	imp.ID, err = res.LastInsertId()
+	if err != nil {
+		return err
+	}
+	return nil
 }

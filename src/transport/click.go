@@ -8,7 +8,7 @@ import (
 
 // Impression is the record for the single impression
 type Click struct {
-	copID          string         `json:"copid"`
+	CopID          string         `json:"copid"`
 	IP             net.IP         `json:"ip"`
 	AdID           int64          `json:"adid"`
 	SlotID         int64          `json:"sid"`
@@ -24,7 +24,7 @@ type Click struct {
 }
 
 func (c Click) Validate() bool {
-	if len(c.copID) == 0 ||
+	if len(c.CopID) == 0 ||
 		len(c.IP.String()) == 0 ||
 		c.SlotID <= 0 ||
 		c.AdID <= 0 ||
