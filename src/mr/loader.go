@@ -3,7 +3,6 @@ package mr
 import (
 	"config"
 	"database/sql"
-	"fmt"
 	"strings"
 	"time"
 )
@@ -88,31 +87,6 @@ func (m *Manager) FetchRegion() (*RegionData, error) {
 	}
 
 	return &res, nil
-}
-
-// FetchSlotAd fetch slot ad
-func (m *Manager) FetchSlotAd(slotString string, adIDString string) ([]SlotData, error) {
-	var res []SlotData
-	query := fmt.Sprintf(`SELECT slots.slot_pubilc_id,
-		slots.slot_size,
-		slots_ads.sla_clicks,
-		slots_ads.sla_imps,
-		slots.slot_floor_cpm,
-		slots_ads.ad_id
-	FROM slots INNER JOIN slots_ads ON slots_ads.slot_id=slots.slot_id
-	WHERE slots.slot_pubilc_id IN (%s)
-	 AND slots_ads.ad_id IN (%s)
-	 AND slots_ads.sla_lastupdate = ?`, slotString, adIDString)
-	_, err := m.GetRDbMap().Select(
-		&res,
-		query,
-		time.Now().AddDate(0, 0, -1).Format("20060102"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
 }
 
 // Build implode slice of string with ,

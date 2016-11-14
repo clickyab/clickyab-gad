@@ -15,7 +15,7 @@ func Logger(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// Start timer
 		start := time.Now()
-		path := c.Request().URL().Path
+		path := c.Request().URL().Path()
 
 		// Process request
 		err := next(c)
@@ -30,7 +30,7 @@ func Logger(next echo.HandlerFunc) echo.HandlerFunc {
 		} else {
 			clientIP, _, _ = net.SplitHostPort(clientIP)
 		}
-		method := c.Request().Method
+		method := c.Request().Method()
 		statusCode := c.Response().Status()
 		logrus.WithFields(
 			logrus.Fields{

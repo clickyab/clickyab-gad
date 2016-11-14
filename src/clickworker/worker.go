@@ -17,7 +17,7 @@ func clickWorker(in *transport.Click) (bool, error) {
 		prefix = transport.FRAUD_PREFIX
 	}
 	var err error
-	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.USER, in.CopID), prefix+transport.SUBKEY_Cl, 1)
+	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.USER, fmt.Sprintf("%d", in.CopID)), prefix+transport.SUBKEY_Cl, 1)
 	assert.Nil(err)
 
 	// increment click to campaign

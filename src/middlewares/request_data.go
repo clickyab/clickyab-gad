@@ -21,7 +21,7 @@ type RequestData struct {
 	UserAgent      string
 	IP2Location    *mr.IP2Location
 	Browser        string
-	Os             string
+	OS             string
 	Platform       string
 	PlatformID     int64
 	BrowserVersion string
@@ -51,7 +51,7 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		name, version := ua.Browser()
 		e.Browser = name
 		e.BrowserVersion = version
-		e.Os = ua.OS()
+		e.OS = ua.OS()
 		e.Mobile = ua.Mobile()
 		e.Platform = ua.Platform()
 		e.PlatformID = config.FindOsID(ua.Platform())
