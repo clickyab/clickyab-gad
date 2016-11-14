@@ -1,6 +1,7 @@
 package main
 
 import (
+	"assert"
 	"config"
 	"errors"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 	"rabbit"
 	"redis"
 	"time"
+	"transport"
+	"utils"
 	"version"
 )
 
@@ -28,6 +31,10 @@ func main() {
 	models.Initialize()
 	rabbit.Initialize()
 	aredis.Initialize()
-	//e := echo.New().NewContext(nil, nil)
+	fmt.Println(utils.KeyGenDaily(transport.USER, "5"))
+	aredis.IncHash("ab","b",4,false,0)
+	_, err := utils.IncKeyDaily(utils.KeyGenDaily(transport.USER, "5"), "fc",1)
+	assert.Nil(err)
+	time.Sleep(2*time.Second)
 
 }
