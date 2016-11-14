@@ -1633,3 +1633,5 @@ CREATE INDEX imp_date ON impressions20161110 (imp_date);
 CREATE INDEX sla_id ON impressions20161110 (sla_id);
 CREATE INDEX slot_id ON impressions20161110 (slot_id);
 CREATE INDEX w_id ON impressions20161110 (w_id);
+
+alter table slots_ads  add unique index index_name (slot_id,ad_id);

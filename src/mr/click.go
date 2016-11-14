@@ -1,6 +1,9 @@
 package mr
 
-import "database/sql"
+import (
+	"database/sql"
+	"transport"
+)
 
 // Click data table clicks
 type Click struct {
@@ -24,4 +27,55 @@ type Click struct {
 	OS              sql.NullInt64  `json:"c_os" db:"c_os"`
 	Time            sql.NullInt64  `json:"imp_time" db:"imp_time"`
 	Date            sql.NullInt64  `json:"imp_date" db:"imp_date"`
+}
+
+func (m *Manager) InsertClick(click *transport.Click) error {
+	query := `INSERT INTO clicks (c_winnerbid,
+	w_id,
+	app_id,
+	wp_id,
+	cp_id,
+	ca_id,
+	slot_id,
+	sla_id,
+	ad_id,
+	cop_id,
+	imp_id,
+	c_status,
+	c_ip,
+	c_referaddress,
+	c_parenturl,
+	c_fast,
+	c_os,
+	c_time,
+	c_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+	res, err := m.GetWDbMap().Exec(query,
+		click.WinnerBid,
+		click.Web.WebsiteID,
+		0, //app id  TODO : integrate app later
+		0, //wp_id
+		click.CampaignID,
+		click.CampaignAdID, //default in mysql ca_id
+		click.SlotID,
+
+		//fetch slot AD
+		click.SlaID,
+		click.AdID,
+		click.CopID,
+		click.ImpID,
+		click.Status, // c_status
+		click.IP.String(),
+		click.OutTime.Unix()-click.InTime.Unix(),
+		click.OS,
+		click.OutTime,
+		click.OutTime.Format("20060102"),
+	)
+	if err != nil {
+		return err
+	}
+	click.ID, err = res.LastInsertId()
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -1,43 +1,39 @@
 package transport
 
 import (
-	"database/sql"
 	"net"
 	"time"
 )
 
 // Impression is the record for the single impression
 type Click struct {
-	User           string         `json:"u"`
-	IP             net.IP         `json:"ip"`
-	AdID           int64          `json:"adid"`
-	SlotID         int64          `json:"sid"`
-	CampaignID     int64          `json:"cid"`
-	UserAgent      string         `json:"ua"`
-	InTime         time.Time      `json:"it"`
-	OutTime        time.Time      `json:"ot"`
-	WinnerBID      int64          `json:"wb"`
-	RefererAddress sql.NullString `json:"referrer"`
-	ParentUrl      sql.NullString `json:"parent"`
-	FraudReason    int            `json:"fre"`
+	ID           int64     `json:"id"`
+	CopID        int64     `json:"copid"`
+	IP           net.IP    `json:"ip"`
+	AdID         int64     `json:"adid"`
+	SlotID       int64     `json:"sid"`
+	CampaignID   int64     `json:"cid"`
+	UserAgent    string    `json:"ua"`
+	WinnerBid    int64     `json:"winner_bid"`
+	InTime       time.Time `json:"it"`
+	OutTime      time.Time `json:"ot"`
+	FraudReason  int       `json:"fre"`
+	SlaID        int64     `json:"sla_id"`
+	ImpID        int64     `json:"imp_id"`
+	OS           int64     `json:"os"`
+	Status       int64     `json:"status"`
+	CampaignAdID int64     `json:"campaign_ad_ID"`
 	// TODO : better status
-	Status int64       `json:"s"`
-	Cookie bool        `json:"c"`
-	Imp    *Impression `json:"imp"`
-	Web    *WebSiteImp `json:"web"`
+	Web *WebSiteImp `json:"web"`
 }
 
 func (c Click) Validate() bool {
-	if len(c.User) == 0 ||
+	if c.CopID == 0 ||
 		len(c.IP.String()) == 0 ||
 		c.SlotID <= 0 ||
 		c.AdID <= 0 ||
 		c.CampaignID <= 0 ||
-		c.WinnerBID <= 0 ||
-		len(c.RefererAddress.String) == 0 ||
-		len(c.ParentUrl.String) == 0 ||
-		c.Imp == nil ||
-		c.Imp.Web == nil ||
+
 		c.Web == nil ||
 		c.Web.WebsiteID <= 0 {
 		return false

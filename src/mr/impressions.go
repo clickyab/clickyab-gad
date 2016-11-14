@@ -32,23 +32,26 @@ import (
 // InsertImpression insert into impression table
 func (m *Manager) InsertImpression(imp *transport.Impression) error {
 	query := fmt.Sprintf(`INSERT INTO impressions%s (
+							cp_id,
 							w_id,wp_id,app_id,
 							ad_id,cop_id,ca_id,
 							imp_ipaddress,imp_referaddress,imp_parenturl,
 							imp_url,imp_winnerbid,imp_status,
 							imp_cookie,imp_alexa,imp_flash,
-							imp_time,imp_date
+							imp_time,imp_date,sla_id,slot_id
 							) VALUES (
+							?,
 							?,?,?,
 							?,?,?,
 							?,?,?,
 							?,?,?,
 							?,?,?,
-							?,?
+							?,?,?,?
 							)`, time.Now().Format("20060102"))
 	wid := sql.NullInt64{}
 	refer := sql.NullString{}
 	parent := sql.NullString{}
+	var slot int64
 	if imp.Web != nil {
 		wid.Valid = true
 		wid.Int64 = imp.Web.WebsiteID
@@ -58,6 +61,7 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 
 		parent.Valid = imp.Web.ParentURL != ""
 		parent.String = imp.Web.ParentURL
+		slot = imp.Web.SlotID
 	}
 	appID := sql.NullInt64{}
 	if imp.App != nil {
@@ -66,12 +70,15 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 	}
 
 	res, err := m.GetWDbMap().Exec(query,
+		imp.CampaignID,
 		wid, 0, appID,
 		imp.AdID, imp.CopID, imp.CampaignAdID,
 		imp.IP.String(), refer, parent,
 		imp.URL, imp.WinnerBID, imp.Status,
 		0, 0, 0,
 		imp.Time.Unix(), imp.Time.Format("20060102"),
+		imp.SlaID,
+		slot,
 	)
 	if err != nil {
 		return err

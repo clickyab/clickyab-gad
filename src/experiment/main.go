@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"models"
+	"mr"
 	"rabbit"
 	"redis"
 	"time"
@@ -28,6 +29,7 @@ func main() {
 	models.Initialize()
 	rabbit.Initialize()
 	aredis.Initialize()
-	//e := echo.New().NewContext(nil, nil)
+	m := mr.NewManager().InsertSlotAd(1902, 7673)
+	fmt.Println(m)
 
 }

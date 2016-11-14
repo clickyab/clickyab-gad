@@ -147,7 +147,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_1">
-<a title="{{.BannerTitleTextType}}" href="{{.LinkTextType}}" target="_blank" style="width:100%; height:100%;display: block;">
+<a title="{{.BannerTitleTextType}}" href="{{.Link}}" target="_blank" style="width:100%; height:100%;display: block;">
 <div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
 <div class="banner_thumb_logo section_thumb">
 <img src="{{.Logo}}"/>
@@ -315,7 +315,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_4">
-	<a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+	<a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
 		<div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
 			<div class="banner_thumb_logo section_thumb">
 				<img src="{{.Logo}}"/>
@@ -489,7 +489,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_5">
-                <a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+                <a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
                     <div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
                             <div class="banner_thumb_logo section_thumb">
                                 <img src="{{.Logo}}"/>
@@ -674,7 +674,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_6">
-	<a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+	<a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
 		<div class="banner_thumb" style="background: {{.BackgroundBannerPickerSelector}}">
 			<div class="banner_thumb_logo section_thumb">
 				<img src="{{.Logo}}"/>
@@ -856,7 +856,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_7">
-                <a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+                <a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
                     <div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
                             <div class="banner_thumb_logo section_thumb">
                                 <img src="{{.Logo}}"/>
@@ -1045,7 +1045,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_8">
-                <a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+                <a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
                     <div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
                             <div class="banner_thumb_logo section_thumb">
                                 <img src="{{.Logo}}"/>
@@ -1222,7 +1222,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_10">
-                <a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+                <a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
                     <div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
                             <div class="banner_thumb_logo section_thumb">
                                 <img src="{{.Logo}}"/>
@@ -1409,7 +1409,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_11">
-                <a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+                <a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
                     <div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
                             <div class="banner_thumb_logo section_thumb">
                                 <img src="{{.Logo}}"/>
@@ -1606,7 +1606,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_12">
-                <a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+                <a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
                     <div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
                             <div class="banner_thumb_logo section_thumb">
                                 <img src="{{.Logo}}"/>
@@ -1781,7 +1781,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_13">
-	<a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+	<a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
 		<div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
 			<div class="banner_thumb_logo section_thumb">
                                 <img src="{{.Logo}}"/>
@@ -1985,7 +1985,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 </head>
 <body>
 <div class="minimal_template banner_size_14">
-                <a title="" class="banner_link" href="{{.LinkTextType}}" target="_blank" style="width: 100%; height: 100%; display: block;">
+                <a title="" class="banner_link" href="{{.Link}}" target="_blank" style="width: 100%; height: 100%; display: block;">
                     <div class="banner_thumb" style="background:{{.BackgroundBannerPickerSelector}}">
                             <div class="banner_thumb_logo section_thumb">
                                 <img src="{{.Logo}}"/>

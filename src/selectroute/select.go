@@ -20,8 +20,6 @@ import (
 	"transport"
 	"utils"
 
-	"runtime/debug"
-
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 )
@@ -95,12 +93,13 @@ func (tc *selectController) selectAd(c echo.Context) error {
 		winnerAd[slotID] = exceedFloor[0]
 		winnerAd[slotID].SlotID = slotSize[slotID].ID
 		video = video || exceedFloor[0].AdType == config.AdTypeVideo
-		show[slotID] = fmt.Sprintf("%s://%s/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, "show", rd.MegaImp, website.WID, exceedFloor[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
+		show[slotID] = fmt.Sprintf("%s://%s/show/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, rd.MegaImp, website.WID, exceedFloor[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
 
 		assert.Nil(storeCapping(m.CopID, exceedFloor[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
 
 	}
+
 	err = tc.addMegaKey(rd, website, winnerAd)
 	assert.Nil(err)
 	b, _ := json.MarshalIndent(show, "\t", "\t")
@@ -140,7 +139,6 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.MinAd
 }
 
 func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.WebsiteData, winnerAd map[string]*mr.MinAdData) error {
-	debug.PrintStack()
 	// add mega imp
 	ip, err := utils.IP2long(rd.IP)
 	if err != nil {
@@ -163,8 +161,9 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 		tmp = append(tmp, fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, winnerAd[i].AdID), fmt.Sprintf("%d", winnerAd[i].SlotID))
 	}
 
+	//TODO : Config time
 	return aredis.HMSet(
-		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp), true, time.Hour,
+		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp), time.Hour,
 		tmp...,
 	)
 }

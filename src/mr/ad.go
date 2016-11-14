@@ -18,7 +18,7 @@ const DynamicAdType = 2
 
 // Dynamic ad struct
 type Dynamic struct {
-	LinkTextType                    string `json:"link_text_type"`
+	Link                            string `json:"-"`
 	BannerTitleTextType             string `json:"banner_title_text_type"`
 	TemplateID                      string `json:"template_id"`
 	CtaTitleTextType                string `json:"cta_title_text_type"`
