@@ -20,4 +20,5 @@ const (
 	IMP = "IMP"
 	CLICK = "C"
 	MEGA = "MEGA"
+	CONV = "CONV"
 )

@@ -61,6 +61,7 @@ func Initialize() {
 	Config.Clickyab.DailyImpExpire = o.GetDuration("clickyab.daily_imp_expire")
 	Config.Clickyab.DailyClickExpire = o.GetDuration("clickyab.daily_click_expire")
 	Config.Clickyab.DailyCapExpire = o.GetDuration("clickyab.daily_cap_expire")
+	Config.Clickyab.ConvDelay = o.GetDuration("clickyab.conv_delay")
 
 	for i := range all {
 		all[i].Loaded()

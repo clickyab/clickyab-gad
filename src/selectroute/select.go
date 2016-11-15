@@ -203,7 +203,7 @@ func (tc *selectController) getDataFromCtx(c echo.Context) (*middlewares.Request
 
 //FetchWebsite website and check if the minimum floor is applied
 func (selectController) fetchWebsite(publicID int) (*mr.WebsiteData, error) {
-	website, err := mr.NewManager().FetchWebsite(publicID)
+	website, err := mr.NewManager().FetchWebsiteByPublicID(publicID)
 	if err != nil {
 		return nil, err
 	}

@@ -101,6 +101,8 @@ type AppConfig struct {
 		MinCPMFloor      int64         `onion:"min_cpm_floor"`
 		CopLen           int           `onion:"cop_len"`
 		FastClick        int64         `onion:"fast_click"`
+		ConvDelay        time.Duration `onion:"conv_delay"`
+		ConvRetry        int64         `onion:"conv_retry"`
 	}
 }
 
@@ -150,8 +152,10 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.min_imp", 1000))
 	assert.Nil(d.SetDefault("clickyab.min_frequency", 2))
 	assert.Nil(d.SetDefault("clickyab.daily_imp_expire", 7*24*time.Hour))
-	assert.Nil(d.SetDefault("clickyab.daily_click_expire", 72*time.Hour))
+	assert.Nil(d.SetDefault("clickyab.daily_click_expire", 7*24*time.Hour))
 	assert.Nil(d.SetDefault("clickyab.daily_cap_expire", 72*time.Hour))
+	assert.Nil(d.SetDefault("clickyab.conv_delay", time.Second*10))
+	assert.Nil(d.SetDefault("clickyab.conv_retry", 8))
 	assert.Nil(d.SetDefault("clickyab.min_cpm_floor", 150))
 	assert.Nil(d.SetDefault("clickyab.max_load_fail", 3))
 	assert.Nil(d.SetDefault("clickyab.cop_len", 10))

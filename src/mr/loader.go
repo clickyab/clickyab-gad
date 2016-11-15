@@ -54,8 +54,8 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	return res, nil
 }
 
-// FetchWebsite function @todo
-func (m *Manager) FetchWebsite(publicID int) (*WebsiteData, error) {
+// FetchWebsiteByPublicID function @todo
+func (m *Manager) FetchWebsiteByPublicID(publicID int) (*WebsiteData, error) {
 	var res = WebsiteData{}
 
 	query := `SELECT * FROM websites WHERE w_pub_id = ?  LIMIT 1`
@@ -64,6 +64,24 @@ func (m *Manager) FetchWebsite(publicID int) (*WebsiteData, error) {
 		&res,
 		query,
 		publicID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+// FetchWebsite function @todo
+func (m *Manager) FetchWebsite(ID int64) (*WebsiteData, error) {
+	var res = WebsiteData{}
+
+	query := `SELECT * FROM websites WHERE w_id = ?  LIMIT 1`
+
+	err := m.GetRDbMap().SelectOne(
+		&res,
+		query,
+		ID,
 	)
 	if err != nil {
 		return nil, err

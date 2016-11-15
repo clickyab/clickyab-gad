@@ -68,6 +68,9 @@ impworker: $(GB)
 clickworker: $(GB)
 	$(BUILD) clickworker
 
+convworker: $(GB)
+	$(BUILD) convworker
+
 experiment: $(GB)
 	$(BUILD) experiment
 
@@ -80,6 +83,9 @@ run-impworker: impworker
 
 run-clickworker: clickworker
 	$(BIN)/clickworker
+
+run-convworker: convworker
+	$(BIN)/convworker
 
 run-experiment: experiment
 	$(BIN)/experiment
@@ -119,3 +125,4 @@ lint: $(LINTER)
 	$(LINTERCMD) $(ROOT)/src/rabbit
 	$(LINTERCMD) $(ROOT)/src/impworker
 	$(LINTERCMD) $(ROOT)/src/clickworker
+	$(LINTERCMD) $(ROOT)/src/convworker

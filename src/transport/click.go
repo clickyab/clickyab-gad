@@ -22,7 +22,8 @@ type Click struct {
 	ImpID        int64     `json:"imp_id"`
 	OS           int64     `json:"os"`
 	Status       int64     `json:"status"`
-	CampaignAdID int64     `json:"campaign_ad_ID"`
+	CampaignAdID int64     `json:"cpadid"`
+	Rand         string    `json:"rand"`
 	// TODO : better status
 	Web *WebSiteImp `json:"web"`
 }

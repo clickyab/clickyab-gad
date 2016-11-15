@@ -19,6 +19,10 @@ import (
 
 	"rabbit"
 
+	"strings"
+
+	"utils"
+
 	"github.com/labstack/echo"
 )
 
@@ -31,6 +35,7 @@ const (
 	suspRndMismatch    = 1025
 	suspIPMismatch     = 1026
 	suspUAMismatch     = 1027
+	suspInvalidWebsite = 1028
 )
 
 func assertNil(status bool, err error) {
@@ -79,6 +84,14 @@ func (tc *selectController) click(c echo.Context) error {
 		noRedisKey = true
 	}
 
+	wID, err := strconv.ParseInt(result["WS"], 10, 0)
+	assertNil(noRedisKey, err)
+
+	webSite, err := mr.NewManager().FetchWebsite(wID)
+	status = changeStatus(status, suspInvalidWebsite, err != nil || (webSite.WStatus != 0 && webSite.WStatus != 1))
+
+	clikID := <-utils.ID
+
 	go func() {
 
 		winnerBid, err := strconv.ParseInt(result["WIN"], 10, 0)
@@ -91,9 +104,6 @@ func (tc *selectController) click(c echo.Context) error {
 		status = changeStatus(status, suspUAMismatch, rd.UserAgent != result["UA"])
 
 		status = changeStatus(status, suspRndMismatch, rand != result["RND"])
-
-		wID, err := strconv.ParseInt(result["WS"], 10, 0)
-		assertNil(noRedisKey, err)
 
 		slotID, err := strconv.ParseInt(result["S"], 10, 0)
 		assertNil(noRedisKey, err)
@@ -125,7 +135,7 @@ func (tc *selectController) click(c echo.Context) error {
 			status = suspDuplicateClick
 		}
 
-		click := tc.fillClick(c, ads, winnerBid, wID, slotID, inTime, outTime, slaID, impID, cpAdID, status)
+		click := tc.fillClick(c, ads, winnerBid, wID, slotID, inTime, outTime, slaID, impID, cpAdID, status, clikID)
 		err = rabbit.Publish("cy.click", click)
 		assert.Nil(err)
 	}()
@@ -134,11 +144,13 @@ func (tc *selectController) click(c echo.Context) error {
 		return c.String(http.StatusNotFound, "Not found")
 	}
 
-	return c.Redirect(http.StatusFound, ads.AdURL.String)
-
+	// TODO : better handling
+	_, _ = aredis.IncHash(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, clikID), "OK", 1, config.Config.Clickyab.DailyClickExpire)
+	body := tc.replaceParameters(ads.AdURL.String, webSite.WDomain.String, ads.CampaignName.String, rand, result["IMPR"])
+	return c.HTML(200, body)
 }
 
-func (selectController) fillClick(ctx echo.Context, ads mr.Ad, winnerBid int64, websiteID int64, slotID int64, inTime, outTime time.Time, slaID int64, impID int64, campaignAdID int64, status int64) *transport.Click {
+func (selectController) fillClick(ctx echo.Context, ads mr.Ad, winnerBid int64, websiteID int64, slotID int64, inTime, outTime time.Time, slaID int64, impID int64, campaignAdID int64, status int64, rand string) *transport.Click {
 	rd := middlewares.MustGetRequestData(ctx)
 	adID, err := strconv.ParseInt(ctx.Param("ad"), 10, 0)
 	assert.Nil(err)
@@ -158,6 +170,7 @@ func (selectController) fillClick(ctx echo.Context, ads mr.Ad, winnerBid int64, 
 		OS:           rd.PlatformID,
 		Status:       status,
 		CampaignAdID: campaignAdID,
+		Rand:         rand,
 		Web: &transport.WebSiteImp{
 			WebsiteID: websiteID,
 			SlotID:    slotID,
@@ -165,4 +178,26 @@ func (selectController) fillClick(ctx echo.Context, ads mr.Ad, winnerBid int64, 
 			ParentURL: rd.Parent,
 		},
 	}
+}
+
+func (selectController) replaceParameters(url, domain, campaign, clickID, impID string) string {
+	r := strings.NewReplacer(
+		"[domain]",
+		domain,
+		"[campaign]",
+		campaign,
+		"[click_id]",
+		clickID,
+		"{domain}",
+		domain,
+		"{campaign}",
+		campaign,
+		"{imp_id}",
+		impID,
+		"{click_id}",
+		clickID,
+	)
+
+	url = r.Replace(url)
+	return `<html><head><title>$imp_url</title><meta name="robots" content="nofollow"/></head><body><script>window.setTimeout( function() { window.location.href = '` + url + `' }, 500 );</script></body></html>`
 }
