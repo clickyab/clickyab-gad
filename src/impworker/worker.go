@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"transport"
 	"utils"
+	"fmt"
 )
 
 func impWorker(in *transport.Impression) (bool, error) {
@@ -55,6 +56,18 @@ func impWorker(in *transport.Impression) (bool, error) {
 		_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.USER_WEBSITE, fmt.Sprintf("%d%s%d", in.CopID, transport.DELIMITER, in.Web.WebsiteID)), prefix+transport.SUBKEY_IMP, 1)
 		assert.Nil(err)
 	}
+
+	_,err = utils.IncKeyDaily(utils.KeyGenDaily(transport.CAMPAIGN_SLOT, fmt.Sprintf("%d%s%d", in.CampaignID, transport.DELIMITER, in.Web.SlotID)),prefix+transport.SUBKEY_IMP, 1)
+	assert.Nil(err)
+
+	_,err = utils.IncKeyDaily(utils.KeyGenDaily(transport.CAMPAIGN_WEBSITE, fmt.Sprintf("%d%s%d", in.CampaignID, transport.DELIMITER, in.Web.WebsiteID)),prefix+transport.SUBKEY_IMP, 1)
+	assert.Nil(err)
+
+	_,err = utils.IncKeyDaily(utils.KeyGenDaily(transport.AD_SLOT, fmt.Sprintf("%d%s%d", in.AdID, transport.DELIMITER, in.Web.SlotID)),prefix+transport.SUBKEY_IMP, 1)
+	assert.Nil(err)
+
+	_,err = utils.IncKeyDaily(utils.KeyGenDaily(transport.AD_WEBSITE, fmt.Sprintf("%d%s%d", in.AdID, transport.DELIMITER, in.Web.WebsiteID)),prefix+transport.SUBKEY_IMP, 1)
+	assert.Nil(err)
 
 	return true, nil
 }
