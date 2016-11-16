@@ -15,6 +15,13 @@ import (
 	"transport"
 	"utils"
 
+	"html/template"
+	"math/rand"
+
+	"net"
+
+	"net/url"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 )
@@ -26,6 +33,22 @@ type SingleAd struct {
 	Height string
 	Src    string
 	Tiny   bool
+}
+
+type Vast struct {
+	Link        template.HTML
+	Width       string
+	Height      string
+	Src         template.HTML
+	Tiny        bool
+	Linear      bool
+	RND         int64
+	RND2        int64
+	SkipOffset  string
+	Duration    string
+	Video       bool
+	Title       template.HTML
+	Description template.HTML
 }
 
 // VideoAd the video add
@@ -41,9 +64,11 @@ func (tc *selectController) show(c echo.Context) error {
 	rd := middlewares.MustGetRequestData(c)
 	var suspicious bool
 	mega := c.Param("mega")
-	typ:=c.Param("type")
-	if typ!="web" && typ!="vast"{
-		return c.String(http.StatusNotFound,"not found")
+	typ := c.Param("type")
+	long := c.Request().URL().QueryParam("l")
+	pos := c.Request().URL().QueryParam("pos")
+	if typ != "web" && typ != "vast" {
+		return c.String(http.StatusNotFound, "not found")
 	}
 	ad := c.Param("ad")
 	adID, err := strconv.ParseInt(ad, 10, 64)
@@ -73,7 +98,7 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 	rand := <-utils.ID
 	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s", rd.Proto, rd.URL, websiteID, mega, adID, rand)
-	res, err := tc.makeAdData(c,typ,ads, url)
+	res, err := tc.makeAdData(c, typ, ads, url, long, pos)
 	if err != nil {
 		return err
 	}
@@ -82,7 +107,10 @@ func (tc *selectController) show(c echo.Context) error {
 	imp := tc.fillImp(c, suspicious, ads, winnerFinalBid, websiteID, slotID)
 
 	go tc.callWorker(websiteID, slotID, adID, mega, rand, imp, rd)
-	return c.HTML(200, res)
+	if typ == "vast" {
+		return c.XMLBlob(http.StatusOK, []byte(res))
+	}
+	return c.HTML(http.StatusOK, res)
 }
 
 func (selectController) callWorker(WID int64, slotID int64, adID int64, mega string, rand string, imp transport.Impression, rd *middlewares.RequestData) {
@@ -167,9 +195,9 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid
 }
 
 // makeAdData
-func (tc *selectController) makeAdData(c echo.Context,typ string, ads mr.Ad, url string) (string, error) {
+func (tc *selectController) makeAdData(c echo.Context, typ string, ads mr.Ad, url string, long string, pos string) (string, error) {
 	buf := &bytes.Buffer{}
-	if typ == "web"{
+	if typ == "web" {
 		switch ads.AdType {
 		case mr.SingleAdType:
 			res := tc.makeSingleAdData(ads, url)
@@ -189,10 +217,21 @@ func (tc *selectController) makeAdData(c echo.Context,typ string, ads mr.Ad, url
 			}
 
 		}
-	}else{
-
+		return buf.String(), nil
 	}
 
+	nl := config.NonLinearVastSize(ads.AdSize)
+	if !nl {
+		res := tc.makeVastAdData(ads, url, long, pos)
+		if err := linear.Execute(buf, res); err != nil {
+			return "", err
+		}
+		return buf.String(), nil
+	}
+	res := tc.makeVastAdData(ads, url, long, pos)
+	if err := nonlinear.Execute(buf, res); err != nil {
+		return "", err
+	}
 
 	return buf.String(), nil
 
@@ -218,6 +257,40 @@ func (tc *selectController) makeSingleAdData(ad mr.Ad, url string) SingleAd {
 		Width:  w,
 		Src:    ad.AdImg.String,
 		Tiny:   true,
+	}
+	return sa
+}
+func (tc *selectController) makeVastAdData(ad mr.Ad, urll string, long string, pos string) Vast {
+	w, h := config.GetSizeByNum(ad.AdSize)
+	_, ma := config.MakeVastLen(long)
+
+	skipOffset := config.Config.Clickyab.Vast.DefaultSkipOff
+	duration := config.Config.Clickyab.Vast.DefaultDuration
+	if k, ok := ma[pos]; ok {
+		duration = k[2]
+		if len(k) == 4 {
+			skipOffset = k[3]
+		}
+	}
+	var v = ad.AdType == 3
+	r := rand.Int63n(99999)
+	r2 := rand.Int63n(99999)
+	u, _ := url.Parse(ad.AdURL.String)
+	host, _, _ := net.SplitHostPort(u.Host)
+
+	sa := Vast{
+		Link:        template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", urll)),
+		Height:      h,
+		Width:       w,
+		Src:         template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", ad.AdImg.String)),
+		Tiny:        true,
+		RND:         r,
+		RND2:        r2,
+		Video:       v,
+		Duration:    duration,
+		SkipOffset:  skipOffset,
+		Title:       template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", host)),
+		Description: template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", ad.AdBody.String)),
 	}
 	return sa
 }

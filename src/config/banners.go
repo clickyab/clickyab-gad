@@ -27,9 +27,11 @@ var sizes = map[string]int{
 
 // AdTypeVideo is the ad type video
 const AdTypeVideo = 3
+const AdTypeNormal = 0
+const AdTypeDynamic = 2
 
-const vastLinearSize=8
-const vastNonLinearSize=9
+const vastLinearSize = 9
+const vastNonLinearSize = 6
 
 var videoSize = []int{3, 4, 9, 16, 14, 17}
 
@@ -65,11 +67,15 @@ func InVideoSize(size int) bool {
 	return false
 }
 
-func InVastSize(size int) bool{
-	if size==vastLinearSize || size==vastNonLinearSize{
+func InVastSize(size int) bool {
+	if size == vastLinearSize || size == vastNonLinearSize {
 		return true
 	}
 	return false
+}
+
+func NonLinearVastSize(size int) bool {
+	return size == vastNonLinearSize
 }
 
 // GetVideoSize return all video sizes

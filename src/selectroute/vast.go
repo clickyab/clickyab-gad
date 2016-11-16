@@ -46,7 +46,8 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		Size:        sizeNumSlice,
 		Country:     country,
 	}
-	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
+	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
+	fmt.Println(filteredAds)
 	show := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, website, true)
 
 	fmt.Println(show)
@@ -62,7 +63,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	result := &bytes.Buffer{}
 
 	assert.Nil(vastIndex.Execute(result, v))
-	return c.String(200, result.String())
+	return c.XMLBlob(200, result.Bytes())
 }
 
 func (tc *selectController) slotSizeVast(websitePublicID int64, length map[string][]string, website mr.WebsiteData) (map[string]slotData, map[string]int, map[string]vastSlotData) {
