@@ -20,8 +20,7 @@ import (
 	"github.com/labstack/echo"
 )
 
-// VideoAd the video add
-type VastAd struct {
+type vastAdTemplate struct {
 	Link     template.HTML
 	Repeat   string
 	Offset   string
@@ -51,9 +50,9 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	show := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, website, true)
 
 	fmt.Println(show)
-	var v = make([]VastAd, 0)
+	var v = make([]vastAdTemplate, 0)
 	for i := range sizeNumSlice {
-		v = append(v, VastAd{
+		v = append(v, vastAdTemplate{
 			Link:   template.HTML(fmt.Sprintf("<![CDATA[\n%s&pos=%s&type=%s&l=%s\n]]>", show[i], vastSlotData[i].Offset, vastSlotData[i].Type, lenType)),
 			Offset: vastSlotData[i].Offset,
 			Type:   vastSlotData[i].Type,

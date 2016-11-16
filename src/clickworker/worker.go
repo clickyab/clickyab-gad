@@ -13,7 +13,6 @@ func clickWorker(in *transport.Click) (bool, error) {
 
 	//Validation Click TODO : should be changed using redis
 
-
 	// increment click to user
 	prefix := ""
 	if in.FraudReason != 0 {

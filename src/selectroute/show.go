@@ -35,7 +35,7 @@ type SingleAd struct {
 	Tiny   bool
 }
 
-type Vast struct {
+type vastTemplate struct {
 	Link        template.HTML
 	Width       string
 	Height      string
@@ -194,34 +194,39 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid
 	}
 }
 
+func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads mr.Ad, url string, long string, pos string) (string, error) {
+	buf := &bytes.Buffer{}
+
+	switch ads.AdType {
+	case mr.SingleAdType:
+		res := tc.makeSingleAdData(ads, url)
+		if err := singleAdTemplate.Execute(buf, res); err != nil {
+			return "", err
+		}
+	case mr.VideoAdType:
+		res := tc.makeVideoAdData(ads, url)
+		if err := videoAdTemplate.Execute(buf, res); err != nil {
+			return "", err
+		}
+	case mr.DynamicAdType:
+		res := getTemplate("", ads.AdSize)
+		ads.AdAttribute.Link = url
+		if err := res.Execute(buf, ads.AdAttribute); err != nil {
+			return "", err
+		}
+
+	}
+	return buf.String(), nil
+}
+
 // makeAdData
 func (tc *selectController) makeAdData(c echo.Context, typ string, ads mr.Ad, url string, long string, pos string) (string, error) {
-	buf := &bytes.Buffer{}
 	if typ == "web" {
-		switch ads.AdType {
-		case mr.SingleAdType:
-			res := tc.makeSingleAdData(ads, url)
-			if err := singleAdTemplate.Execute(buf, res); err != nil {
-				return "", err
-			}
-		case mr.VideoAdType:
-			res := tc.makeVideoAdData(ads, url)
-			if err := videoAdTemplate.Execute(buf, res); err != nil {
-				return "", err
-			}
-		case mr.DynamicAdType:
-			res := getTemplate("", ads.AdSize)
-			ads.AdAttribute.Link = url
-			if err := res.Execute(buf, ads.AdAttribute); err != nil {
-				return "", err
-			}
-
-		}
-		return buf.String(), nil
+		return tc.makeWebTemplate(c, typ, ads, url, long, pos)
 	}
 
-	nl := config.NonLinearVastSize(ads.AdSize)
-	if !nl {
+	buf := &bytes.Buffer{}
+	if !config.NonLinearVastSize(ads.AdSize) {
 		res := tc.makeVastAdData(ads, url, long, pos)
 		if err := linear.Execute(buf, res); err != nil {
 			return "", err
@@ -260,7 +265,7 @@ func (tc *selectController) makeSingleAdData(ad mr.Ad, url string) SingleAd {
 	}
 	return sa
 }
-func (tc *selectController) makeVastAdData(ad mr.Ad, urll string, long string, pos string) Vast {
+func (tc *selectController) makeVastAdData(ad mr.Ad, urll string, long string, pos string) vastTemplate {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	_, ma := config.MakeVastLen(long)
 
@@ -278,7 +283,7 @@ func (tc *selectController) makeVastAdData(ad mr.Ad, urll string, long string, p
 	u, _ := url.Parse(ad.AdURL.String)
 	host, _, _ := net.SplitHostPort(u.Host)
 
-	sa := Vast{
+	sa := vastTemplate{
 		Link:        template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", urll)),
 		Height:      h,
 		Width:       w,

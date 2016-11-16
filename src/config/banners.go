@@ -27,10 +27,14 @@ var sizes = map[string]int{
 
 // AdTypeVideo is the ad type video
 const AdTypeVideo = 3
-const AdTypeNormal = 0
+
+// AdTypeDynamic is the dynamic ad type
 const AdTypeDynamic = 2
 
+// VastLinearSize default linear size
 const VastLinearSize = 9
+
+// VastNonLinearSize default non-linear size
 const VastNonLinearSize = 6
 
 var videoSize = []int{3, 4, 9, 16, 14, 17}
@@ -67,6 +71,7 @@ func InVideoSize(size int) bool {
 	return false
 }
 
+// InVastSize is the size is vast size
 func InVastSize(size int) bool {
 	if size == VastLinearSize || size == VastNonLinearSize {
 		return true
@@ -74,6 +79,7 @@ func InVastSize(size int) bool {
 	return false
 }
 
+// NonLinearVastSize check if the banner is non linear
 func NonLinearVastSize(size int) bool {
 	return size == VastNonLinearSize
 }

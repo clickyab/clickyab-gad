@@ -81,7 +81,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		Country:     country,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show := tc.makeShow(c,"web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
+	show := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
 	b, _ := json.MarshalIndent(show, "\t", "\t")
 	result := "renderFarm(" + string(b) + ");"
 	return c.HTML(200, result)
@@ -331,7 +331,7 @@ func bestCTRKey(c int, adID int64, slotID int64, cpID int64, wID int64) string {
 	return key
 }
 
-func (tc *selectController) makeShow(c echo.Context,typ string,rd *middlewares.RequestData, filteredAds map[int][]*mr.MinAdData, sizeNumSlice map[string]int, slotSize map[string]slotData, website *mr.WebsiteData, multipleVideo bool) map[string]string {
+func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares.RequestData, filteredAds map[int][]*mr.MinAdData, sizeNumSlice map[string]int, slotSize map[string]slotData, website *mr.WebsiteData, multipleVideo bool) map[string]string {
 	filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
 
 	var (
@@ -360,7 +360,7 @@ func (tc *selectController) makeShow(c echo.Context,typ string,rd *middlewares.R
 		winnerAd[slotID] = exceedFloor[0]
 		winnerAd[slotID].SlotID = slotSize[slotID].ID
 		video = !multipleVideo && (video || exceedFloor[0].AdType == config.AdTypeVideo)
-		show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ,rd.MegaImp, website.WID, exceedFloor[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
+		show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, exceedFloor[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
 
 		assert.Nil(storeCapping(rd.CopID, exceedFloor[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
