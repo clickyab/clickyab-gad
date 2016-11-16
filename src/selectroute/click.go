@@ -68,6 +68,7 @@ func (tc *selectController) click(c echo.Context) error {
 
 	rand := c.Param("rand")
 	mega := c.Param("mega")
+	tv := c.QueryParam("tv") != ""
 
 	ads, err := mr.NewManager().GetAd(adID)
 	status = changeStatus(0, suspNoAdFound, err != nil)
@@ -135,7 +136,8 @@ func (tc *selectController) click(c echo.Context) error {
 			status = suspDuplicateClick
 		}
 
-		click := tc.fillClick(c, ads, winnerBid, wID, slotID, inTime, outTime, slaID, impID, cpAdID, status, clikID)
+		click := tc.fillClick(c, ads, winnerBid, wID, slotID, inTime, outTime, slaID, impID, cpAdID, status, clikID, tv)
+
 		err = rabbit.Publish("cy.click", click)
 		assert.Nil(err)
 	}()
@@ -150,7 +152,7 @@ func (tc *selectController) click(c echo.Context) error {
 	return c.HTML(200, body)
 }
 
-func (selectController) fillClick(ctx echo.Context, ads mr.Ad, winnerBid int64, websiteID int64, slotID int64, inTime, outTime time.Time, slaID int64, impID int64, campaignAdID int64, status int64, rand string) *transport.Click {
+func (selectController) fillClick(ctx echo.Context, ads mr.Ad, winnerBid int64, websiteID int64, slotID int64, inTime, outTime time.Time, slaID int64, impID int64, campaignAdID int64, status int64, rand string, tv bool) *transport.Click {
 	rd := middlewares.MustGetRequestData(ctx)
 	adID, err := strconv.ParseInt(ctx.Param("ad"), 10, 0)
 	assert.Nil(err)
@@ -171,6 +173,7 @@ func (selectController) fillClick(ctx echo.Context, ads mr.Ad, winnerBid int64, 
 		Status:       status,
 		CampaignAdID: campaignAdID,
 		Rand:         rand,
+		TrueView:     tv,
 		Web: &transport.WebSiteImp{
 			WebsiteID: websiteID,
 			SlotID:    slotID,

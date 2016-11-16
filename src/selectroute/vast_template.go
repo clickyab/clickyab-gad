@@ -2,6 +2,18 @@ package selectroute
 
 import "html/template"
 
+const vastAd = `<VMAP version="1.0">
+{{ range $index,$value:= . }}
+		<AdBreak timeOffset="{{$value.Offset}}" breakId="slot_{{$index}}" breakType="{{$value.Type}}" repeatAfter="{{$value.Repeat}}">
+			<AdSource allowMultipleAds="false" followRedirects="true">
+		<AdTagURI templateType="vast3">
+		{{$value.Link}}
+		</AdTagURI>
+		</AdSource>
+		</AdBreak>
+		{{end}}
+		</VMAP>`
+
 const linearTemplate = `<VAST version="3.0">
         <Ad id="{{.RND}}">
             <InLine>
@@ -21,13 +33,13 @@ const linearTemplate = `<VAST version="3.0">
                                    {{.Link}}
                                 </ClickThrough>
                             </VideoClicks>
-    							{{ if .Video }}
+                                {{ if .Video }}
                             <TrackingEvents>
                                 <Tracking event="complete">
-                                    {{ .Link }}
+                                    {{ .Tracking }}
                                 </Tracking>
                             </TrackingEvents>
-        						{{end}}
+                                {{end}}
                             <MediaFiles>
                                 <MediaFile delivery="progressive" bitrate="24" width="{{.Width}}" height="{{.Height}}" type="{{if .Video}}video/mp4{{else}}image{{end}}">
                                     {{.Src}}
@@ -67,4 +79,5 @@ const nonLinearTemplate = `<VAST version="3">
 var (
 	linear    = template.Must(template.New("vast_linear_ad").Parse(linearTemplate))
 	nonlinear = template.Must(template.New("vast_nonlinear_ad").Parse(nonLinearTemplate))
+	vastIndex = template.Must(template.New("vast_index").Parse(vastAd))
 )

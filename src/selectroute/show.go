@@ -37,6 +37,7 @@ type SingleAd struct {
 
 type vastTemplate struct {
 	Link        template.HTML
+	Tracking    template.HTML
 	Width       string
 	Height      string
 	Src         template.HTML
@@ -285,6 +286,7 @@ func (tc *selectController) makeVastAdData(ad mr.Ad, urll string, long string, p
 
 	sa := vastTemplate{
 		Link:        template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", urll)),
+		Tracking:    template.HTML(fmt.Sprintf("<![CDATA[\n%s?tv=1\n]]>", urll)),
 		Height:      h,
 		Width:       w,
 		Src:         template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", ad.AdImg.String)),

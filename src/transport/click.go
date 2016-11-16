@@ -24,6 +24,7 @@ type Click struct {
 	Status       int64     `json:"status"`
 	CampaignAdID int64     `json:"cpadid"`
 	Rand         string    `json:"rand"`
+	TrueView     bool      `json:"tv"`
 	// TODO : better status
 	Web *WebSiteImp `json:"web"`
 }

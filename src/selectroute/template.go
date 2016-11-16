@@ -83,20 +83,7 @@ const videoAD = `<!DOCTYPE html>
 	</div>
 	</body></html>`
 
-const vastAd = `<VMAP version="1.0">
-{{ range $index,$value:= . }}
-		<AdBreak timeOffset="{{$value.Offset}}" breakId="slot_{{$index}}" breakType="{{$value.Type}}" repeatAfter="{{$value.Repeat}}">
-			<AdSource allowMultipleAds="false" followRedirects="true">
-		<AdTagURI templateType="vast3">
-		{{$value.Link}}
-		</AdTagURI>
-		</AdSource>
-		</AdBreak>
-		{{end}}
-		</VMAP>`
-
 var (
 	singleAdTemplate = template.Must(template.New("single_ad").Parse(singleAd))
 	videoAdTemplate  = template.Must(template.New("video_ad").Parse(videoAD))
-	vastIndex        = template.Must(template.New("vast_index").Parse(vastAd))
 )
