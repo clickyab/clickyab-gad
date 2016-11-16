@@ -14,13 +14,15 @@ import (
 
 	"bytes"
 
+	"html/template"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 )
 
 // VideoAd the video add
 type VastAd struct {
-	Link     string
+	Link     template.HTML
 	Repeat   string
 	Offset   string
 	Type     string
@@ -51,7 +53,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	var v = make([]VastAd, 0)
 	for i := range sizeNumSlice {
 		v = append(v, VastAd{
-			Link:   fmt.Sprintf("%s&pos=%s&type=%s&l=%s", show[i], vastSlotData[i].Offset, vastSlotData[i].Type, lenType),
+			Link:   template.HTML(fmt.Sprintf("<![CDATA[\n%s&pos=%s&type=%s&l=%s\n]]>", show[i], vastSlotData[i].Offset, vastSlotData[i].Type, lenType)),
 			Offset: vastSlotData[i].Offset,
 			Type:   vastSlotData[i].Type,
 			Repeat: vastSlotData[i].Repeat,
