@@ -28,5 +28,6 @@ func main() {
 	models.Initialize()
 	rabbit.Initialize()
 	aredis.Initialize()
+	m:=selec
 
 }

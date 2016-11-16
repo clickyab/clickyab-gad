@@ -41,6 +41,10 @@ func (tc *selectController) show(c echo.Context) error {
 	rd := middlewares.MustGetRequestData(c)
 	var suspicious bool
 	mega := c.Param("mega")
+	typ:=c.Param("type")
+	if typ!="web" && typ!="vast"{
+		return c.String(http.StatusNotFound,"not found")
+	}
 	ad := c.Param("ad")
 	adID, err := strconv.ParseInt(ad, 10, 64)
 	assert.Nil(err)
@@ -69,7 +73,7 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 	rand := <-utils.ID
 	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s", rd.Proto, rd.URL, websiteID, mega, adID, rand)
-	res, err := tc.makeAdData(c, ads, url)
+	res, err := tc.makeAdData(c,typ,ads, url)
 	if err != nil {
 		return err
 	}
@@ -163,27 +167,32 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid
 }
 
 // makeAdData
-func (tc *selectController) makeAdData(c echo.Context, ads mr.Ad, url string) (string, error) {
+func (tc *selectController) makeAdData(c echo.Context,typ string, ads mr.Ad, url string) (string, error) {
 	buf := &bytes.Buffer{}
-	switch ads.AdType {
-	case mr.SingleAdType:
-		res := tc.makeSingleAdData(ads, url)
-		if err := singleAdTemplate.Execute(buf, res); err != nil {
-			return "", err
+	if typ == "web"{
+		switch ads.AdType {
+		case mr.SingleAdType:
+			res := tc.makeSingleAdData(ads, url)
+			if err := singleAdTemplate.Execute(buf, res); err != nil {
+				return "", err
+			}
+		case mr.VideoAdType:
+			res := tc.makeVideoAdData(ads, url)
+			if err := videoAdTemplate.Execute(buf, res); err != nil {
+				return "", err
+			}
+		case mr.DynamicAdType:
+			res := getTemplate("", ads.AdSize)
+			ads.AdAttribute.Link = url
+			if err := res.Execute(buf, ads.AdAttribute); err != nil {
+				return "", err
+			}
+
 		}
-	case mr.VideoAdType:
-		res := tc.makeVideoAdData(ads, url)
-		if err := videoAdTemplate.Execute(buf, res); err != nil {
-			return "", err
-		}
-	case mr.DynamicAdType:
-		res := getTemplate("", ads.AdSize)
-		ads.AdAttribute.Link = url
-		if err := res.Execute(buf, ads.AdAttribute); err != nil {
-			return "", err
-		}
+	}else{
 
 	}
+
 
 	return buf.String(), nil
 

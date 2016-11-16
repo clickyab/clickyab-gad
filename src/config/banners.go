@@ -28,6 +28,9 @@ var sizes = map[string]int{
 // AdTypeVideo is the ad type video
 const AdTypeVideo = 3
 
+const vastLinearSize=8
+const vastNonLinearSize=9
+
 var videoSize = []int{3, 4, 9, 16, 14, 17}
 
 // GetSize return the size of a banner in clickyab std
@@ -58,6 +61,13 @@ func InVideoSize(size int) bool {
 		if videoSize[i] == size {
 			return true
 		}
+	}
+	return false
+}
+
+func InVastSize(size int) bool{
+	if size==vastLinearSize || size==vastNonLinearSize{
+		return true
 	}
 	return false
 }

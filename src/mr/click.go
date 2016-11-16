@@ -80,3 +80,14 @@ func (m *Manager) InsertClick(click *transport.Click) error {
 	}
 	return nil
 }
+
+/*func(m *Manager) CountTodayClickByUser(copID int64) (int64,error){
+	query:=`SELECT * FROM clicks WHERE cop_id = ?`
+	res,err:=m.GetRDbMap().Exec(query,
+		copID,
+	)
+	if err!=nil{
+		return 0,err
+	}
+	return res.RowsAffected(),nil
+}*/

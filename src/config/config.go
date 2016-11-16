@@ -90,19 +90,19 @@ type AppConfig struct {
 	}
 
 	Clickyab struct {
-		MaxLoadFail      int           `onion:"max_load_fail"`
-		DefaultCTR       float64       `onion:"default_ctr"`
-		CTRConst         []string      `onion:"ctr_const"`
-		MinImp           int64         `onion:"min_imp"`
-		MinFrequency     int           `onion:"min_frequency"`
-		DailyImpExpire   time.Duration `onion:"daily_imp_expire"`
-		DailyClickExpire time.Duration `onion:"daily_click_expire"`
-		DailyCapExpire   time.Duration `onion:"daily_cap_expire"`
-		MinCPMFloor      int64         `onion:"min_cpm_floor"`
-		CopLen           int           `onion:"cop_len"`
-		FastClick        int64         `onion:"fast_click"`
-		ConvDelay        time.Duration `onion:"conv_delay"`
-		ConvRetry        int64         `onion:"conv_retry"`
+		MaxLoadFail       int           `onion:"max_load_fail"`
+		DefaultCTR        float64       `onion:"default_ctr"`
+		CTRConst          []string      `onion:"ctr_const"`
+		MinImp            int64         `onion:"min_imp"`
+		MinFrequency      int           `onion:"min_frequency"`
+		DailyImpExpire    time.Duration `onion:"daily_imp_expire"`
+		DailyClickExpire  time.Duration `onion:"daily_click_expire"`
+		DailyCapExpire    time.Duration `onion:"daily_cap_expire"`
+		MinCPMFloor       int64         `onion:"min_cpm_floor"`
+		CopLen            int           `onion:"cop_len"`
+		FastClick         int64         `onion:"fast_click"`
+		ConvDelay         time.Duration `onion:"conv_delay"`
+		ConvRetry         int64         `onion:"conv_retry"`
 	}
 }
 

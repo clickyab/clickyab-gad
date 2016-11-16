@@ -7,7 +7,7 @@ import (
 
 // InsertConversion try to insert conversion base on click
 func (m *Manager) InsertConversion(clickID, action string) error {
-	q := `INSERT INTO click_conv (c_id,
+	q := `INSERT INTO clicks_conv (c_id,
 		w_id,
 		app_id,
 		wp_id,

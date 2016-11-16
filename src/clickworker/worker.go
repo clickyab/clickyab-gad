@@ -11,6 +11,9 @@ import (
 // error means Ack/Nack the boolean maens only when error is not nil, and means re-queue
 func clickWorker(in *transport.Click) (bool, error) {
 
+	//Validation Click TODO : should be changed using redis
+
+
 	// increment click to user
 	prefix := ""
 	if in.FraudReason != 0 {
@@ -50,6 +53,10 @@ func clickWorker(in *transport.Click) (bool, error) {
 
 	// increment the ad-website
 	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.AD_WEBSITE, fmt.Sprintf("%d%s%d", in.AdID, transport.DELIMITER, in.Web.WebsiteID)), prefix+transport.SUBKEY_Cl, 1)
+	assert.Nil(err)
+
+	// increment the user website kry in redis
+	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.USER_WEBSITE, fmt.Sprintf("%d%s%d", in.CopID, transport.DELIMITER, in.Web.WebsiteID)), prefix+transport.SUBKEY_Cl, 1)
 	assert.Nil(err)
 
 	// persist in mysql database

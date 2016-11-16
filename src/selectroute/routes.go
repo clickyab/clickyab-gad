@@ -15,8 +15,9 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 			Browse: true,
 		},
 	))
-	e.Get("/select", tc.selectAd)
-	e.Get("/show/:mega/:wid/:ad", tc.show)
+	e.Get("/select", tc.selectWebAd)
+	e.Get("/show/:type/:mega/:wid/:ad", tc.show)
 	e.Get("/click/:wid/:mega/:ad/:rand", tc.click)
-	e.Get("/conversion", tc.conversion)
+	e.Get("/conversion/", tc.conversion)
+	e.Get("/ads/vast/", tc.selectVastAd)
 }
