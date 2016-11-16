@@ -3,9 +3,12 @@ package main
 import (
 	"assert"
 	"fmt"
+	"mr"
+	"redis"
 	"strconv"
 	"transport"
 	"utils"
+	"config"
 )
 
 // error means Ack/Nack the boolean maens only when error is not nil, and means re-queue
@@ -58,7 +61,17 @@ func clickWorker(in *transport.Click) (bool, error) {
 	_, err = utils.IncKeyDaily(utils.KeyGenDaily(transport.USER_WEBSITE, fmt.Sprintf("%d%s%d", in.CopID, transport.DELIMITER, in.Web.WebsiteID)), prefix+transport.SUBKEY_Cl, 1)
 	assert.Nil(err)
 
-	// persist in mysql database
+	//insert click in db
+	err = mr.NewManager().InsertClick(in)
+	if err != nil {
+		return false, err
+	}
+	err=aredis.HMSet(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, in.Rand),config.Config.Clickyab.DailyClickExpire,"CLICK",in.ID)
+	if err!=nil{
+		return false, err
+	}
+
+	//
 	return false, nil
 }
 

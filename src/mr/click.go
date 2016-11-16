@@ -78,6 +78,18 @@ func (m *Manager) InsertClick(click *transport.Click) error {
 	if err != nil {
 		return err
 	}
+	if click.TrueView{
+		return m.InsertTrueView(click.ID)
+	}
+	return nil
+}
+
+func(m *Manager) InsertTrueView(clickID int64) error{
+	query := `INSERT INTO trueview (tv_click_id) VALUES (?)`
+	_,err:=m.GetProperDBMap().Exec(query,clickID)
+	if err!=nil{
+		return err
+	}
 	return nil
 }
 
