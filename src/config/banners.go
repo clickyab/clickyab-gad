@@ -30,8 +30,8 @@ const AdTypeVideo = 3
 const AdTypeNormal = 0
 const AdTypeDynamic = 2
 
-const vastLinearSize = 9
-const vastNonLinearSize = 6
+const VastLinearSize = 9
+const VastNonLinearSize = 6
 
 var videoSize = []int{3, 4, 9, 16, 14, 17}
 
@@ -68,14 +68,14 @@ func InVideoSize(size int) bool {
 }
 
 func InVastSize(size int) bool {
-	if size == vastLinearSize || size == vastNonLinearSize {
+	if size == VastLinearSize || size == VastNonLinearSize {
 		return true
 	}
 	return false
 }
 
 func NonLinearVastSize(size int) bool {
-	return size == vastNonLinearSize
+	return size == VastNonLinearSize
 }
 
 // GetVideoSize return all video sizes

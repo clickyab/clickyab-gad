@@ -76,9 +76,9 @@ func (tc *selectController) slotSizeVast(websitePublicID int64, length map[strin
 		i++
 		lenType := length[m][0]
 		pub := fmt.Sprintf("%d%s", websitePublicID, length[m][1])
-		sizeNumSlice[pub] = 9
+		sizeNumSlice[pub] = config.VastNonLinearSize
 		if lenType == "linear" {
-			sizeNumSlice[pub] = 8
+			sizeNumSlice[pub] = config.VastLinearSize
 		}
 		slotPublic = append(slotPublic, pub)
 		vastSlot[pub] = vastSlotData{
