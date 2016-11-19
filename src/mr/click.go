@@ -66,6 +66,8 @@ func (m *Manager) InsertClick(click *transport.Click) error {
 		click.ImpID,
 		click.Status, // c_status
 		click.IP.String(),
+		click.Web.Referrer,
+		click.Web.ParentURL,
 		click.OutTime.Unix()-click.InTime.Unix(),
 		click.OS,
 		click.OutTime,

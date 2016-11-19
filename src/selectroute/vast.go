@@ -18,6 +18,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
+	"net/http"
 )
 
 type vastAdTemplate struct {
@@ -36,8 +37,8 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	slotPublicID := website.WPubID
-	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(slotPublicID, length, *website)
+	webPublicID := website.WPubID
+	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(webPublicID, length, *website)
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -46,10 +47,8 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		Country:     country,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
-	fmt.Println(filteredAds)
 	show := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, website, true)
 
-	fmt.Println(show)
 	var v = make([]vastAdTemplate, 0)
 	for i := range sizeNumSlice {
 		v = append(v, vastAdTemplate{
@@ -62,7 +61,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	result := &bytes.Buffer{}
 
 	assert.Nil(vastIndex.Execute(result, v))
-	return c.XMLBlob(200, result.Bytes())
+	return c.XMLBlob(http.StatusOK, result.Bytes())
 }
 
 func (tc *selectController) slotSizeVast(websitePublicID int64, length map[string][]string, website mr.WebsiteData) (map[string]slotData, map[string]int, map[string]vastSlotData) {
@@ -86,7 +85,7 @@ func (tc *selectController) slotSizeVast(websitePublicID int64, length map[strin
 			Type:   lenType,
 		}
 	}
-	finalSlotData, finalSizeNumSlice := tc.slotSizeNormal(slotPublic, website, sizeNumSlice)
+	finalSlotData, finalSizeNumSlice := tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 	return finalSlotData, finalSizeNumSlice, vastSlot
 
 }
@@ -112,9 +111,9 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 	return rd, website, country, lenVast, vastCon, nil
 }
 
-func (tc *selectController) slotSizeNormal(slotPublic []string, website mr.WebsiteData, sizeNumSlice map[string]int) (map[string]slotData, map[string]int) {
+func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, sizeNumSlice map[string]int) (map[string]slotData, map[string]int) {
 	slotPublicString := mr.Build(slotPublic)
-	res, err := mr.NewManager().FetchSlots(slotPublicString, website.WID)
+	res, err := mr.NewManager().FetchSlots(slotPublicString, webID)
 	assert.Nil(err)
 
 	answer := make(map[string]slotData)
@@ -141,7 +140,7 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, website mr.Websi
 		}
 	}
 
-	insertedSlots := tc.insertNewSlots(website.WID, newSlots...)
+	insertedSlots := tc.insertNewSlots(webID, newSlots...)
 	for i := range insertedSlots {
 		answer[i] = slotData{
 			ID:       insertedSlots[i],

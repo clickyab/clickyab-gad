@@ -230,7 +230,7 @@ func (tc selectController) slotSizeWeb(params map[string][]string, website mr.We
 
 	}
 
-	return tc.slotSizeNormal(slotPublic, website, sizeNumSlice)
+	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 }
 
 func (selectController) insertNewSlots(wID int64, newSlots ...int64) map[string]int64 {
