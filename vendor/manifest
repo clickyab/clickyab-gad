@@ -144,6 +144,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/pkg/profile",
+			"repository": "https://github.com/pkg/profile",
+			"revision": "030571e6da0f040a04e94a9af0dd8b6dd0cce0eb",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/pmezard/go-difflib/difflib",
 			"repository": "https://github.com/pmezard/go-difflib",
 			"revision": "792786c7400a136282c1664665ae0a8db921c6c2",

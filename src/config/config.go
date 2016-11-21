@@ -2,13 +2,10 @@ package config
 
 import (
 	"assert"
-	"runtime"
-
-	"time"
-
-	"transport"
-
 	"fmt"
+	"runtime"
+	"time"
+	"transport"
 
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"

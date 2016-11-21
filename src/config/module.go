@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/fzerorubigd/expand"
+	"github.com/pkg/profile"
 	"gopkg.in/fzerorubigd/onion.v2"
 	"gopkg.in/fzerorubigd/onion.v2/extraenv"
-	"gopkg.in/yaml.v2"
-	"fmt"
 )
 
 var (
@@ -69,9 +69,6 @@ func Initialize() {
 		all[i].Loaded()
 	}
 
-	x, _ := yaml.Marshal(Config)
-	fmt.Println(string(x))
-
 }
 
 // SetConfigParameter try to set the config parameter for the logrus base on config
@@ -80,6 +77,9 @@ func SetConfigParameter() {
 		// In development mode I need colors :) candy mode is GREAT!
 		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true, DisableColors: false})
 		logrus.SetLevel(logrus.DebugLevel)
+		exp, _ := expand.HomeDir()
+		profile.ProfilePath(filepath.Join(exp, appName))
+
 	} else {
 		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: false, DisableColors: true})
 		logrus.SetLevel(logrus.WarnLevel)
