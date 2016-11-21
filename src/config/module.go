@@ -11,6 +11,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/fzerorubigd/onion.v2"
 	"gopkg.in/fzerorubigd/onion.v2/extraenv"
+	"gopkg.in/yaml.v2"
+	"fmt"
 )
 
 var (
@@ -66,6 +68,9 @@ func Initialize() {
 	for i := range all {
 		all[i].Loaded()
 	}
+
+	x, _ := yaml.Marshal(Config)
+	fmt.Println(string(x))
 
 }
 

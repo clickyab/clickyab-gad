@@ -74,8 +74,11 @@ convworker: $(GB)
 experiment: $(GB)
 	$(BUILD) experiment
 
-run-server: server
+run-server: server notroot
 	sudo setcap cap_net_bind_service=+ep $(BIN)/server
+	$(BIN)/server
+
+run-server-docker: server root
 	$(BIN)/server
 
 run-impworker: impworker

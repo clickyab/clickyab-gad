@@ -45,6 +45,7 @@ type AppConfig struct {
 		Network  string
 		Address  string
 		Password string
+		Databse  int
 		Days     int //Daily Statistic TimeOut Expiration TODO : the worst position for this
 	}
 

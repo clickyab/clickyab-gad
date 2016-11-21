@@ -26,15 +26,14 @@ func Initialize() {
 			MaxIdle:     3,
 			IdleTimeout: 240 * time.Second,
 			Dial: func() (redis.Conn, error) {
-				c, err := redis.Dial(config.Config.Redis.Network, config.Config.Redis.Address)
+				dialOptions := []redis.DialOption{redis.DialDatabase(config.Config.Redis.Databse)}
+				if config.Config.Redis.Password != "" {
+					dialOptions = append(dialOptions, redis.DialPassword(config.Config.Redis.Password))
+				}
+
+				c, err := redis.Dial(config.Config.Redis.Network, config.Config.Redis.Address, dialOptions...)
 				if err != nil {
 					return nil, err
-				}
-				if config.Config.Redis.Password != "" {
-					if _, err := c.Do("AUTH", config.Config.Redis.Password); err != nil {
-						_ = c.Close()
-						return nil, err
-					}
 				}
 				return c, err
 			},
