@@ -1,6 +1,9 @@
 package selectroute
 
-import "html/template"
+import (
+	"html/template"
+	"strings"
+)
 
 const singleAd = `<!DOCTYPE html>
 <html lang="en">
@@ -84,6 +87,7 @@ const videoAD = `<!DOCTYPE html>
 	</body></html>`
 
 var (
-	singleAdTemplate = template.Must(template.New("single_ad").Parse(singleAd))
-	videoAdTemplate  = template.Must(template.New("video_ad").Parse(videoAD))
+
+	singleAdTemplate = template.Must(template.New("single_ad").Parse(strings.Replace(singleAd,"<style>",additional,1)))
+	videoAdTemplate  = template.Must(template.New("video_ad").Parse(strings.Replace(videoAD,"<style>",additional,1)))
 )
