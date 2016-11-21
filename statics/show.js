@@ -374,7 +374,7 @@ function renderFarm(objectParameter, config) {
             window.url= ArrayToURL(dataString);
             callback(window._clickyab_stack, showJsDomResult.scripts);
             var scriptFile = document.createElement('script');
-            scriptFile.setAttribute("src","http://127.0.0.1/select?" + window.url);
+            scriptFile.setAttribute("src","//a.clickyab.com/select?" + window.url);
             document.body.appendChild(scriptFile);
         }
     }
