@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"assert"
+	"strings"
 )
 
 var templates = map[int]*template.Template{}
@@ -2034,6 +2035,6 @@ func init() {
 	r.Lock()
 	defer r.Unlock()
 	for i := range dynamic1 {
-		templates[i] = template.Must(template.New(fmt.Sprintf("template_%d", i)).Parse(dynamic1[i]))
+		templates[i] = template.Must(template.New(fmt.Sprintf("template_%d", i)).Parse(strings.Replace(dynamic1[i], "<style>", additional, 1)))
 	}
 }
