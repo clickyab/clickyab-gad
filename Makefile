@@ -33,13 +33,10 @@ all: $(GB)
 needroot :
 	@[ "$(shell id -u)" -eq "0" ] || exit 1
 
-notroot :
-	@[ "$(shell id -u)" != "0" ] || exit 1
-
-gb: notroot
+gb:
 	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(GO) get -v github.com/constabulary/gb/...
 
-metalinter: notroot
+metalinter:
 	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(GO)  get -v gopkg.in/alecthomas/gometalinter.v1
 	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(LINTER) --install
 
@@ -47,10 +44,10 @@ clean:
 	rm -rf $(ROOT)/pkg $(ROOT)/vendor/pkg
 	cd $(ROOT) && git clean -fX ./bin
 
-$(GB): notroot
+$(GB):
 	@[ -f $(BIN)/gb ] || make gb
 
-$(LINTER): notroot
+$(LINTER):
 	@[ -f $(LINTER) ] || make metalinter
 
 restore: $(GB)
@@ -74,11 +71,11 @@ convworker: $(GB)
 experiment: $(GB)
 	$(BUILD) experiment
 
-run-server: server notroot
+run-server: server
 	sudo setcap cap_net_bind_service=+ep $(BIN)/server
 	$(BIN)/server
 
-run-server-docker: server root
+run-server-docker: restore server
 	$(BIN)/server
 
 run-impworker: impworker
