@@ -7,11 +7,8 @@ import (
 
 //CheckCountry find country client in campaign
 func CheckCountry(c *selector.Context, in mr.AdData) bool {
-	if len(in.CampaignCountry) == 0 {
-		return true
-	}
 	if c.Country == nil {
-		return false
+		return len(in.CampaignCountry)==0
 	}
-	return in.CampaignCountry.Has(c.Country.ID)
+	return in.CampaignCountry.Has(true, c.Country.ID)
 }

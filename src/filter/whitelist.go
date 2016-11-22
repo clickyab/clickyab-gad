@@ -7,8 +7,5 @@ import (
 
 // CheckWhiteList return boolean
 func CheckWhiteList(c *selector.Context, in mr.AdData) bool {
-	if len(in.CampaignPlacement) == 0 {
-		return true
-	}
-	return in.CampaignPlacement.Has(c.Website.WID)
+	return in.CampaignPlacement.Has(true, c.Website.WID)
 }

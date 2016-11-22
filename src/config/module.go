@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/fzerorubigd/expand"
-	"github.com/pkg/profile"
 	"gopkg.in/fzerorubigd/onion.v2"
 	"gopkg.in/fzerorubigd/onion.v2/extraenv"
 )
@@ -77,8 +75,6 @@ func SetConfigParameter() {
 		// In development mode I need colors :) candy mode is GREAT!
 		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true, DisableColors: false})
 		logrus.SetLevel(logrus.DebugLevel)
-		exp, _ := expand.HomeDir()
-		profile.ProfilePath(filepath.Join(exp, appName))
 
 	} else {
 		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: false, DisableColors: true})
