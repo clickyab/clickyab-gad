@@ -16,9 +16,10 @@ import (
 
 	"html/template"
 
+	"net/http"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
-	"net/http"
 )
 
 type vastAdTemplate struct {
@@ -105,7 +106,7 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 	}
 	country, err := tc.fetchCountry(rd.IP)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.Debug(err)
 	}
 	lenVast, vastCon := config.MakeVastLen(c.QueryParam("l"))
 	return rd, website, country, lenVast, vastCon, nil

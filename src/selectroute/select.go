@@ -169,7 +169,7 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 	}
 	country, err := tc.fetchCountry(rd.IP)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.Debug(err)
 	}
 	//check if the website domain is valid
 	if website.WDomain.Valid && website.WDomain.String != domain[0] {
