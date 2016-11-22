@@ -35,6 +35,5 @@ func CreateCopID(useragent string, ip net.IP, l int) string {
 	h := sha1.New()
 	_, _ = h.Write([]byte(useragent))
 	_, _ = h.Write([]byte(ip))
-	fmt.Println(fmt.Sprintf("%x", h.Sum(nil)), l)
 	return fmt.Sprintf("%x", h.Sum(nil))[:l]
 }

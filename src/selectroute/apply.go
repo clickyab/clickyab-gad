@@ -15,12 +15,12 @@ func (tc *selectController) applyAd(c echo.Context) error {
 	}
 	_, sizeNumSlice := tc.slotSizeWeb(params, *website)
 	//call context
-	m := selector.Context{
+	_ = selector.Context{
 		RequestData: *rd,
 		Website:     website,
 		Size:        sizeNumSlice,
 		Country:     country,
 	}
-	 selector.Apply(&m, selector.GetAdData(), webSelector)
+	// selector.Apply(&m, selector.GetAdData(), webSelector)
 	return nil
 }

@@ -23,7 +23,7 @@ import (
 func main() {
 	config.Initialize()
 	config.SetConfigParameter()
-	defer profile.Start(profile.CPUProfile, profile.NoShutdownHook, profile.ProfilePath("./"+<-utils.ID))
+	defer profile.Start(profile.CPUProfile, profile.NoShutdownHook, profile.ProfilePath("./tmp/"+<-utils.ID)).Stop()
 
 	version.PrintVersion().Info("Application started")
 	models.Initialize()
