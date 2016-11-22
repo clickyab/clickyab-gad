@@ -7,6 +7,7 @@ import (
 	"models"
 	"rabbit"
 	"redis"
+	"sync"
 	"time"
 	"version"
 )
@@ -29,4 +30,14 @@ func main() {
 	rabbit.Initialize()
 	aredis.Initialize()
 
+	wg := sync.WaitGroup{}
+	for i := range []int{1, 2, 3, 4, 5, 6, 7, 8, 9} {
+		wg.Add(1)
+		go func(ij int) {
+			defer wg.Done()
+			fmt.Print(ij)
+		}(i)
+	}
+
+	wg.Wait()
 }

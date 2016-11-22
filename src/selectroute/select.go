@@ -89,7 +89,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData, slotID int64, exceedFloor *[]*mr.MinAdData, video bool, minCapFloor *int) {
+func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData, slotID int64, video bool) bool {
 	adData.CTR, _ = tc.calculateCTR(
 		adData.CampaignID,
 		adData.AdID,
@@ -98,17 +98,7 @@ func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData,
 	)
 	adData.CPM = utils.Cpm(adData.CampaignMaxBid, adData.CTR)
 	//exceed cpm floor
-	if adData.CPM >= website.WFloorCpm.Int64 && (!video || adData.AdType != config.AdTypeVideo) {
-		if len(*exceedFloor) == 0 {
-			*minCapFloor = adData.Capping.GetCapping()
-		}
-
-		//minimum capping
-		if adData.Capping.GetCapping() <= *minCapFloor && adData.WinnerBid == 0 {
-			*exceedFloor = append(*exceedFloor, adData)
-
-		}
-	}
+	return adData.CPM >= website.WFloorCpm.Int64 && (!video || adData.AdType != config.AdTypeVideo)
 }
 
 func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.MinAdData) int64 {
@@ -339,36 +329,55 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 	)
 	// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 	for slotID := range slotSize {
-		var exceedFloor []*mr.MinAdData
-		minCapFloor := 0
+		exceedFloor := &mr.CappingLocker{}
 		wg := sync.WaitGroup{}
 		wg.Add(len(filteredAds[slotSize[slotID].SlotSize]))
-		for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
-			go func() {
+		for _, a := range filteredAds[slotSize[slotID].SlotSize] {
+			go func(adData *mr.MinAdData) {
 				defer wg.Done()
-				tc.doBid(adData, website, slotSize[slotID].ID, &exceedFloor, video, &minCapFloor)
-			}()
+				if tc.doBid(adData, website, slotSize[slotID].ID, video) {
+					if exceedFloor.Len() == 0 {
+						exceedFloor.Set(adData.Capping.GetCapping())
+					}
+
+					//minimum capping
+					if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
+						exceedFloor.Append(adData)
+					}
+				}
+			}(a)
 		}
 		wg.Wait()
-		if len(exceedFloor) == 0 {
+		if exceedFloor.Len() < 1 {
 			// TODO : send a warning, log it or anything else:)
+			logrus.Warn("No ad :/ TODO : Log me")
 			continue
 		}
-		ef := mr.ByCPM(exceedFloor)
+		ef := mr.ByCPM(exceedFloor.GetData())
 		sort.Sort(ef)
-		exceedFloor = []*mr.MinAdData(ef)
+		sorted := []*mr.MinAdData(ef)
 
-		secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, exceedFloor)
-		exceedFloor[0].WinnerBid = utils.WinnerBid(secondCPM, exceedFloor[0].CTR)
-		exceedFloor[0].Capping.IncView(1)
-		winnerAd[slotID] = exceedFloor[0]
+		secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
+		sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
+		sorted[0].Capping.IncView(1)
+		winnerAd[slotID] = sorted[0]
 		winnerAd[slotID].SlotID = slotSize[slotID].ID
-		video = !multipleVideo && (video || exceedFloor[0].AdType == config.AdTypeVideo)
-		show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, exceedFloor[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
+		video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
+		show[slotID] = fmt.Sprintf(
+			"%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d",
+			rd.Proto,
+			rd.URL,
+			typ,
+			rd.MegaImp,
+			website.WID,
+			sorted[0].AdID,
+			rd.TID,
+			rd.Parent,
+			slotSize[slotID].ID,
+		)
 
-		assert.Nil(storeCapping(rd.CopID, exceedFloor[0].CampaignID))
+		assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
-
 	}
 
 	err := tc.addMegaKey(rd, website, winnerAd)

@@ -1,6 +1,10 @@
 package mr
 
-import "github.com/labstack/echo"
+import (
+	"sync"
+
+	"github.com/labstack/echo"
+)
 
 // Capping is the structure for capping
 type capping struct {
@@ -16,6 +20,13 @@ type CappingInterface interface {
 	GetCapping() int
 	IncView(int)
 	GetSelected() bool
+}
+
+// CappingLocker is the safe capping counter for min capping
+type CappingLocker struct {
+	cap  int
+	lock sync.RWMutex
+	data []*MinAdData
 }
 
 const (
@@ -59,4 +70,46 @@ func (c *capping) IncView(a int) {
 
 func (c *capping) GetSelected() bool {
 	return c.Selected
+}
+
+// Set the capping value
+func (c *CappingLocker) Set(i int) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if c.cap > 0 { // Do not allow set capping if already set
+		return
+	}
+	c.cap = i
+}
+
+// Get the capping value
+func (c *CappingLocker) Get() int {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
+	return c.cap
+}
+
+// Get the slice
+func (c *CappingLocker) GetData() []*MinAdData {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
+	return c.data
+}
+
+// Len of the slice
+func (c *CappingLocker) Len() int {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
+	return len(c.data)
+}
+
+// Append to slice
+func (c *CappingLocker) Append(m *MinAdData) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	c.data = append(c.data, m)
 }
