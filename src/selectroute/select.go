@@ -68,6 +68,7 @@ type vastSlotData struct {
 
 // Select function is the route that the real biding happen
 func (tc *selectController) selectWebAd(c echo.Context) error {
+	t := time.Now()
 	params := c.QueryParams()
 
 	rd, website, country, err := tc.getWebDataFromCtx(c)
@@ -85,7 +86,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
 	show := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
 	b, _ := json.MarshalIndent(show, "\t", "\t")
-	result := "renderFarm(" + string(b) + ");"
+	result := "renderFarm(" + string(b) + "); \n//" + time.Since(t).String()
 	return c.HTML(200, result)
 }
 
