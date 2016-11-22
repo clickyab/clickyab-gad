@@ -24,6 +24,7 @@ func Initialize() {
 	once.Do(func() {
 		Pool = &redis.Pool{
 			MaxIdle:     3,
+			MaxActive:   100,
 			IdleTimeout: 240 * time.Second,
 			Dial: func() (redis.Conn, error) {
 				dialOptions := []redis.DialOption{redis.DialDatabase(config.Config.Redis.Databse)}
@@ -57,7 +58,7 @@ func Initialize() {
 // StoreKey is a simple key value store with timeout
 func StoreKey(key, data string, expire time.Duration) error {
 	r := Pool.Get()
-	defer func() { assert.Nil(r.Close()) }()
+	_ = r.Close()
 	_, err := r.Do("SET", key, data)
 	if err != nil {
 		return err
@@ -70,7 +71,7 @@ func StoreKey(key, data string, expire time.Duration) error {
 // GetKey Get a key from redis
 func GetKey(key string, touch bool, expire time.Duration) (string, error) {
 	r := Pool.Get()
-	defer func() { assert.Nil(r.Close()) }()
+	_ = r.Close()
 	res, err := r.Do("GET", key)
 	if err != nil {
 		return "", err
@@ -92,7 +93,7 @@ func GetKey(key string, touch bool, expire time.Duration) (string, error) {
 func HGetAll(key string, touch bool, expire time.Duration) (map[string]int, error) {
 	var res map[string]int
 	r := Pool.Get()
-	defer func() { assert.Nil(r.Close()) }()
+	_ = r.Close()
 	n, err := r.Do("HGETALL", key)
 
 	res, err = redis.IntMap(n, err)
@@ -114,7 +115,7 @@ func HGetAll(key string, touch bool, expire time.Duration) (map[string]int, erro
 func HGetAllString(key string, touch bool, expire time.Duration) (map[string]string, error) {
 	var res map[string]string
 	r := Pool.Get()
-	defer func() { assert.Nil(r.Close()) }()
+	_ = r.Close()
 	n, err := r.Do("HGETALL", key)
 
 	res, err = redis.StringMap(n, err)
@@ -135,7 +136,7 @@ func HGetAllString(key string, touch bool, expire time.Duration) (map[string]str
 // RemoveKey for removing a key in redis
 func RemoveKey(key string) error {
 	r := Pool.Get()
-	defer func() { assert.Nil(r.Close()) }()
+	_ = r.Close()
 	_, err := r.Do("DEL", key)
 
 	return err
@@ -144,8 +145,7 @@ func RemoveKey(key string) error {
 // IncHash try to inc hash
 func IncHash(key string, hash string, value int, expire time.Duration) (int64, error) {
 	r := Pool.Get()
-	defer func() { assert.Nil(r.Close()) }()
-
+	_ = r.Close()
 	data, err := redis.Int64(r.Do("HINCRBY", key, hash, value))
 	if err != nil {
 		return 0, err
@@ -165,7 +165,7 @@ func HGetByField(key string, field ...string) (map[string]int64, error) {
 		"fi": 0,
 	}
 	r := Pool.Get()
-	defer func() { assert.Nil(r.Close()) }()
+	_ = r.Close()
 	n, err := r.Do("HGETALL", key)
 
 	res, err = redis.Int64Map(n, err)
@@ -198,8 +198,7 @@ func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, 
 
 func HMSet(key string, expire time.Duration, fields ...interface{}) error {
 	r := Pool.Get()
-	defer func() { assert.Nil(r.Close()) }()
-
+	_ = r.Close()
 	nf := make([]interface{}, len(fields)+1)
 	nf[0] = key
 	for i := range fields {

@@ -20,6 +20,8 @@ import (
 	"transport"
 	"utils"
 
+	"sync"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 )
@@ -343,9 +345,15 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 	for slotID := range slotSize {
 		var exceedFloor []*mr.MinAdData
 		minCapFloor := 0
+		wg := sync.WaitGroup{}
+		wg.Add(len(filteredAds[slotSize[slotID].SlotSize]))
 		for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
-			tc.doBid(adData, website, slotSize[slotID].ID, &exceedFloor, video, &minCapFloor)
+			go func() {
+				defer wg.Done()
+				tc.doBid(adData, website, slotSize[slotID].ID, &exceedFloor, video, &minCapFloor)
+			}()
 		}
+		wg.Wait()
 		if len(exceedFloor) == 0 {
 			// TODO : send a warning, log it or anything else:)
 			continue
