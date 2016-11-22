@@ -3,6 +3,7 @@ package mr
 import (
 	"database/sql"
 	"net"
+	"time"
 	"utils"
 )
 
@@ -23,6 +24,12 @@ func (m *Manager) GetLocation(ip net.IP) (*IP2Location, error) {
 	if err != nil {
 		return nil, err
 	}
+	key := utils.Sha1("IP_" + ip.String())
+	err = fetch(key, &res)
+	if err == nil {
+		return &res, nil
+	}
+
 	query := `SELECT * FROM ip2location WHERE ip_from <= ? AND ip_to >= ? LIMIT 1`
 	err = m.GetRDbMap().SelectOne(
 		&res,
@@ -34,6 +41,6 @@ func (m *Manager) GetLocation(ip net.IP) (*IP2Location, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	_ = store(key, &res, time.Hour)
 	return &res, nil
 }

@@ -2,8 +2,10 @@ package utils
 
 import (
 	"config"
+	"crypto/sha1"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -125,4 +127,11 @@ func InSlice(a interface{}, list []interface{}) bool {
 		}
 	}
 	return false
+}
+
+// Sha1 is the sha1 generation func
+func Sha1(k string) string {
+	h := sha1.New()
+	_, _ = h.Write([]byte(k))
+	return fmt.Sprintf("%x", h.Sum(nil))
 }

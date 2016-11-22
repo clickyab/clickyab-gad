@@ -2,6 +2,9 @@ package mr
 
 import (
 	"database/sql"
+	"fmt"
+	"time"
+	"utils"
 )
 
 // WebsiteData type @todo
@@ -33,4 +36,51 @@ type WebsiteData struct {
 	WNotApprovedReason SharpArray     `json:"w_notapprovedreason" db:"w_notapprovedreason"`
 	CreatedAt          sql.NullString `json:"created_at" db:"created_at"`
 	UpdatedAt          sql.NullString `json:"updated_at" db:"updated_at"`
+}
+
+// FetchWebsiteByPublicID function @todo
+func (m *Manager) FetchWebsiteByPublicID(publicID int) (*WebsiteData, error) {
+	var res = WebsiteData{}
+	key := utils.Sha1(fmt.Sprintf("Website_%d", publicID))
+	err := fetch(key, &res)
+	if err == nil {
+		return &res, nil
+	}
+
+	query := `SELECT * FROM websites WHERE w_pub_id = ?  LIMIT 1`
+
+	err = m.GetRDbMap().SelectOne(
+		&res,
+		query,
+		publicID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = store(key, &res, time.Hour)
+	return &res, nil
+}
+
+// FetchWebsite function @todo
+func (m *Manager) FetchWebsite(ID int64) (*WebsiteData, error) {
+	var res = WebsiteData{}
+	key := utils.Sha1(fmt.Sprintf("WebsiteID_%d", ID))
+	err := fetch(key, &res)
+	if err == nil {
+		return &res, nil
+	}
+	query := `SELECT * FROM websites WHERE w_id = ?  LIMIT 1`
+
+	err = m.GetRDbMap().SelectOne(
+		&res,
+		query,
+		ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = store(key, &res, time.Hour)
+	return &res, nil
 }

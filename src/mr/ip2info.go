@@ -2,6 +2,9 @@ package mr
 
 import (
 	"database/sql"
+	"errors"
+	"time"
+	"utils"
 )
 
 //CountryInfo struct country info
@@ -18,8 +21,18 @@ type CountryInfo struct {
 //ConvertCountry2Info get data country from string
 func (m *Manager) ConvertCountry2Info(name string) (CountryInfo, error) {
 	var country CountryInfo
+	if len(name) < 2 {
+		return country, errors.New("invalid country name")
+	}
+
+	key := utils.Sha1("Country_" + name)
+	err := fetch(key, &country)
+	if err == nil {
+		return country, nil
+	}
+
 	query := `SELECT * FROM country WHERE iso = ? LIMIT 1`
-	err := m.GetRDbMap().SelectOne(
+	err = m.GetRDbMap().SelectOne(
 		&country,
 		query,
 		name,
@@ -28,5 +41,6 @@ func (m *Manager) ConvertCountry2Info(name string) (CountryInfo, error) {
 		return country, err
 	}
 
+	_ = store(key, &country, time.Hour)
 	return country, nil
 }
