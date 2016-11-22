@@ -127,26 +127,22 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 		return err
 	}
 	// TODO : get interface from redis?
-	tmp := []interface{}{
-		"IP",
-		fmt.Sprintf("%d", ip),
-		"UA",
-		rd.UserAgent,
-		"WS",
-		fmt.Sprintf("%d", website.WID),
-		"T",
-		fmt.Sprintf("%d", time.Now().Unix()),
+	tmp := map[string]string{
+		"IP": fmt.Sprintf("%d", ip),
+		"UA": rd.UserAgent,
+		"WS": fmt.Sprintf("%d", website.WID),
+		"T":  fmt.Sprintf("%d", time.Now().Unix()),
 	}
 
 	for i := range winnerAd {
-		tmp = append(tmp, fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, winnerAd[i].AdID), fmt.Sprintf("%d", winnerAd[i].WinnerBid))
-		tmp = append(tmp, fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, winnerAd[i].AdID), fmt.Sprintf("%d", winnerAd[i].SlotID))
+		tmp[fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].WinnerBid)
+		tmp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].SlotID)
 	}
 
 	//TODO : Config time
 	return aredis.HMSet(
 		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp), time.Hour,
-		tmp...,
+		tmp,
 	)
 }
 

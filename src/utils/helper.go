@@ -110,7 +110,7 @@ func KeyGenDaily(prefix, value string) string {
 }
 
 //IncKeyDaily function increase redis daily key
-func IncKeyDaily(key, subKey string, count int) (int64, error) {
+func IncKeyDaily(key, subKey string, count int64) (int64, error) {
 	res, err := aredis.IncHash(
 		key,
 		subKey,

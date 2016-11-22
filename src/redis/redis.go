@@ -9,183 +9,124 @@ import (
 
 	"fmt"
 
+	"strconv"
+
 	"github.com/Sirupsen/logrus"
-	"github.com/garyburd/redigo/redis"
+	"gopkg.in/redis.v5"
 )
 
 var (
 	// Pool the actual pool to use with redis
-	Pool *redis.Pool
-	once = &sync.Once{}
+	Client *redis.Client
+	once   = &sync.Once{}
 )
 
 // Initialize try to create a redis pool
 func Initialize() {
 	once.Do(func() {
-		Pool = &redis.Pool{
-			MaxIdle:     3,
-			MaxActive:   100,
-			IdleTimeout: 240 * time.Second,
-			Dial: func() (redis.Conn, error) {
-				dialOptions := []redis.DialOption{redis.DialDatabase(config.Config.Redis.Databse)}
-				if config.Config.Redis.Password != "" {
-					dialOptions = append(dialOptions, redis.DialPassword(config.Config.Redis.Password))
-				}
-
-				c, err := redis.Dial(config.Config.Redis.Network, config.Config.Redis.Address, dialOptions...)
-				if err != nil {
-					return nil, err
-				}
-				return c, err
+		Client = redis.NewClient(
+			&redis.Options{
+				Network:  config.Config.Redis.Network,
+				Addr:     config.Config.Redis.Address,
+				Password: config.Config.Redis.Password,
+				PoolSize: config.Config.Redis.Size,
+				DB:       config.Config.Redis.Databse,
 			},
-			TestOnBorrow: func(c redis.Conn, t time.Time) error {
-				_, err := c.Do("PING")
-				return err
-			},
-		}
-
+		)
 		// PING the server to make sure every thing is fine
-		conn := Pool.Get()
-		defer func() { _ = conn.Close() }()
-
-		_, err := conn.Do("PING")
-		assert.Nil(err)
-
-		logrus.Info("redis is reday.")
+		assert.Nil(Client.Ping().Err())
+		logrus.Debug("redis is ready.")
 	})
 }
 
 // StoreKey is a simple key value store with timeout
 func StoreKey(key, data string, expire time.Duration) error {
-	r := Pool.Get()
-	_ = r.Close()
-	_, err := r.Do("SET", key, data)
-	if err != nil {
-		return err
-	}
-	_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))
-
-	return err
+	return Client.Set(key, data, expire).Err()
 }
 
 // GetKey Get a key from redis
 func GetKey(key string, touch bool, expire time.Duration) (string, error) {
-	r := Pool.Get()
-	_ = r.Close()
-	res, err := r.Do("GET", key)
-	if err != nil {
+	cmd := Client.Get(key)
+	if err := cmd.Err(); err != nil {
 		return "", err
 	}
 
 	if touch {
-		_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))
-		assert.Nil(err)
-	}
-	data, err := redis.Bytes(res, err)
-	if err != nil {
-		return "", err
-	}
-
-	return string(data), nil
-}
-
-// HGetAll Get a key and value from redis
-func HGetAll(key string, touch bool, expire time.Duration) (map[string]int, error) {
-	var res map[string]int
-	r := Pool.Get()
-	_ = r.Close()
-	n, err := r.Do("HGETALL", key)
-
-	res, err = redis.IntMap(n, err)
-	if err != nil {
-		return res, err
-	}
-
-	if touch {
-		for k := range res {
-			_, err = r.Do("EXPIRE", k, int64(expire.Seconds()))
-			assert.Nil(err)
+		bCmd := Client.Expire(key, expire)
+		if err := bCmd.Err(); err != nil {
+			return "", err
 		}
-
 	}
-	return res, nil
-}
-
-// HGetAll Get a key and value from redis
-func HGetAllString(key string, touch bool, expire time.Duration) (map[string]string, error) {
-	var res map[string]string
-	r := Pool.Get()
-	_ = r.Close()
-	n, err := r.Do("HGETALL", key)
-
-	res, err = redis.StringMap(n, err)
-	if err != nil {
-		return res, err
-	}
-
-	if touch {
-		for k := range res {
-			_, err = r.Do("EXPIRE", k, int64(expire.Seconds()))
-			assert.Nil(err)
-		}
-
-	}
-	return res, nil
+	return cmd.String(), nil
 }
 
 // RemoveKey for removing a key in redis
 func RemoveKey(key string) error {
-	r := Pool.Get()
-	_ = r.Close()
-	_, err := r.Do("DEL", key)
+	bCmd := Client.Del(key)
+	return bCmd.Err()
+}
 
-	return err
+// HGetAll Get a key and value from redis
+// @deprecated use the HGetAllString
+func HGetAll(key string, touch bool, expire time.Duration) (map[string]int, error) {
+	res, err := HGetAllString(key, touch, expire)
+	if err != nil {
+		return nil, err
+	}
+
+	newRes := make(map[string]int)
+	for i := range res {
+		ii, _ := strconv.ParseInt(res[i], 10, 0)
+		newRes[i] = int(ii)
+	}
+	return newRes, nil
+}
+
+// HGetAll Get a key and value from redis
+func HGetAllString(key string, touch bool, expire time.Duration) (map[string]string, error) {
+	cmd := Client.HGetAll(key)
+	if err := cmd.Err(); err != nil {
+		return nil, err
+	}
+
+	if touch {
+		Client.Expire(key, expire)
+	}
+
+	return cmd.Result()
 }
 
 // IncHash try to inc hash
-func IncHash(key string, hash string, value int, expire time.Duration) (int64, error) {
-	r := Pool.Get()
-	_ = r.Close()
-	data, err := redis.Int64(r.Do("HINCRBY", key, hash, value))
-	if err != nil {
-		return 0, err
-	}
-	_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))
-	assert.Nil(err)
-	return data, nil
+func IncHash(key string, hash string, value int64, expire time.Duration) (int64, error) {
+	cmd := Client.HIncrBy(key, hash, value)
+
+	Client.Expire(key, expire)
+	return cmd.Result()
 }
 
 // HGetAll Get a key and value from redis
 func HGetByField(key string, field ...string) (map[string]int64, error) {
-	var res map[string]int64
-	final := map[string]int64{
-		"c":  0,
-		"i":  0,
-		"fc": 0,
-		"fi": 0,
-	}
-	r := Pool.Get()
-	_ = r.Close()
-	n, err := r.Do("HGETALL", key)
 
-	res, err = redis.Int64Map(n, err)
+	final := map[string]int64{}
+
+	res, err := HGetAllString(key, false, 0)
 	if err != nil {
+		for i := range field {
+			final[field[i]] = 0
+		}
 		return final, err
 	}
 	for f := range field {
-		final[field[f]] = res[field[f]]
+		final[field[f]], _ = strconv.ParseInt(res[field[f]], 10, 0)
 	}
 	return final, nil
 }
 func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, error) {
 	now := time.Now()
-	var res map[string]int64
-	final := map[string]int64{
-		"c":  0,
-		"i":  0,
-		"fc": 0,
-		"fi": 0,
-	}
+	var (
+		res   map[string]int64
+		final = make(map[string]int64)
+	)
 
 	for i := 0; i <= days; i++ {
 		res, _ = HGetByField(fmt.Sprintf("%s%s", prefix, now.AddDate(0, 0, -1*i).Format("060102")), field...)
@@ -196,20 +137,12 @@ func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, 
 	return final, nil
 }
 
-func HMSet(key string, expire time.Duration, fields ...interface{}) error {
-	r := Pool.Get()
-	_ = r.Close()
-	nf := make([]interface{}, len(fields)+1)
-	nf[0] = key
-	for i := range fields {
-		nf[i+1] = fields[i]
-	}
+func HMSet(key string, expire time.Duration, fields map[string]string) error {
 
-	_, err := redis.String(r.Do("HMSET", nf...))
-	if err != nil {
+	cmd := Client.HMSet(key, fields)
+	if err := cmd.Err(); err != nil {
 		return err
 	}
-	_, err = r.Do("EXPIRE", key, int64(expire.Seconds()))
-	assert.Nil(err)
+	Client.Expire(key, expire)
 	return nil
 }

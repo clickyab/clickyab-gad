@@ -135,30 +135,20 @@ func (selectController) callWorker(WID int64, slotID int64, adID int64, mega str
 
 	// TODO : Use constant not strings
 	//set mega ip in redis
-	tmp := []interface{}{
-		"IP",
-		rd.IP,
-		"UA",
-		rd.UserAgent,
-		"WS",
-		WID,
-		"T",
-		time.Now().Unix(),
-		"S",
-		slotID,
-		"IMPR",
-		imp.ID,
-		"RND",
-		rand,
-		"WIN",
-		imp.WinnerBID,
-		"CPADID",
-		imp.CampaignAdID,
-		"SLAID",
-		imp.SlaID,
+	tmp := map[string]string{
+		"IP":     rd.IP.String(),
+		"UA":     rd.UserAgent,
+		"WS":     strconv.FormatInt(WID, 10),
+		"T":      strconv.FormatInt(time.Now().Unix(), 10),
+		"S":      strconv.FormatInt(slotID, 10),
+		"IMPR":   strconv.FormatInt(imp.ID, 10),
+		"RND":    rand,
+		"WIN":    strconv.FormatInt(imp.WinnerBID, 10),
+		"CPADID": strconv.FormatInt(imp.CampaignAdID, 10),
+		"SLAID":  strconv.FormatInt(imp.SlaID, 10),
 	}
 	// TODO : Config time
-	err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%d", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, adID), 2*time.Hour, tmp...)
+	err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%d", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, adID), 2*time.Hour, tmp)
 	if err != nil {
 		logrus.WithField("cy.imp", imp).Error("error in hmset", err)
 	}

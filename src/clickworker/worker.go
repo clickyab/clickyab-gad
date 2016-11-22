@@ -86,6 +86,9 @@ func clickWorker(in *transport.Click) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	err = aredis.HMSet(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, in.Rand), config.Config.Clickyab.DailyClickExpire, "CLICK", in.ID)
+	tmp := map[string]string{
+		"CLICK": strconv.FormatInt(in.ID, 10),
+	}
+	err = aredis.HMSet(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, in.Rand), config.Config.Clickyab.DailyClickExpire, tmp)
 	return false, err
 }

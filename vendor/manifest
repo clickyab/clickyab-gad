@@ -39,20 +39,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/garyburd/redigo/internal",
-			"repository": "https://github.com/garyburd/redigo",
-			"revision": "80f7de34463b0ed3d7c61303e5619efe1b227f92",
-			"branch": "master",
-			"path": "/internal"
-		},
-		{
-			"importpath": "github.com/garyburd/redigo/redis",
-			"repository": "https://github.com/garyburd/redigo",
-			"revision": "80f7de34463b0ed3d7c61303e5619efe1b227f92",
-			"branch": "master",
-			"path": "/redis"
-		},
-		{
 			"importpath": "github.com/go-sql-driver/mysql",
 			"repository": "https://github.com/go-sql-driver/mysql",
 			"revision": "0b58b37b664c21f3010e836f1b931e1d0b0b0685",
@@ -201,6 +187,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "gopkg.in/bsm/ratelimit.v1",
+			"repository": "https://gopkg.in/bsm/ratelimit.v1",
+			"revision": "db14e161995a5177acef654cb0dd785e8ee8bc22",
+			"branch": "v1"
+		},
+		{
 			"importpath": "gopkg.in/fzerorubigd/onion.v2",
 			"repository": "https://gopkg.in/fzerorubigd/onion.v2",
 			"revision": "078930955df67fe99807c7099902a5282796521f",
@@ -216,6 +208,12 @@
 			"importpath": "gopkg.in/gorp.v1",
 			"repository": "https://gopkg.in/gorp.v1",
 			"revision": "c87af80f3cc5036b55b83d77171e156791085e2e",
+			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/redis.v5",
+			"repository": "https://gopkg.in/redis.v5",
+			"revision": "c9856861674f102a5f51104c36401a3cf691739c",
 			"branch": "master"
 		},
 		{
