@@ -5,6 +5,10 @@ import (
 
 	"database/sql"
 
+	"utils"
+
+	"time"
+
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -29,9 +33,15 @@ type Slot struct {
 func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slot, error) {
 	var res []Slot
 
+	key := utils.Sha1(fmt.Sprintf("slot_%s_%d", publicID, wID))
+	err := fetch(key, &res)
+	if err == nil {
+		return res, nil
+	}
+
 	query := fmt.Sprintf(`SELECT * FROM slots WHERE slot_pubilc_id IN (%s) AND w_id = ?`, publicID)
 
-	_, err := m.GetProperDBMap().Select(
+	_, err = m.GetProperDBMap().Select(
 		&res,
 		query,
 		wID,
@@ -40,6 +50,7 @@ func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slot, error) {
 		return nil, err
 	}
 
+	_ = store(key, &res, time.Hour)
 	return res, nil
 }
 

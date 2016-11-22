@@ -3,6 +3,7 @@ package mr
 import (
 	"config"
 	"database/sql"
+	"sort"
 	"strings"
 	"time"
 )
@@ -73,6 +74,7 @@ func (m *Manager) FetchRegion() (*RegionData, error) {
 
 // Build implode slice of string with ,
 func Build(slot []string) string {
+	sort.Strings(slot)
 	return strings.Join(slot, ",")
 }
 

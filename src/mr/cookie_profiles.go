@@ -4,8 +4,10 @@ import (
 	"assert"
 	"config"
 	"database/sql"
+	"fmt"
 	"net"
 	"time"
+	"utils"
 )
 
 // CookieProfile cookie_profiles struct table
@@ -27,9 +29,14 @@ type CookieProfile struct {
 // FetchCookieProfile get data from table cookie
 func (m *Manager) FetchCookieProfile(key string) (*CookieProfile, error) {
 	var res = CookieProfile{}
+	hash := utils.Sha1(fmt.Sprintf("cookie_%d", key))
+	err := fetch(hash, &res)
+	if err == nil {
+		return &res, nil
+	}
 	query := `SELECT * FROM cookie_profiles WHERE cop_key = ?  LIMIT 1`
 
-	err := m.GetProperDBMap().SelectOne(
+	err = m.GetProperDBMap().SelectOne(
 		&res,
 		query,
 		key,
@@ -38,6 +45,7 @@ func (m *Manager) FetchCookieProfile(key string) (*CookieProfile, error) {
 		return nil, err
 	}
 
+	_ = store(hash, &res, time.Hour)
 	return &res, nil
 }
 
