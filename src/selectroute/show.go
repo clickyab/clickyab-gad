@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"time"
 	"transport"
-	"utils"
 
 	"html/template"
 	"math/rand"
@@ -21,6 +20,8 @@ import (
 	"net"
 
 	"net/url"
+
+	"store"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -62,56 +63,13 @@ type VideoAd struct {
 }
 
 func (tc *selectController) show(c echo.Context) error {
-	rd := middlewares.MustGetRequestData(c)
-	var suspicious bool
-	mega := c.Param("mega")
-	typ := c.Param("type")
-	long := c.Request().URL().QueryParam("l")
-	pos := c.Request().URL().QueryParam("pos")
-	if typ != "web" && typ != "vast" {
-		return c.String(http.StatusNotFound, "not found")
+	reserve := c.Param("reserve")
+	fmt.Println(reserve)
+	k, ok := store.Get(reserve)
+	if !ok {
+		return c.String(http.StatusNotFound, "no key")
 	}
-	ad := c.Param("ad")
-	adID, err := strconv.ParseInt(ad, 10, 64)
-	assert.Nil(err)
-	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
-
-	//TODO :validate Wid compare to us
-
-	assert.Nil(err)
-	if err != nil {
-		// TODO : check error
-		suspicious = true
-	}
-
-	megaImp, err := aredis.HGetAllString(transport.MEGA+transport.DELIMITER+mega, false, 0)
-	assert.Nil(err)
-	var winnerBid string
-	var winnerFinalBid int64
-	var ok bool
-	if winnerBid, ok = megaImp[fmt.Sprintf("%s%s%s", transport.ADVERTISE, transport.DELIMITER, ad)]; !ok {
-		return c.String(http.StatusNotFound, "ad not found")
-	}
-	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
-	ads, err := mr.NewManager().GetAd(adID)
-	if err != nil {
-		return c.String(http.StatusNotFound, "not found")
-	}
-	rand := <-utils.ID
-	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s", rd.Proto, rd.URL, websiteID, mega, adID, rand)
-	res, err := tc.makeAdData(c, typ, ads, url, long, pos)
-	if err != nil {
-		return err
-	}
-	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, adID)], 10, 64)
-	assert.Nil(err)
-	imp := tc.fillImp(c, suspicious, ads, winnerFinalBid, websiteID, slotID)
-
-	go tc.callWorker(websiteID, slotID, adID, mega, rand, imp, rd)
-	if typ == "vast" {
-		return c.XMLBlob(http.StatusOK, []byte(res))
-	}
-	return c.HTML(http.StatusOK, res)
+	return c.HTML(http.StatusOK, k)
 }
 
 func (selectController) callWorker(WID int64, slotID int64, adID int64, mega string, rand string, imp transport.Impression, rd *middlewares.RequestData) {

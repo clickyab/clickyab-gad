@@ -22,6 +22,8 @@ import (
 
 	"sync"
 
+	"store"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
 )
@@ -321,68 +323,94 @@ func bestCTRKey(c int, adID int64, slotID int64, cpID int64, wID int64) string {
 }
 
 func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares.RequestData, filteredAds map[int][]*mr.MinAdData, sizeNumSlice map[string]int, slotSize map[string]slotData, website *mr.WebsiteData, multipleVideo bool) map[string]string {
-	filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
 
 	var (
 		winnerAd = make(map[string]*mr.MinAdData)
 		show     = make(map[string]string)
 		video    bool // once set, never unset it again
+		reserved = make(map[string]string)
 	)
-	// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
+
 	for slotID := range slotSize {
-		exceedFloor := &mr.CappingLocker{}
-		wg := sync.WaitGroup{}
-		wg.Add(len(filteredAds[slotSize[slotID].SlotSize]))
-		for _, a := range filteredAds[slotSize[slotID].SlotSize] {
-			go func(adData *mr.MinAdData) {
-				defer wg.Done()
-				if tc.doBid(adData, website, slotSize[slotID].ID, video) {
-					if exceedFloor.Len() == 0 {
-						exceedFloor.Set(adData.Capping.GetCapping())
-					}
-
-					//minimum capping
-					if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
-						exceedFloor.Append(adData)
-					}
-				}
-			}(a)
-		}
-		wg.Wait()
-		if exceedFloor.Len() < 1 {
-			// TODO : send a warning, log it or anything else:)
-			show[slotID] = "No ad :/ TODO : Log me"
-			continue
-		}
-		ef := mr.ByCPM(exceedFloor.GetData())
-		sort.Sort(ef)
-		sorted := []*mr.MinAdData(ef)
-
-		secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
-		sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
-		sorted[0].Capping.IncView(1)
-		winnerAd[slotID] = sorted[0]
-		winnerAd[slotID].SlotID = slotSize[slotID].ID
-		video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
+		reserved[slotID] = <-utils.ID
+		store.Reserve(reserved[slotID])
 		show[slotID] = fmt.Sprintf(
-			"%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d",
+			"%s://%s/show/%s/%s/%s/%s/%d?tid=%s&ref=%s&s=%d",
 			rd.Proto,
 			rd.URL,
 			typ,
+			"machine",
 			rd.MegaImp,
+			reserved[slotID],
 			website.WID,
-			sorted[0].AdID,
 			rd.TID,
 			rd.Parent,
 			slotSize[slotID].ID,
 		)
 
-		assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
-		// TODO {fzerorubigd} : Can we check for inner capping increase?
 	}
+	fmt.Print(show)
 
-	err := tc.addMegaKey(rd, website, winnerAd)
-	assert.Nil(err)
+	go func() {
+
+		filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
+
+		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
+		for slotID := range slotSize {
+			exceedFloor := &mr.CappingLocker{}
+			wg := sync.WaitGroup{}
+			wg.Add(len(filteredAds[slotSize[slotID].SlotSize]))
+			for _, a := range filteredAds[slotSize[slotID].SlotSize] {
+				go func(adData *mr.MinAdData) {
+					defer wg.Done()
+					if tc.doBid(adData, website, slotSize[slotID].ID, video) {
+						if exceedFloor.Len() == 0 {
+							exceedFloor.Set(adData.Capping.GetCapping())
+						}
+
+						//minimum capping
+						if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
+							exceedFloor.Append(adData)
+						}
+					}
+				}(a)
+			}
+			wg.Wait()
+			if exceedFloor.Len() < 1 {
+				// TODO : send a warning, log it or anything else:)
+				show[slotID] = "No ad :/ TODO : Log me"
+				continue
+			}
+			ef := mr.ByCPM(exceedFloor.GetData())
+			sort.Sort(ef)
+			sorted := []*mr.MinAdData(ef)
+
+			secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
+			sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
+			sorted[0].Capping.IncView(1)
+			winnerAd[slotID] = sorted[0]
+			winnerAd[slotID].SlotID = slotSize[slotID].ID
+			video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
+			store.Set(reserved[slotID], fmt.Sprintf(
+				"%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d",
+				rd.Proto,
+				rd.URL,
+				typ,
+				rd.MegaImp,
+				website.WID,
+				sorted[0].AdID,
+				rd.TID,
+				rd.Parent,
+				slotSize[slotID].ID,
+			),
+			)
+			assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
+			// TODO {fzerorubigd} : Can we check for inner capping increase?
+		}
+
+		err := tc.addMegaKey(rd, website, winnerAd)
+		assert.Nil(err)
+	}()
 	return show
 }
 
