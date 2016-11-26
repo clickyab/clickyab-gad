@@ -4,6 +4,7 @@ import (
 	"assert"
 	"mr"
 	"selector"
+	"transport"
 
 	"fmt"
 	"strconv"
@@ -17,6 +18,9 @@ import (
 	"html/template"
 
 	"net/http"
+
+	"redis"
+	"utils"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -65,7 +69,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	return c.XMLBlob(http.StatusOK, result.Bytes())
 }
 
-func (tc *selectController) slotSizeVast(websitePublicID int64, length map[string][]string, website mr.WebsiteData) (map[string]slotData, map[string]int, map[string]vastSlotData) {
+func (tc *selectController) slotSizeVast(websitePublicID int64, length map[string][]string, website mr.WebsiteData) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
 	var vastSlot = make(map[string]vastSlotData)
@@ -112,12 +116,12 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 	return rd, website, country, lenVast, vastCon, nil
 }
 
-func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, sizeNumSlice map[string]int) (map[string]slotData, map[string]int) {
+func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, sizeNumSlice map[string]int) (map[string]*slotData, map[string]int) {
 	slotPublicString := mr.Build(slotPublic)
 	res, err := mr.NewManager().FetchSlots(slotPublicString, webID)
 	assert.Nil(err)
 
-	answer := make(map[string]slotData)
+	answer := make(map[string]*slotData)
 	var newSlots []int64
 	for i := range slotPublic {
 		if _, ok := answer[slotPublic[i]]; ok {
@@ -125,7 +129,7 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 		}
 		for j := range res {
 			if fmt.Sprintf("%d", res[j].PublicID) == slotPublic[i] {
-				answer[slotPublic[i]] = slotData{
+				answer[slotPublic[i]] = &slotData{
 					ID:       res[j].ID,
 					PublicID: slotPublic[i],
 					SlotSize: sizeNumSlice[slotPublic[i]],
@@ -143,10 +147,19 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 
 	insertedSlots := tc.insertNewSlots(webID, newSlots...)
 	for i := range insertedSlots {
-		answer[i] = slotData{
+		answer[i] = &slotData{
 			ID:       insertedSlots[i],
 			PublicID: i,
 			SlotSize: sizeNumSlice[i],
+		}
+	}
+
+	for i := range answer {
+		result, err := aredis.SumHMGetField(utils.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), config.Config.Redis.Days, "i", "c")
+		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
+			answer[i].Ctr = config.Config.Clickyab.DefaultCTR
+		} else {
+			answer[i].Ctr = utils.Ctr(result["i"], result["c"])
 		}
 	}
 
