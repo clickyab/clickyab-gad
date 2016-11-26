@@ -3,9 +3,13 @@ package mr
 import (
 	"config"
 	"database/sql"
+	"redis"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
+	"transport"
+	"utils"
 )
 
 // LoadAds function @todo
@@ -50,6 +54,16 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	for i := range res {
+		//get redis key for ad
+		result, err := aredis.SumHMGetField(utils.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)), config.Config.Redis.Days, "i", "c")
+		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
+			res[i].AdCTR = config.Config.Clickyab.DefaultCTR
+		} else {
+			res[i].AdCTR = utils.Ctr(result["i"], result["c"])
+		}
 	}
 
 	return res, nil

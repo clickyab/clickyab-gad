@@ -68,12 +68,16 @@ func Get(key string) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	
+
 	dataLock.RUnlock()
-	
+
 	d.w.Wait()
 	res := d.data
-	
+	go func() {
+		dataLock.Lock()
+		defer dataLock.Unlock()
+		delete(data, key)
+	}()
 	return res, true
 
 }

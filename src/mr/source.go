@@ -17,6 +17,7 @@ type MinAdData struct {
 	AdID              int64            `json:"ad_id" db:"ad_id"`
 	CampaignFrequency int              `json:"cp_frequency" db:"cp_frequency"`
 	CTR               float64          `json:"ctr" db:"ctr"`
+	AdCTR             float64          `json:"ad_ctr" db:"ad_ctr"`
 	CPM               int64            `json:"cpm" db:"cpm"`
 	Capping           CappingInterface `json:"capping" db:"-"`
 	WinnerBid         int64            `json:"winner_bid" db:"-"`
@@ -105,7 +106,6 @@ type AdData struct {
 	AdImg          sql.NullString `json:"ad_img" db:"ad_img"`
 	AdStatus       int            `json:"ad_status" db:"ad_status"`
 	AdRejectReason sql.NullString `json:"ad_reject_reason" db:"ad_reject_reason"`
-	AdCTR          float64        `json:"ad_ctr" db:"ad_ctr"`
 	AdConversion   int            `json:"ad_conv" db:"ad_conv"`
 	AdTime         int            `json:"ad_time" db:"ad_time"`
 
