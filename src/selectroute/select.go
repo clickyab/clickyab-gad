@@ -272,8 +272,8 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 		}
 		if exceedFloor.Len() < 1 {
 			// TODO : send a warning, log it or anything else:)
-			tmp := "No ad :/ TODO : Log me"
-			show[slotID] = tmp
+			logrus.Warn("no ad")
+			show[slotID] = ""
 			continue
 		}
 		ef := mr.ByCPM(exceedFloor.GetData())
