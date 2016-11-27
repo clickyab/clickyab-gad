@@ -152,7 +152,7 @@ func (tc *selectController) click(c echo.Context) error {
 	return c.HTML(200, body)
 }
 
-func (selectController) fillClick(ctx echo.Context, ads mr.Ad, winnerBid int64, websiteID int64, slotID int64, inTime, outTime time.Time, slaID int64, impID int64, campaignAdID int64, status int64, rand string, tv bool) *transport.Click {
+func (selectController) fillClick(ctx echo.Context, ads *mr.Ad, winnerBid int64, websiteID int64, slotID int64, inTime, outTime time.Time, slaID int64, impID int64, campaignAdID int64, status int64, rand string, tv bool) *transport.Click {
 	rd := middlewares.MustGetRequestData(ctx)
 	adID, err := strconv.ParseInt(ctx.Param("ad"), 10, 0)
 	assert.Nil(err)
