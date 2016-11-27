@@ -86,6 +86,9 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	show := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
 	b, _ := json.MarshalIndent(show, "\t", "\t")
 	result := "renderFarm(" + string(b) + "); \n//" + time.Since(t).String()
+	go func(){
+
+	}()
 	return c.HTML(200, result)
 }
 

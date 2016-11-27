@@ -5,6 +5,9 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"utils"
+	"time"
 )
 
 // SingleAdType constant
@@ -91,17 +94,22 @@ type Ad struct {
 }
 
 //GetAd get data ad from id
-func (m *Manager) GetAd(id int64) (Ad, error) {
-	var Ads Ad
+func (m *Manager) GetAd(id int64) (*Ad, error) {
+	var ad Ad
+	key := utils.Sha1(fmt.Sprintf("adData_%d", id))
+	err := fetch(key, &ad)
+	if err == nil {
+		return &ad, nil
+	}
 	query := `SELECT ads.*,campaigns_ads.ca_id,campaigns_ads.cp_id, campaigns.cp_name FROM ads LEFT JOIN campaigns_ads ON ads.ad_id = campaigns_ads.ad_id  LEFT JOIN campaigns ON campaigns_ads.cp_id = campaigns.cp_id WHERE ads.ad_id = ? LIMIT 1`
-	err := m.GetRDbMap().SelectOne(
-		&Ads,
+	err = m.GetRDbMap().SelectOne(
+		&ad,
 		query,
 		id,
 	)
 	if err != nil {
-		return Ads, err
+		return &ad, err
 	}
-
-	return Ads, nil
+	_ = store(key, &ad, time.Minute)
+	return &ad, nil
 }

@@ -55,10 +55,10 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Mobile = ua.Mobile()
 		e.Platform = ua.Platform()
 		e.PlatformID = config.FindOsID(ua.Platform())
-		e.Referrer = ctx.Request().Referer()
+		e.Referrer = ctx.Request().URL().QueryParam("ref")
 		e.Method = ctx.Request().Method()
 		e.MegaImp = <-utils.ID
-		e.Parent = ctx.Request().URL().QueryParam("ref")
+		e.Parent = ctx.Request().URL().QueryParam("parent")
 
 		if e.TID = ctx.Request().URL().QueryParam("tid"); e.TID == "" {
 			e.TID = utils.CreateCopID(e.UserAgent, e.IP, config.Config.Clickyab.CopLen)

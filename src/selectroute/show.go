@@ -93,12 +93,13 @@ func (tc *selectController) show(c echo.Context) error {
 		return c.String(http.StatusNotFound, "ad not found")
 	}
 	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
+
 	ads, err := mr.NewManager().GetAd(adID)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
 	rand := <-utils.ID
-	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s", rd.Proto, rd.URL, websiteID, mega, adID, rand)
+	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s&ref=%s", rd.Proto, rd.URL, websiteID, mega, adID, rand, rd.Parent)
 	res, err := tc.makeAdData(c, typ, ads, url, long, pos)
 	if err != nil {
 		return err
@@ -158,15 +159,13 @@ func (selectController) callWorker(WID int64, slotID int64, adID int64, mega str
 	}
 }
 
-func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid int64, websiteID int64, slotID int64) transport.Impression {
+func (selectController) fillImp(ctx echo.Context, sus bool, ads *mr.Ad, winnerBid int64, websiteID int64, slotID int64) transport.Impression {
 	rd := middlewares.MustGetRequestData(ctx)
-	adID, err := strconv.ParseInt(ctx.Param("ad"), 10, 0)
-	assert.Nil(err)
 
 	return transport.Impression{
 		Suspicious:   sus,
 		IP:           rd.IP,
-		AdID:         adID,
+		AdID:         ads.AdID,
 		CopID:        rd.CopID,
 		CampaignAdID: ads.CampaignAdID.Int64,
 
@@ -185,7 +184,7 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads mr.Ad, winnerBid
 	}
 }
 
-func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads mr.Ad, url string, long string, pos string) (string, error) {
+func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string) (string, error) {
 	buf := &bytes.Buffer{}
 
 	switch ads.AdType {
@@ -211,7 +210,7 @@ func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads mr.A
 }
 
 // makeAdData
-func (tc *selectController) makeAdData(c echo.Context, typ string, ads mr.Ad, url string, long string, pos string) (string, error) {
+func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string) (string, error) {
 	if typ == "web" {
 		return tc.makeWebTemplate(c, typ, ads, url, long, pos)
 	}
@@ -233,7 +232,7 @@ func (tc *selectController) makeAdData(c echo.Context, typ string, ads mr.Ad, ur
 
 }
 
-func (tc *selectController) makeVideoAdData(ad mr.Ad, url string) VideoAd {
+func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string) VideoAd {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	sa := VideoAd{
 		Link:   url,
@@ -245,7 +244,7 @@ func (tc *selectController) makeVideoAdData(ad mr.Ad, url string) VideoAd {
 	return sa
 }
 
-func (tc *selectController) makeSingleAdData(ad mr.Ad, url string) SingleAd {
+func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string) SingleAd {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	sa := SingleAd{
 		Link:   url,
@@ -256,7 +255,7 @@ func (tc *selectController) makeSingleAdData(ad mr.Ad, url string) SingleAd {
 	}
 	return sa
 }
-func (tc *selectController) makeVastAdData(ad mr.Ad, urll string, long string, pos string) vastTemplate {
+func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, pos string) vastTemplate {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	_, ma := config.MakeVastLen(long)
 

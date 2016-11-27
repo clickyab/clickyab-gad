@@ -293,7 +293,8 @@ function renderFarm(objectParameter, config) {
     }
     var fp = new Fingerprint();
     var uid = fp.get();
-    var ref = document.referrer;
+    var ref = document.URL;
+    var parent = document.referrer;
     if(document.referrer == "") {
         ref = false;
     }
@@ -313,6 +314,7 @@ function renderFarm(objectParameter, config) {
         pairs.push('i=' + dataString[0].id);
         pairs.push('tid=' + uid);
         pairs.push('ref=' + ref);
+        pairs.push('parent=' + parent);
         return pairs.join('&');
     }
 
@@ -334,6 +336,9 @@ function renderFarm(objectParameter, config) {
         iframeElement.hspace = "0";
         iframeElement.allowtransparency = "true";
         iframeElement.scrolling = "no";
+        iframeElement.style.padding="0";
+        iframeElement.style.margin="0";
+        iframeElement.style.border="0";
         divElement.appendChild(iframeElement);
         // iframeElement.onload = function(){
         //     var inTheIframe = iframeElement.contentDocument || iframeElement.contentWindow.document;
@@ -374,7 +379,7 @@ function renderFarm(objectParameter, config) {
             window.url= ArrayToURL(dataString);
             callback(window._clickyab_stack, showJsDomResult.scripts);
             var scriptFile = document.createElement('script');
-            scriptFile.setAttribute("src","//a.clickyab.com/select?" + window.url);
+            scriptFile.setAttribute("src","http://192.168.88.210/select?" + window.url);
             document.body.appendChild(scriptFile);
         }
     }
@@ -404,5 +409,4 @@ function renderFarm(objectParameter, config) {
         }
     };
 })();
-
 
