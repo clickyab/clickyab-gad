@@ -41,7 +41,6 @@ const requestDataToken = "__request_data__"
 // RequestCollector try to collect data from request
 func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
-
 		e := &RequestData{}
 		e.IP = net.ParseIP(ctx.Request().RealIP())
 		e.UserAgent = ctx.Request().UserAgent()
@@ -64,7 +63,6 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 			e.TID = utils.CreateCopID(e.UserAgent, e.IP, config.Config.Clickyab.CopLen)
 		}
 		e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
-
 		ctx.Set(requestDataToken, e)
 		return next(ctx)
 	}

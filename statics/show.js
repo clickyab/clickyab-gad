@@ -255,7 +255,13 @@
 
 });
 function renderFarm(objectParameter, config) {
+    var webMobile = false;
+
     for (var key in objectParameter) {
+        if(key === "web-mobile") {
+            webMobile = true;
+            console.log(key);
+        }
         var element = document.getElementById("clickyab_iframe_" +key);
         if (typeof(element) != 'undefined' && element != null) {
             element.setAttribute("src", objectParameter[key]);

@@ -48,6 +48,8 @@ var (
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
 )
 
+const WebMobile string = "1000"
+
 type selectController struct {
 }
 
@@ -69,12 +71,11 @@ type vastSlotData struct {
 func (tc *selectController) selectWebAd(c echo.Context) error {
 	t := time.Now()
 	params := c.QueryParams()
-
 	rd, website, country, err := tc.getWebDataFromCtx(c)
 	if err != nil {
 		return err
 	}
-	slotSize, sizeNumSlice := tc.slotSizeWeb(params, *website)
+	slotSize, sizeNumSlice := tc.slotSizeWeb(params, *website, rd.Mobile)
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -84,9 +85,18 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
 	show := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
+
+	//substitute the webMobile slot if exists
+	wm:=fmt.Sprintf("%d%s", website.WPubID, WebMobile)
+	val, ok := show[wm]
+	if ok {
+		show["web-mobile"] = val
+		delete(show, wm)
+	}
+
 	b, _ := json.MarshalIndent(show, "\t", "\t")
 	result := "renderFarm(" + string(b) + "); \n//" + time.Since(t).String()
-	go func(){
+	go func() {
 
 	}()
 	return c.HTML(200, result)
@@ -197,7 +207,7 @@ func (selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
 
 }
 
-func (tc selectController) slotSizeWeb(params map[string][]string, website mr.WebsiteData) (map[string]*slotData, map[string]int) {
+func (tc selectController) slotSizeWeb(params map[string][]string, website mr.WebsiteData, mobile bool) (map[string]*slotData, map[string]int) {
 	var size = make(map[string]string)
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
@@ -219,6 +229,11 @@ func (tc selectController) slotSizeWeb(params map[string][]string, website mr.We
 
 	}
 
+	if mobile {
+		slotPub := fmt.Sprintf("%d%s", website.WPubID, WebMobile)
+		slotPublic = append(slotPublic, slotPub)
+		sizeNumSlice[slotPub] = 8
+	}
 	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 }
 

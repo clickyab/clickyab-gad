@@ -75,6 +75,5 @@ func (m *Manager) CreateCookieProfile(key string, ip net.IP) *CookieProfile {
 		assert.Nil(err)
 
 	}
-
 	return res
 }
