@@ -51,6 +51,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/jteeuwen/go-bindata",
+			"repository": "https://github.com/jteeuwen/go-bindata",
+			"revision": "a0ff2567cfb70903282db057e799fd826784d41d",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/klauspost/compress/flate",
 			"repository": "https://github.com/klauspost/compress",
 			"revision": "d0763f13d86e630f5d3ea9fa848a6ecc68255297",

@@ -7,3 +7,5 @@ pkg/
 /tmp
 .idea
 *.iml
+config-dist.yml
+node_modules/

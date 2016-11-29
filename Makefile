@@ -1,6 +1,7 @@
 export APPNAME=server
 export DEFAULT_PASS=bita123
 export GO=$(shell which go)
+export NODE=$(shell which nodejs)
 export GIT:=$(shell which git)
 export ROOT=$(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 export BIN=$(ROOT)/bin
@@ -23,7 +24,7 @@ export RUSER?=$(APPNAME)
 export RPASS?=$(DEFAULT_PASS)
 export WORK_DIR=$(ROOT)/tmp
 export LINTERCMD=$(LINTER) --deadline=100s --disable-all --enable=structcheck --enable=deadconde --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell
-
+export UGLIFYJS=$(ROOT)/node_modules/.bin/uglifyjs
 
 .PHONY: all gb clean
 
@@ -126,3 +127,23 @@ lint: $(LINTER)
 	$(LINTERCMD) $(ROOT)/src/impworker
 	$(LINTERCMD) $(ROOT)/src/clickworker
 	$(LINTERCMD) $(ROOT)/src/convworker
+
+uglifyjs: noroot
+	npm install uglifyjs
+
+$(UGLIFYJS):
+	@[ -f $(UGLIFYJS) ] || make uglifyjs
+
+uglify: $(UGLIFYJS)
+	rm -rf $(ROOT)/tmp/embed
+	mkdir -p $(ROOT)/tmp/embed
+	cp $(ROOT)/statics/show.js $(ROOT)/tmp/embed/show.js
+	$(NODE) $(UGLIFYJS) $(ROOT)/statics/show.js -o $(ROOT)/tmp/embed/show-min.js
+	cp $(ROOT)/statics/conversion/clickyab-tracking.js $(ROOT)/tmp/embed/clickyab-tracking.js
+	$(NODE) $(UGLIFYJS) $(ROOT)/statics/conversion/clickyab-tracking.js -o $(ROOT)/tmp/embed/clickyab-tracking-min.js
+
+go-bindata: $(GB)
+	$(BUILD) github.com/jteeuwen/go-bindata/go-bindata
+
+embed: go-bindata uglify
+	cd $(ROOT)/tmp/embed/ && $(BIN)/go-bindata -o $(ROOT)/src/statics/static-no-lint.go -nomemcopy=true -pkg=statics ./...

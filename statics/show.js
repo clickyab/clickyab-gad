@@ -346,31 +346,6 @@ function renderFarm(objectParameter, config) {
         iframeElement.style.margin="0";
         iframeElement.style.border="0";
         divElement.appendChild(iframeElement);
-        // iframeElement.onload = function(){
-        //     var inTheIframe = iframeElement.contentDocument || iframeElement.contentWindow.document;
-        //     var clickyabLogo = inTheIframe.createElement('a');
-        //     function hoverLogo() {
-        //         clickyabLogo.style.width = "66px";
-        //     }
-        //     function unhoverLogo() {
-        //         clickyabLogo.style.width = "19px";
-        //     }
-        //     var getProtocol = window.location.protocol;
-        //     clickyabLogo.href = "http://clickyab.com/?ref=icon";
-        //     clickyabLogo.style.height = "18px";
-        //     clickyabLogo.style.width = "19px";
-        //     clickyabLogo.style.position = "absolute";
-        //     clickyabLogo.style.top = "0";
-        //     clickyabLogo.style.right = "0";
-        //     clickyabLogo.style.zIndex = "100";
-        //     clickyabLogo.style.display = "block";
-        //     clickyabLogo.style.borderRadius = "0px 0px 0px 4px";
-        //     clickyabLogo.style.background = "url('"+getProtocol+ "//static.clickyab.com/img/clickyab-tiny.png') right top no-repeat";
-        //     clickyabLogo.setAttribute("target","_blank");
-        //     clickyabLogo.onmouseover = hoverLogo;
-        //     clickyabLogo.onmouseout = unhoverLogo;
-        //     inTheIframe.body.appendChild(clickyabLogo);
-        // };
         showJS.parentNode.insertBefore(divElement, showJS.nextSibling);
 
         return divElement;
@@ -385,7 +360,7 @@ function renderFarm(objectParameter, config) {
             window.url= ArrayToURL(dataString);
             callback(window._clickyab_stack, showJsDomResult.scripts);
             var scriptFile = document.createElement('script');
-            scriptFile.setAttribute("src","http://192.168.88.210/select?" + window.url);
+            scriptFile.setAttribute("src","//a.clickyab.com/select?" + window.url);
             document.body.appendChild(scriptFile);
         }
     }
