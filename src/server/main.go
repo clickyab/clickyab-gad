@@ -24,9 +24,9 @@ func main() {
 	defer profile.Start(profile.CPUProfile, profile.NoShutdownHook, profile.ProfilePath("./tmp/"+<-utils.ID)).Stop()
 
 	version.PrintVersion().Info("Application started")
-	models.Initialize()
 	aredis.Initialize()
 	rabbit.Initialize()
+	models.Initialize()
 
 	server := modules.Initialize(config.Config.MountPoint)
 	go func() {

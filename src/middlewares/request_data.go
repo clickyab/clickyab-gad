@@ -16,7 +16,6 @@ import (
 
 // RequestData is the data for request
 type RequestData struct {
-	CloudIP        string
 	IP             net.IP
 	UserAgent      string
 	IP2Location    *mr.IP2Location

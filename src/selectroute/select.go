@@ -30,7 +30,7 @@ var (
 		filter.CheckOS,
 		filter.CheckWhiteList,
 		filter.CheckBlackList,
-		filter.CheckNetwork,
+		filter.IsWebNetwork,
 		filter.CheckCategory,
 		filter.CheckCountry,
 	)
@@ -40,7 +40,7 @@ var (
 		filter.CheckOS,
 		filter.CheckWhiteList,
 		filter.CheckBlackList,
-		filter.CheckNetwork,
+		filter.IsWebNetwork,
 		filter.CheckCategory,
 		filter.CheckCountry,
 	)
