@@ -319,8 +319,6 @@ function webMobile(url) {
             }
 
         }
-
-
         // one time add into url D=[domain name] - I=[id]
         pairs.push('d=' + dataString[0].domain);
         pairs.push('i=' + dataString[0].id);
