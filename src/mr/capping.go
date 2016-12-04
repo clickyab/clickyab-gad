@@ -13,7 +13,7 @@ type capping struct {
 	Selected  bool
 }
 
-// CappingInterface interface caaping
+// CappingInterface interface capping
 type CappingInterface interface {
 	GetView() int
 	GetFrequency() int
@@ -90,7 +90,7 @@ func (c *CappingLocker) Get() int {
 	return c.cap
 }
 
-// Get the slice
+// GetData return the slice
 func (c *CappingLocker) GetData() []*MinAdData {
 	c.lock.RLock()
 	defer c.lock.RUnlock()

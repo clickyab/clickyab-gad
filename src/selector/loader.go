@@ -20,7 +20,7 @@ type myModel struct {
 }
 
 func interval() {
-	manager:=mr.NewManager()
+	manager := mr.NewManager()
 	ticker := time.NewTicker(time.Minute)
 	fail := 0
 	for range ticker.C {

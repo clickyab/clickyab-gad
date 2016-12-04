@@ -62,7 +62,10 @@ func Initialize() {
 	Config.Clickyab.DailyClickExpire = o.GetDuration("clickyab.daily_click_expire")
 	Config.Clickyab.DailyCapExpire = o.GetDuration("clickyab.daily_cap_expire")
 	Config.Clickyab.ConvDelay = o.GetDuration("clickyab.conv_delay")
-	assert.True(Config.Clickyab.AdCTREffect+Config.Clickyab.SlotCTREffect==100,"ad ctr effect and slot ctr effect doesnt match")
+	assert.True(
+		Config.Clickyab.AdCTREffect+Config.Clickyab.SlotCTREffect == 100,
+		"ad ctr effect and slot ctr effect dose not match",
+	)
 	for i := range all {
 		all[i].Loaded()
 	}

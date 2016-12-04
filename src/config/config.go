@@ -133,7 +133,12 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("redis.days", 2))
 
 	// TODO :  make sure ?parseTime=true is always set!
-	assert.Nil(d.SetDefault("mysql.rdsn", "dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-1.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true"))
+	assert.Nil(
+		d.SetDefault(
+			"mysql.rdsn",
+			"dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-1.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true",
+		),
+	)
 	assert.Nil(d.SetDefault("mysql.wdsn", "root:bita123@tcp(127.0.0.1:3306)/clickyab?charset=utf8&parseTime=true"))
 	assert.Nil(d.SetDefault("mysql.max_connection", 30))
 	assert.Nil(d.SetDefault("mysql.max_idle_connection", 5))
@@ -152,7 +157,16 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("select.balance", 50000))
 
 	assert.Nil(d.SetDefault("clickyab.default_ctr", 0.1))
-	assert.Nil(d.SetDefault("clickyab.ctr_const", []string{transport.AD_SLOT, transport.AD_WEBSITE, transport.CAMPAIGN, transport.CAMPAIGN_SLOT, transport.SLOT}))
+	assert.Nil(d.SetDefault(
+		"clickyab.ctr_const",
+		[]string{
+			transport.AD_SLOT,
+			transport.AD_WEBSITE,
+			transport.CAMPAIGN,
+			transport.CAMPAIGN_SLOT,
+			transport.SLOT,
+		},
+	))
 	assert.Nil(d.SetDefault("clickyab.min_imp", 1000))
 	assert.Nil(d.SetDefault("clickyab.min_frequency", 2))
 	assert.Nil(d.SetDefault("clickyab.daily_imp_expire", 7*24*time.Hour))

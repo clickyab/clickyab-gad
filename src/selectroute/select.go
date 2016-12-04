@@ -48,7 +48,7 @@ var (
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
 )
 
-const WebMobile string = "1000"
+const webMobile string = "1000"
 
 type selectController struct {
 }
@@ -87,7 +87,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	show := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
 
 	//substitute the webMobile slot if exists
-	wm:=fmt.Sprintf("%d%s", website.WPubID, WebMobile)
+	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
 	val, ok := show[wm]
 	if ok {
 		show["web-mobile"] = val
@@ -230,7 +230,7 @@ func (tc selectController) slotSizeWeb(params map[string][]string, website mr.We
 	}
 
 	if mobile {
-		slotPub := fmt.Sprintf("%d%s", website.WPubID, WebMobile)
+		slotPub := fmt.Sprintf("%d%s", website.WPubID, webMobile)
 		slotPublic = append(slotPublic, slotPub)
 		sizeNumSlice[slotPub] = 8
 	}

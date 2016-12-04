@@ -13,7 +13,7 @@ func (tc *selectController) applyAd(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	_, sizeNumSlice := tc.slotSizeWeb(params, *website,false)
+	_, sizeNumSlice := tc.slotSizeWeb(params, *website, false)
 	//call context
 	_ = selector.Context{
 		RequestData: *rd,

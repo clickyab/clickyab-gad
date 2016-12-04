@@ -2,25 +2,17 @@ package selectroute
 
 import (
 	"assert"
-	"mr"
-	"strconv"
-	"transport"
-
-	"fmt"
-
-	"middlewares"
-
-	"time"
-
 	"config"
-	"redis"
-
+	"fmt"
+	"middlewares"
+	"mr"
 	"net/http"
-
 	"rabbit"
-
+	"redis"
+	"strconv"
 	"strings"
-
+	"time"
+	"transport"
 	"utils"
 
 	"github.com/labstack/echo"

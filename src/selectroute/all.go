@@ -1,8 +1,9 @@
 package selectroute
 
 import (
-	"github.com/labstack/echo"
 	"selector"
+
+	"github.com/labstack/echo"
 )
 
 func (tc *selectController) allAds(c echo.Context) error {

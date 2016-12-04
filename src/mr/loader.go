@@ -58,7 +58,12 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 
 	for i := range res {
 		//get redis key for ad
-		result, err := aredis.SumHMGetField(utils.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)), config.Config.Redis.Days, "i", "c")
+		result, err := aredis.SumHMGetField(
+			utils.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)),
+			config.Config.Redis.Days,
+			"i",
+			"c",
+		)
 		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
 			res[i].AdCTR = config.Config.Clickyab.DefaultCTR
 		} else {
