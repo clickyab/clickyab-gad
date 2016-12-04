@@ -1,4 +1,4 @@
-package selectroute
+package routes
 
 import (
 	"selector"

@@ -1,25 +1,18 @@
-package selectroute
+package routes
 
 import (
 	"assert"
-	"mr"
-	"selector"
-	"transport"
-
-	"fmt"
-	"strconv"
-
-	"middlewares"
-
-	"config"
-
 	"bytes"
-
+	"config"
+	"fmt"
 	"html/template"
-
+	"middlewares"
+	"mr"
 	"net/http"
-
 	"redis"
+	"selector"
+	"strconv"
+	"transport"
 	"utils"
 
 	"github.com/Sirupsen/logrus"

@@ -1,4 +1,4 @@
-package selectroute
+package routes
 
 import (
 	"config"
@@ -23,6 +23,7 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 		postfix = ".js"
 	}
 	e.Get("/show.js", tc.assetRoute("show"+postfix))
+	e.Get("/vastAD.js", tc.assetRoute("vastAD"+postfix))
 	e.Get("/conversion/clickyab-tracking.js", tc.assetRoute("clickyab-tracking"+postfix))
 }
 

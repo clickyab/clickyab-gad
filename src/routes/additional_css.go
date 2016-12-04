@@ -1,4 +1,4 @@
-package selectroute
+package routes
 
 const additional = `<style>
 html, body, div, span, applet, object, iframe,

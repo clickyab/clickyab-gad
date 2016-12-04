@@ -142,6 +142,8 @@ uglify: $(UGLIFYJS)
 	$(NODE) $(UGLIFYJS) $(ROOT)/statics/show.js -o $(ROOT)/tmp/embed/show-min.js
 	cp $(ROOT)/statics/conversion/clickyab-tracking.js $(ROOT)/tmp/embed/clickyab-tracking.js
 	$(NODE) $(UGLIFYJS) $(ROOT)/statics/conversion/clickyab-tracking.js -o $(ROOT)/tmp/embed/clickyab-tracking-min.js
+	cp $(ROOT)/statics/vastAD.js $(ROOT)/tmp/embed/vastAD.js
+	$(NODE) $(UGLIFYJS) $(ROOT)/statics/vastAD.js -o $(ROOT)/tmp/embed/vastAD-min.js
 
 go-bindata: $(GB)
 	$(BUILD) github.com/jteeuwen/go-bindata/go-bindata
