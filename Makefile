@@ -153,3 +153,12 @@ embed: go-bindata uglify
 
 create-imp-table :
 	echo 'CREATE TABLE impressions$(IMPDATE)  LIKE impressions20161108; ' | mysql -u $(DB_USER) -p$(DBPASS) -c $(DB_NAME)
+
+restore: $(GB)
+	PATH=$(PATH):$(BIN) $(GB) vendor restore
+	cp $(ROOT)/vendor/manifest $(ROOT)/vendor/manifest.done
+
+conditional-restore:
+	$(DIFF) $(ROOT)/vendor/manifest $(ROOT)/vendor/manifest.done || make restore
+
+docker-build: conditional-restore all
