@@ -8,6 +8,7 @@ export BIN=$(ROOT)/bin
 export GB=$(BIN)/gb
 export LINTER=$(BIN)/gometalinter.v1
 export GOPATH=$(ROOT):$(ROOT)/vendor
+export DIFF=$(shell which diff)
 export WATCH?=hello
 export LONGHASH=$(shell git log -n1 --pretty="format:%H" | cat)
 export SHORTHASH=$(shell git log -n1 --pretty="format:%h"| cat)
@@ -51,9 +52,6 @@ $(GB):
 
 $(LINTER):
 	@[ -f $(LINTER) ] || make metalinter
-
-restore: $(GB)
-	PATH=$(PATH):$(BIN) $(GB) vendor restore
 
 fetch: $(GB)
 	PATH=$(PATH):$(BIN) $(GB) vendor fetch $(REPO)

@@ -1,0 +1,39 @@
+---
+# prepare docker and images for webservers:
+- name: build go app (GAD) in local
+  hosts: local
+  tasks:
+
+    - make:
+        chdir: "{{ playbook_dir }}/../.."
+        target: docker-build
+
+# copy builded go app to webservers:
+- name: copy builded GO app to webservers and run
+  hosts: server
+  tasks:
+
+    - name: make sure docker.py is ready
+      pip:
+        name: docker-py
+
+    - name: copy go binary files to web servers
+      synchronize: src="{{ playbook_dir }}/../../bin/" dest=/gad/ delete=yes rsync_opts="--exclude=.git --exclude=*.sh --exclude=gb*" checksum=yes times=no
+
+    - name: pull docker ubuntu image
+      command: docker pull registry.clickyab.ae/clickyab/ubuntu
+
+    - name: sync the runner image
+      synchronize: src="{{ playbook_dir }}/docker-runner/" dest=/tmp/docker-runner delete=yes checksum=yes times=no
+
+    - name: build the docker
+      docker_image:
+        path: /tmp/docker-runner
+        name: ubuntu-supervisor
+
+    - name: run the container
+      docker_container:
+        name: server
+        image: ubuntu-supervisor
+        volumes:
+          - /gad:/gad
