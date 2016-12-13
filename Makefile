@@ -160,3 +160,6 @@ conditional-restore:
 	$(DIFF) $(ROOT)/vendor/manifest $(ROOT)/vendor/manifest.done || make restore
 
 docker-build: conditional-restore all
+
+ansible:
+	ansible-playbook -vvvv -i $(ROOT)/contrib/deploy/hosts.ini $(ROOT)/contrib/deploy/staging.yaml

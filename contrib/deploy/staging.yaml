@@ -3,6 +3,9 @@
 - name: build go app (GAD) in local
   hosts: local
   tasks:
+    - make:
+        chdir: "{{ playbook_dir }}/../.."
+        target: clean
 
     - make:
         chdir: "{{ playbook_dir }}/../.."
