@@ -10,10 +10,13 @@ RUN apt-get update \
     && rm dumb-init_*.deb \
     && rm -rf /var/lib/apt/lists/*
 
+VOLUME /app
+
 ADD init-script.sh /sbin/init-script.sh
 RUN chmod a+x /sbin/init-script.sh
 
-ENTRYPOINT [/sbin/init-script.sh]
+WORKDIR /app
+ENTRYPOINT ["/sbin/init-script.sh"]
+
 CMD ["/bin/bash"]
 
-VOLUME /app

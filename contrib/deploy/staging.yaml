@@ -1,42 +1,114 @@
 ---
 # prepare docker and images for webservers:
-- name: build go app (GAD) in local
-  hosts: local
-  tasks:
-    - make:
-        chdir: "{{ playbook_dir }}/../.."
-        target: clean
+- name: build the code
+  hosts: vagrant
 
-    - make:
-        chdir: "{{ playbook_dir }}/../.."
-        target: docker-build
+  tasks:
+    - name: clean all data
+      make:
+        target: clean
+        chdir: /home/develop/gad
+
+    - name: build binaries
+      make:
+        target: all
+        chdir: /home/develop/gad
 
 # copy builded go app to webservers:
 - name: copy builded GO app to webservers and run
-  hosts: server
+  hosts: staging
   tasks:
 
     - name: make sure docker.py is ready
       pip:
         name: docker-py
 
-    - name: copy go binary files to web servers
-      synchronize: src="{{ playbook_dir }}/../../bin/" dest=/gad/ delete=yes rsync_opts="--exclude=.git --exclude=*.sh --exclude=gb*" checksum=yes times=no
+    - name: Creates directory
+      file:
+        path: /home/cy/gad
+        state: directory
 
-    - name: pull docker ubuntu image
-      command: docker pull registry.clickyab.ae/clickyab/ubuntu
+
+    - name: copy go binary files to web servers
+      synchronize:
+        src: "{{ playbook_dir }}/../../bin/"
+        dest: "/home/cy/gad/bin/"
+        delete: yes
+        rsync_opts: "--exclude=.git --exclude=*.sh --exclude=gb* --exclude=go-bindata --exclude=fswatch --exclude=codegen --exclude=.gitignore"
+        checksum: yes
+        times: no
+
+    - name: pull ubuntu image
+      docker_image:
+        name: registry.clickyab.ae/clickyab/ubuntu
 
     - name: sync the runner image
-      synchronize: src="{{ playbook_dir }}/docker-runner/" dest=/tmp/docker-runner delete=yes checksum=yes times=no
+      synchronize:
+        src: "{{ playbook_dir }}/docker-runner/"
+        dest: /home/cy/gad/docker-runner
+        delete: yes
+        checksum: yes
+        times: no
 
     - name: build the docker
       docker_image:
-        path: /tmp/docker-runner
-        name: ubuntu-supervisor
+        path: /home/cy/gad/docker-runner
+        name: registry.clickyab.ae/clickyab/gad-runner
 
-    - name: run the container
+- name: Run web server
+  hosts: web
+  tasks:
+
+    - name: Re-create a web container
       docker_container:
-        name: server
-        image: ubuntu-supervisor
+        name: gad-web
+        image: registry.clickyab.ae/clickyab/gad-runner
+        command: /app/bin/server
+        state: started
+        recreate: yes
+        ports:
+          - 8000:80
         volumes:
-          - /gad:/gad
+          - /home/cy/gad:/app
+
+- name: Run click worker
+  hosts: click
+  tasks:
+
+    - name: Re-create a click container
+      docker_container:
+        name: gad-click
+        image: registry.clickyab.ae/clickyab/gad-runner
+        command: /app/bin/clickworker
+        state: started
+        recreate: yes
+        volumes:
+          - /home/cy/gad:/app
+
+- name: Run imp worker
+  hosts: imp
+  tasks:
+
+    - name: Re-create a imp worker
+      docker_container:
+        name: gad-imp
+        image: registry.clickyab.ae/clickyab/gad-runner
+        command: /app/bin/impworker
+        state: started
+        recreate: yes
+        volumes:
+          - /home/cy/gad:/app
+
+- name: Run conv worker
+  hosts: conv
+  tasks:
+
+    - name: Re-create conv worker
+      docker_container:
+        name: gad-conv
+        image: registry.clickyab.ae/clickyab/gad-runner
+        command: /app/bin/convworker
+        state: started
+        recreate: yes
+        volumes:
+          - /home/cy/gad:/app
