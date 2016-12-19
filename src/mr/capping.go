@@ -3,7 +3,7 @@ package mr
 import (
 	"sync"
 
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 // Capping is the structure for capping

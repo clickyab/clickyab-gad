@@ -6,7 +6,7 @@ import (
 	"rabbit"
 	"transport"
 
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 const message = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII="

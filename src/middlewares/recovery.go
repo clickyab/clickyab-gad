@@ -8,7 +8,7 @@ import (
 	"utils"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 // Recovery is the middleware to prevent the panic to crash the app
@@ -16,7 +16,7 @@ func Recovery(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		defer func() {
 			if err := recover(); err != nil {
-				_ = ctx.JSON(
+				ctx.JSON(
 					http.StatusInternalServerError,
 					struct {
 						Error string `json:"error"`

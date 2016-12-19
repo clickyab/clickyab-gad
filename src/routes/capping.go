@@ -10,7 +10,7 @@ import (
 
 	"redis"
 
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 func getCappingKey(copID int64) string {

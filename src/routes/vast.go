@@ -16,7 +16,7 @@ import (
 	"utils"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 type vastAdTemplate struct {

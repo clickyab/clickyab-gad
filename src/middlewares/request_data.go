@@ -10,8 +10,8 @@ import (
 
 	"utils"
 
-	"github.com/labstack/echo"
 	"github.com/mssola/user_agent"
+	"gopkg.in/labstack/echo.v3"
 )
 
 // RequestData is the data for request
@@ -41,11 +41,11 @@ const requestDataToken = "__request_data__"
 func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		e := &RequestData{}
-		e.IP = net.ParseIP(ctx.Request().RealIP())
+		e.IP = net.ParseIP(ctx.RealIP())
 		e.UserAgent = ctx.Request().UserAgent()
 		ua := user_agent.New(ctx.Request().UserAgent())
-		e.URL = ctx.Request().Host()
-		e.Proto = ctx.Request().Scheme()
+		e.URL = ctx.Request().Host
+		e.Proto = ctx.Request().Proto
 		name, version := ua.Browser()
 		e.Browser = name
 		e.BrowserVersion = version
@@ -53,12 +53,12 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Mobile = ua.Mobile()
 		e.Platform = ua.Platform()
 		e.PlatformID = config.FindOsID(ua.Platform())
-		e.Referrer = ctx.Request().URL().QueryParam("ref")
-		e.Method = ctx.Request().Method()
+		e.Referrer = ctx.Request().URL.Query().Get("ref")
+		e.Method = ctx.Request().Method
 		e.MegaImp = <-utils.ID
-		e.Parent = ctx.Request().URL().QueryParam("parent")
+		e.Parent = ctx.Request().URL.Query().Get("parent")
 
-		if e.TID = ctx.Request().URL().QueryParam("tid"); e.TID == "" {
+		if e.TID = ctx.Request().URL.Query().Get("tid"); e.TID == "" {
 			e.TID = utils.CreateCopID(e.UserAgent, e.IP, config.Config.Clickyab.CopLen)
 		}
 		e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID

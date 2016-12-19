@@ -5,8 +5,7 @@ import (
 	"middlewares"
 	"sync"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"gopkg.in/labstack/echo.v3"
 )
 
 var (
@@ -29,15 +28,15 @@ func Register(c ...Controller) {
 func Initialize(mountPoint string) *echo.Echo {
 	once.Do(func() {
 		e = echo.New()
-		mid := []echo.MiddlewareFunc{middlewares.Recovery, middleware.CORS(), middlewares.Logger}
+		mid := []echo.MiddlewareFunc{middlewares.Recovery, middlewares.CORS(), middlewares.Logger}
 		if config.Config.CORS {
-			mid = append(mid, middleware.CORS())
+			mid = append(mid, middlewares.CORS())
 		}
 		e.Use(mid...)
 		for i := range all {
 			all[i].Routes(e, mountPoint)
 		}
-		e.SetLogger(NewLogger())
+		e.Logger = NewLogger()
 	})
 	//engine.SetLogLevel(log.DEBUG)
 	return e

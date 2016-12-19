@@ -15,7 +15,7 @@ import (
 	"transport"
 	"utils"
 
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 const (

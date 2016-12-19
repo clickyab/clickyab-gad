@@ -23,7 +23,7 @@ import (
 	"net/url"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 // SingleAd is the single ad id
@@ -66,8 +66,8 @@ func (tc *selectController) show(c echo.Context) error {
 	var suspicious bool
 	mega := c.Param("mega")
 	typ := c.Param("type")
-	long := c.Request().URL().QueryParam("l")
-	pos := c.Request().URL().QueryParam("pos")
+	long := c.Request().URL.Query().Get("l")
+	pos := c.Request().URL.Query().Get("pos")
 	if typ != "web" && typ != "vast" {
 		return c.String(http.StatusNotFound, "not found")
 	}

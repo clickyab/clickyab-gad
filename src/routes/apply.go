@@ -3,7 +3,7 @@ package routes
 import (
 	"selector"
 
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 func (tc *selectController) applyAd(c echo.Context) error {
