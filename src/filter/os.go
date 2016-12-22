@@ -6,6 +6,6 @@ import (
 )
 
 // CheckOS is the filter function that check for OS in system
-func CheckOS(c *selector.Context, in mr.AdData) bool {
+func CheckOS(c *selector.Context, in mr.MinAdData) bool {
 	return in.CampaignPlatforms.Has(true, c.RequestData.PlatformID)
 }

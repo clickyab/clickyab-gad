@@ -7,7 +7,7 @@ import (
 )
 
 // CheckWebSize check if the banner size exists in the request
-func CheckWebSize(c *selector.Context, in mr.AdData) bool {
+func CheckWebSize(c *selector.Context, in mr.MinAdData) bool {
 	if in.AdType == config.AdTypeVideo {
 		for _, size := range c.Size {
 			if config.InVideoSize(size) {
@@ -26,6 +26,6 @@ func CheckWebSize(c *selector.Context, in mr.AdData) bool {
 }
 
 // CheckVastSize check if the banner size fits for Vast Template
-func CheckVastSize(c *selector.Context, in mr.AdData) bool {
+func CheckVastSize(c *selector.Context, in mr.MinAdData) bool {
 	return in.AdType != config.AdTypeDynamic && (in.AdType == config.AdTypeVideo || config.InVastSize(in.AdSize))
 }

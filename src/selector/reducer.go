@@ -17,12 +17,12 @@ type Context struct {
 }
 
 // FilterFunc is the type use to filter the
-type FilterFunc func(*Context, mr.AdData) bool
+type FilterFunc func(*Context, mr.MinAdData) bool
 
 // Mix try to mix multiple filter to single function so there is no need to
 // call Apply more than once
 func Mix(f ...FilterFunc) FilterFunc {
-	return func(c *Context, a mr.AdData) bool {
+	return func(c *Context, a mr.MinAdData) bool {
 		for i := range f {
 			if !f[i](c, a) {
 				return false
@@ -34,11 +34,11 @@ func Mix(f ...FilterFunc) FilterFunc {
 
 // Apply get the data and then call filter on each of them concurrently, the
 // result is the accepted items
-func Apply(ctx *Context, in []mr.AdData, ff FilterFunc) map[int][]*mr.MinAdData {
+func Apply(ctx *Context, in []mr.MinAdData, ff FilterFunc) map[int][]*mr.MinAdData {
 	m := make(map[int][]*mr.MinAdData)
 	for i := range in {
 		if ff(ctx, in[i]) {
-			n := in[i].MinAdData
+			n := in[i]
 			if n.AdType == config.AdTypeVideo {
 				for _, j := range config.GetVideoSize() {
 					m[j] = append(m[j], &n)

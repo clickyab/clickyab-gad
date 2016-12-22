@@ -13,8 +13,8 @@ import (
 )
 
 // LoadAds function @todo
-func (m *Manager) LoadAds() ([]AdData, error) {
-	var res []AdData
+func (m *Manager) LoadAds() ([]MinAdData, error) {
+	var res []MinAdData
 	//t:= strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 	t := time.Now()
 	u := t.Unix()                          //return date in unixtimestamp

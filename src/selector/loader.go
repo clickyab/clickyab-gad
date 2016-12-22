@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	loaded []mr.AdData
+	loaded []mr.MinAdData
 	lock   = &sync.RWMutex{}
 	once   = &sync.Once{}
 )
@@ -43,7 +43,7 @@ func interval() {
 }
 
 // GetAdData function @todo
-func GetAdData() []mr.AdData {
+func GetAdData() []mr.MinAdData {
 	lock.RLock()
 	defer lock.RUnlock()
 
