@@ -1,9 +1,8 @@
 package routes
 
 import (
-	"version"
-
 	"net/http"
+	"version"
 
 	"gopkg.in/labstack/echo.v3"
 )
