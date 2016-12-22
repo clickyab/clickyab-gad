@@ -14,7 +14,8 @@ RABBIT_HOST=${AMQP_HOST:-192.168.100.30}
 RABBIT_PORT=${AMQP_POST:-5672}
 
 # TODO : env re-write must be done here
-#export GAD_DEVEL_MODE=true
+#export GAD_SLACK_ACTIVE=true
+#export GAD_DEVEL_MODE=false
 export GAD_SITE=a.clickyab.com
 export GAD_PROTO=http
 export GAD_REDIS_ADDRESS=${REDIS_HOST}:${REDIS_PORT}
@@ -25,6 +26,5 @@ export GAD_MYSQL_WDSN="${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL
 export GAD_MYSQL_DATABASE="${MYSQL_DB}"
 export GAD_PROFILE=disable
 export GAD_AMQP_DSN="amqp://${RABBIT_USER}:${RABBIT_PASS}@${RABBIT_HOST}:${RABBIT_PORT}/"
-#export GAD_SLACK_ACTIVE=true
 
 exec "$@"
