@@ -58,7 +58,7 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.MegaImp = <-utils.ID
 		e.Parent = ctx.Request().URL.Query().Get("parent")
 
-		if e.TID = ctx.Request().URL.Query().Get("tid"); e.TID == "" {
+		if e.TID = ctx.Request().URL.Query().Get("tid"); len(e.TID) < config.Config.Clickyab.CopLen {
 			e.TID = utils.CreateCopID(e.UserAgent, e.IP, config.Config.Clickyab.CopLen)
 		}
 		e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID

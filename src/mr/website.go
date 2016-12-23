@@ -39,7 +39,7 @@ type WebsiteData struct {
 }
 
 // FetchWebsiteByPublicID function @todo
-func (m *Manager) FetchWebsiteByPublicID(publicID int) (*WebsiteData, error) {
+func (m *Manager) FetchWebsiteByPublicID(publicID int64) (*WebsiteData, error) {
 	var res = WebsiteData{}
 	key := utils.Sha1(fmt.Sprintf("Website_%d", publicID))
 	err := fetch(key, &res)

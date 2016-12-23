@@ -7,6 +7,8 @@ import (
 	"runtime/debug"
 	"utils"
 
+	"net/http/httputil"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -25,7 +27,7 @@ func Recovery(next echo.HandlerFunc) echo.HandlerFunc {
 					},
 				)
 				stack := debug.Stack()
-				dump := "TODO: create dump" //httputil.DumpRequest(ctx.Request(), true)
+				dump, _ := httputil.DumpRequest(ctx.Request(), true)
 				data := fmt.Sprintf("Request : \n %s \n\nStack : \n %s", dump, stack)
 				logrus.WithField("error", err).Warn(err, data)
 				if config.Config.Redmine.Active {

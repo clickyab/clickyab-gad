@@ -15,6 +15,8 @@ import (
 	"transport"
 	"utils"
 
+	"errors"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -33,7 +35,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 
 	rd, website, country, lenType, length, err := tc.getVastDataFromCtx(c)
 	if err != nil {
-		return err
+		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	webPublicID := website.WPubID
 	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(webPublicID, length, *website)
@@ -91,15 +93,14 @@ func (tc *selectController) slotSizeVast(websitePublicID int64, length map[strin
 func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.WebsiteData, *mr.CountryInfo, string, map[string][]string, error) {
 	rd := middlewares.MustGetRequestData(c)
 
-	publicParams := c.QueryParam("a")
-	publicID, err := strconv.Atoi(publicParams)
+	publicID, err := strconv.ParseInt(c.QueryParam("a"), 10, 0)
 	if err != nil {
-		return nil, nil, nil, "", nil, c.HTML(400, "invalid request")
+		return nil, nil, nil, "", nil, errors.New("invalid request")
 	}
 	//fetch website and set in Context
 	website, err := tc.fetchWebsite(publicID)
 	if err != nil {
-		return nil, nil, nil, "", nil, c.HTML(400, "invalid request")
+		return nil, nil, nil, "", nil, errors.New("invalid request")
 	}
 	country, err := tc.fetchCountry(rd.IP)
 	if err != nil {

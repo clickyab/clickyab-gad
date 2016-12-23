@@ -20,6 +20,8 @@ import (
 	"transport"
 	"utils"
 
+	"net/http"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -73,7 +75,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	params := c.QueryParams()
 	rd, website, country, err := tc.getWebDataFromCtx(c)
 	if err != nil {
-		return err
+		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	slotSize, sizeNumSlice := tc.slotSizeWeb(params, *website, rd.Mobile)
 	//call context
@@ -125,7 +127,7 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 	// add mega imp
 	ip, err := utils.IP2long(rd.IP)
 	if err != nil {
-		return err
+		logrus.Warn(err) // TODO : why????
 	}
 	// TODO : get interface from redis?
 	tmp := map[string]string{
@@ -153,20 +155,20 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 	params := c.QueryParams()
 	publicParams, ok := params["i"]
 	if !ok {
-		return nil, nil, nil, c.HTML(400, "invalid request")
+		return nil, nil, nil, errors.New("invalid request")
 	}
-	publicID, err := strconv.Atoi(publicParams[0])
+	publicID, err := strconv.ParseInt(publicParams[0], 10, 0)
 	if err != nil {
-		return nil, nil, nil, c.HTML(400, "invalid request")
+		return nil, nil, nil, errors.New("invalid request")
 	}
 	domain, ok := params["d"]
 	if !ok {
-		return nil, nil, nil, c.HTML(400, "invalid request")
+		return nil, nil, nil, errors.New("invalid request")
 	}
 	//fetch website and set in Context
 	website, err := tc.fetchWebsite(publicID)
 	if err != nil {
-		return nil, nil, nil, c.HTML(400, "invalid request")
+		return nil, nil, nil, errors.New("invalid request")
 	}
 	country, err := tc.fetchCountry(rd.IP)
 	if err != nil {
@@ -181,7 +183,7 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 }
 
 //FetchWebsite website and check if the minimum floor is applied
-func (selectController) fetchWebsite(publicID int) (*mr.WebsiteData, error) {
+func (selectController) fetchWebsite(publicID int64) (*mr.WebsiteData, error) {
 	website, err := mr.NewManager().FetchWebsiteByPublicID(publicID)
 	if err != nil {
 		return nil, err

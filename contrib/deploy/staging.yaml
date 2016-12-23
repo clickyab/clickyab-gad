@@ -67,7 +67,7 @@
         state: started
         recreate: yes
         ports:
-          - 8000:80
+          - 80:80
         volumes:
           - /home/cy/gad:/app
 
