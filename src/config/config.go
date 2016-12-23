@@ -28,11 +28,13 @@ type AppConfig struct {
 	MaxCPUAvailable int    `onion:"max_cpu_available"`
 	MountPoint      string `onion:"mount_point"`
 	MachineName     string `onion:"machine_name"`
+	PeerInterface   string `onion:"peer_interface"`
+	IPString        string `onion:"ip"`
 
 	Site  string
 	Proto string
 
-	Port       string
+	Port       int
 	StaticRoot string `onion:"static_root"`
 
 	TimeZone string `onion:"time_zone"`
@@ -119,9 +121,11 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("cors", true))
 	assert.Nil(d.SetDefault("max_cpu_available", runtime.NumCPU()))
 	assert.Nil(d.SetDefault("proto", "http"))
-	assert.Nil(d.SetDefault("port", ":80"))
+	assert.Nil(d.SetDefault("port", 80))
 	assert.Nil(d.SetDefault("time_zone", "Asia/Tehran"))
 	assert.Nil(d.SetDefault("machine_name", "m1"))
+	assert.Nil(d.SetDefault("peer_interface", "eth0"))
+	assert.Nil(d.SetDefault("ip", "127.0.0.1"))
 
 	p, err := expand.Path("$HOME/gad/statics")
 	assert.Nil(err)

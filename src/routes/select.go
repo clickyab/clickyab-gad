@@ -125,7 +125,7 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.AdDat
 	return secondCPM
 }
 
-func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.Website, winnerAd map[string]*mr.AdData) error {
+func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website *mr.Website, winnerAd map[string]*mr.AdData) error {
 	// add mega imp
 	ip, err := utils.IP2long(rd.IP)
 	if err != nil {
@@ -137,25 +137,35 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 		"WS": fmt.Sprintf("%d", website.WID),
 		"T":  fmt.Sprintf("%d", time.Now().Unix()),
 	}
-
-	for i := range winnerAd {
-		tmp[fmt.Sprintf(
-			"%s%s%d",
-			transport.ADVERTISE,
-			transport.DELIMITER,
-			winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].WinnerBid)
-		tmp[fmt.Sprintf(
-			"%s%s%d",
-			transport.SLOT,
-			transport.DELIMITER,
-			winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].SlotID)
-	}
-
+	assert.True(config.Config.Clickyab.MegaImpExpire > 1, "invalid config")
 	return aredis.HMSet(
 		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
 		config.Config.Clickyab.MegaImpExpire,
 		tmp,
 	)
+}
+
+func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int64, winnerBid int64, slotID string) {
+	assert.Nil(aredis.StoreHashKey(
+		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+		fmt.Sprintf(
+			"%s%s%d",
+			transport.ADVERTISE,
+			transport.DELIMITER,
+			adID),
+		fmt.Sprintf("%d", winnerBid),
+		config.Config.Clickyab.MegaImpExpire,
+	))
+	assert.Nil(aredis.StoreHashKey(
+		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+		fmt.Sprintf(
+			"%s%s%d",
+			transport.SLOT,
+			transport.DELIMITER,
+			adID),
+		slotID,
+		config.Config.Clickyab.MegaImpExpire,
+	))
 }
 
 func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.CountryInfo, error) {
@@ -278,7 +288,7 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 	)
 	reserve := make(map[string]string)
 	for slotID := range slotSize {
-		tmp := config.Config.MachineName + <-utils.ID
+		tmp := config.Config.MachineName + "-" + <-utils.ID
 		store.Reserve(tmp)
 		reserve[slotID] = tmp
 		show[slotID] = fmt.Sprintf(
@@ -297,22 +307,21 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 
 	go func() {
 
+		err := tc.createMegaKey(rd, website, winnerAd)
+		assert.Nil(err)
 		filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
 
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		for slotID := range slotSize {
 			exceedFloor := &mr.CappingLocker{}
 			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
-				fmt.Print("IN-1")
 				if tc.doBid(adData, website, slotSize[slotID], video) {
 					if exceedFloor.Len() == 0 {
 						exceedFloor.Set(adData.Capping.GetCapping())
 					}
-					fmt.Print("-BID-")
 					//minimum capping
 					if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
 						exceedFloor.Append(adData)
-						fmt.Print("-ADD-")
 					}
 
 				}
@@ -344,14 +353,12 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
 			video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
+			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotID)
 			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
 			//show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
 			assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
 			// TODO {fzerorubigd} : Can we check for inner capping increase?
 		}
-
-		err := tc.addMegaKey(rd, website, winnerAd)
-		assert.Nil(err)
 	}()
 	return show
 }

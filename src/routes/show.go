@@ -22,7 +22,7 @@ import (
 
 	"net/url"
 
-	"store"
+	"cache"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
@@ -74,7 +74,12 @@ func (tc *selectController) show(c echo.Context) error {
 		return c.String(http.StatusNotFound, "not found")
 	}
 
-	ad, _ := store.Get(c.Param("ad"))
+	ad, err := cache.Get(c.Param("ad"))
+	if err != nil {
+		logrus.Warn(err)
+		return c.String(http.StatusNotFound, "not found")
+	}
+
 	adID, err := strconv.ParseInt(ad, 10, 64)
 	assert.Nil(err)
 	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
@@ -89,11 +94,13 @@ func (tc *selectController) show(c echo.Context) error {
 
 	megaImp, err := aredis.HGetAllString(transport.MEGA+transport.DELIMITER+mega, false, 0)
 	assert.Nil(err)
+
+	fmt.Println(megaImp)
 	var winnerBid string
 	var winnerFinalBid int64
 	var ok bool
 	if winnerBid, ok = megaImp[fmt.Sprintf("%s%s%s", transport.ADVERTISE, transport.DELIMITER, ad)]; !ok {
-		return c.String(http.StatusNotFound, "ad not found")
+		return c.String(http.StatusNotFound, "ad not found " + ad)
 	}
 	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
 

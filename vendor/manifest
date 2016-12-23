@@ -50,9 +50,49 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/golang/groupcache",
+			"repository": "https://github.com/golang/groupcache",
+			"revision": "d092608c065831f1984ac9d332ca5b2c95a11f57",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/golang/protobuf/proto",
+			"repository": "https://github.com/golang/protobuf",
+			"revision": "8ee79997227bf9b34611aee7946ae64735e6fd93",
+			"branch": "master",
+			"path": "/proto"
+		},
+		{
 			"importpath": "github.com/gorilla/websocket",
 			"repository": "https://github.com/gorilla/websocket",
 			"revision": "3ab3a8b8831546bd18fd182c20687ca853b2bb13",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/hashicorp/go.net/internal/iana",
+			"repository": "https://github.com/hashicorp/go.net",
+			"revision": "104dcad90073cd8d1e6828b2af19185b60cf3e29",
+			"branch": "master",
+			"path": "/internal/iana"
+		},
+		{
+			"importpath": "github.com/hashicorp/go.net/ipv4",
+			"repository": "https://github.com/hashicorp/go.net",
+			"revision": "104dcad90073cd8d1e6828b2af19185b60cf3e29",
+			"branch": "master",
+			"path": "/ipv4"
+		},
+		{
+			"importpath": "github.com/hashicorp/go.net/ipv6",
+			"repository": "https://github.com/hashicorp/go.net",
+			"revision": "104dcad90073cd8d1e6828b2af19185b60cf3e29",
+			"branch": "master",
+			"path": "/ipv6"
+		},
+		{
+			"importpath": "github.com/hashicorp/mdns",
+			"repository": "https://github.com/hashicorp/mdns",
+			"revision": "9d85cf22f9f8d53cb5c81c1b2749f438b2ee333f",
 			"branch": "master"
 		},
 		{
@@ -99,6 +139,12 @@
 			"importpath": "github.com/mattn/go-isatty",
 			"repository": "https://github.com/mattn/go-isatty",
 			"revision": "30a891c33c7cde7b02a981314b4228ec99380cca",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/miekg/dns",
+			"repository": "https://github.com/miekg/dns",
+			"revision": "4f8d08ab3c3f260afc934e9baf564bede5795458",
 			"branch": "master"
 		},
 		{

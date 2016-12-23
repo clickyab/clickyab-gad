@@ -67,9 +67,11 @@
         state: started
         recreate: yes
         ports:
-          - 80:80
+          - 8000:80
         volumes:
           - /home/cy/gad:/app
+        env:
+          GAD_IP: "{{ ansible_eth1['ipv4']['address'] }}"
 
 - name: Run click worker
   hosts: click

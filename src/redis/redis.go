@@ -146,3 +146,13 @@ func HMSet(key string, expire time.Duration, fields map[string]string) error {
 	Client.Expire(key, expire)
 	return nil
 }
+
+// StoreHashKey is a simple function to set hash key
+func StoreHashKey(key, subkey, data string, expire time.Duration) error {
+	err := Client.HSet(key, subkey, data).Err()
+	if err == nil {
+		err = Client.Expire(key, expire).Err()
+	}
+	
+	return err
+}
