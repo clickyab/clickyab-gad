@@ -57,7 +57,7 @@ func Initialize() {
 	o.AddLazyLayer(extraenv.NewExtraEnvLayer("GAD"))
 	o.GetStruct("", &Config)
 	// TODO {fzerorubigd}: Onion does not support slice in struct mapping
-	Config.Clickyab.CTRConst = o.GetStringSlice("clickyab.ctr_const")
+	//Config.Clickyab.CTRConst = o.GetStringSlice("clickyab.ctr_const")
 	Config.Clickyab.DailyImpExpire = o.GetDuration("clickyab.daily_imp_expire")
 	Config.Clickyab.DailyClickExpire = o.GetDuration("clickyab.daily_click_expire")
 	Config.Clickyab.DailyCapExpire = o.GetDuration("clickyab.daily_cap_expire")

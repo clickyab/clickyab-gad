@@ -11,14 +11,13 @@ import (
 	"gopkg.in/labstack/echo.v3"
 )
 
-// Routes function @todo
+// Routes function register all routes in system
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/select", tc.selectWebAd, middlewares.RequestCollector, middlewares.Header)
 	e.GET("/show/:type/:mega/:wid/:ad", tc.show, middlewares.RequestCollector, middlewares.Header)
 	e.GET("/click/:wid/:mega/:ad/:rand", tc.click, middlewares.RequestCollector, middlewares.Header)
 	e.GET("/conversion/", tc.conversion, middlewares.RequestCollector, middlewares.Header)
 	e.GET("/ads/vast/", tc.selectVastAd, middlewares.RequestCollector, middlewares.Header)
-	e.GET("/version", tc.version, middlewares.Header)
 	e.GET("/allads", tc.allAds, middlewares.RequestCollector, middlewares.Header)
 
 	postfix := "-min.js"

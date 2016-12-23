@@ -98,3 +98,19 @@
         recreate: yes
         volumes:
           - /home/cy/gad:/app
+
+- name: Run warn worker
+  hosts: warn
+  tasks:
+
+    - name: Re-create warn worker
+      docker_container:
+        name: gad-warn
+        image: registry.clickyab.ae/clickyab/gad-runner
+        command: /app/bin/warnworker
+        state: started
+        restart_policy: always
+        recreate: yes
+        volumes:
+          - /home/cy/gad:/app
+

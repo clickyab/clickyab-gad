@@ -7,12 +7,12 @@ import (
 	"middlewares"
 )
 
-// Context type @todo
+// Context is the context used in reducer functions
 type Context struct {
 	middlewares.RequestData
 	// TODO : its better to have a unique size array
 	Size    map[string]int
-	Website *mr.WebsiteData
+	Website *mr.Website
 	Country *mr.CountryInfo
 }
 

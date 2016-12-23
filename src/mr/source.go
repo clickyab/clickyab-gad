@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// SharpArray type @todo
+// SharpArray type is the hack to handle # splited text in our database
 type SharpArray string
 
 // MinAdData min data

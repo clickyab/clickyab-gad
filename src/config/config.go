@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"runtime"
 	"time"
-	"transport"
 
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"
@@ -28,6 +27,7 @@ type AppConfig struct {
 	CORS            bool   `onion:"cors"`
 	MaxCPUAvailable int    `onion:"max_cpu_available"`
 	MountPoint      string `onion:"mount_point"`
+	MachineName     string `onion:"machine_name"`
 
 	Site  string
 	Proto string
@@ -88,14 +88,15 @@ type AppConfig struct {
 	}
 
 	Clickyab struct {
-		MaxLoadFail      int           `onion:"max_load_fail"`
-		DefaultCTR       float64       `onion:"default_ctr"`
-		CTRConst         []string      `onion:"ctr_const"`
+		MaxLoadFail int     `onion:"max_load_fail"`
+		DefaultCTR  float64 `onion:"default_ctr"`
+		//CTRConst         []string      `onion:"ctr_const"`
 		MinImp           int64         `onion:"min_imp"`
 		MinFrequency     int           `onion:"min_frequency"`
 		DailyImpExpire   time.Duration `onion:"daily_imp_expire"`
 		DailyClickExpire time.Duration `onion:"daily_click_expire"`
 		DailyCapExpire   time.Duration `onion:"daily_cap_expire"`
+		MegaImpExpire    time.Duration `onion:"mega_imp_expire"`
 		MinCPMFloor      int64         `onion:"min_cpm_floor"`
 		CopLen           int           `onion:"cop_len"`
 		FastClick        int64         `onion:"fast_click"`
@@ -127,6 +128,8 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("proto", "http"))
 	assert.Nil(d.SetDefault("port", ":80"))
 	assert.Nil(d.SetDefault("time_zone", "Asia/Tehran"))
+	assert.Nil(d.SetDefault("machine_name", "m1"))
+
 	p, err := expand.Path("$HOME/gad/statics")
 	assert.Nil(err)
 	assert.Nil(d.SetDefault("static_root", p))
@@ -164,21 +167,22 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("select.balance", 50000))
 
 	assert.Nil(d.SetDefault("clickyab.default_ctr", 0.1))
-	assert.Nil(d.SetDefault(
-		"clickyab.ctr_const",
-		[]string{
-			transport.AD_SLOT,
-			transport.AD_WEBSITE,
-			transport.CAMPAIGN,
-			transport.CAMPAIGN_SLOT,
-			transport.SLOT,
-		},
-	))
+	//assert.Nil(d.SetDefault(
+	//	"clickyab.ctr_const",
+	//	[]string{
+	//		transport.AD_SLOT,
+	//		transport.AD_WEBSITE,
+	//		transport.CAMPAIGN,
+	//		transport.CAMPAIGN_SLOT,
+	//		transport.SLOT,
+	//	},
+	//))
 	assert.Nil(d.SetDefault("clickyab.min_imp", 1000))
 	assert.Nil(d.SetDefault("clickyab.min_frequency", 2))
 	assert.Nil(d.SetDefault("clickyab.daily_imp_expire", 7*24*time.Hour))
 	assert.Nil(d.SetDefault("clickyab.daily_click_expire", 7*24*time.Hour))
 	assert.Nil(d.SetDefault("clickyab.daily_cap_expire", 72*time.Hour))
+	assert.Nil(d.SetDefault("clickyab.mega_imp_expire", 2*time.Hour))
 	assert.Nil(d.SetDefault("clickyab.conv_delay", time.Second*10))
 	assert.Nil(d.SetDefault("clickyab.conv_retry", 8))
 	assert.Nil(d.SetDefault("clickyab.min_cpm_floor", 150))

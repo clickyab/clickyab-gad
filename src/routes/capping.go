@@ -25,9 +25,8 @@ func getCappingKey(copID int64) string {
 }
 
 func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
-	var userMinView int
 
-	results, _ := aredis.HGetAll(getCappingKey(copID), true, 72*time.Hour)
+	results, _ := aredis.HGetAll(getCappingKey(copID), true, config.Config.Clickyab.DailyCapExpire)
 	for i := range sizeNumSlice {
 		for ad := range filteredAds[sizeNumSlice[i]] {
 			view := results[fmt.Sprintf(
@@ -46,11 +45,6 @@ func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filter
 				view,
 				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency,
 			)
-			if userMinView == 0 {
-				userMinView = view
-			} else if view > 0 && userMinView > view {
-				userMinView = view
-			}
 		}
 		sortCap := mr.ByCapping(filteredAds[sizeNumSlice[i]])
 		sort.Sort(sortCap)
