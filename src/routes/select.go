@@ -11,16 +11,18 @@ import (
 	"modules"
 	"mr"
 	"net"
+	"net/http"
+	"net/http/httputil"
+	"rabbit"
 	"redis"
 	"regexp"
 	"selector"
 	"sort"
+	"store"
 	"strconv"
 	"time"
 	"transport"
 	"utils"
-
-	"net/http"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
@@ -104,7 +106,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData, slot *slotData, video bool) bool {
+func (tc *selectController) doBid(adData *mr.AdData, website *mr.Website, slot *slotData, video bool) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
@@ -114,7 +116,7 @@ func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData,
 	return adData.CPM >= website.WFloorCpm.Int64 && (!video || adData.AdType != config.AdTypeVideo)
 }
 
-func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.MinAdData) int64 {
+func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.AdData) int64 {
 	var secondCPM = floorCPM
 	if len(exceedFloor) > 1 && exceedFloor[0].Capping.GetSelected() == exceedFloor[1].Capping.GetSelected() {
 		secondCPM = exceedFloor[1].CPM
@@ -123,13 +125,12 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.MinAd
 	return secondCPM
 }
 
-func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.WebsiteData, winnerAd map[string]*mr.MinAdData) error {
+func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.Website, winnerAd map[string]*mr.AdData) error {
 	// add mega imp
 	ip, err := utils.IP2long(rd.IP)
 	if err != nil {
 		logrus.Warn(err) // TODO : why????
 	}
-	// TODO : get interface from redis?
 	tmp := map[string]string{
 		"IP": fmt.Sprintf("%d", ip),
 		"UA": rd.UserAgent,
@@ -138,18 +139,26 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 	}
 
 	for i := range winnerAd {
-		tmp[fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].WinnerBid)
-		tmp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].SlotID)
+		tmp[fmt.Sprintf(
+			"%s%s%d",
+			transport.ADVERTISE,
+			transport.DELIMITER,
+			winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].WinnerBid)
+		tmp[fmt.Sprintf(
+			"%s%s%d",
+			transport.SLOT,
+			transport.DELIMITER,
+			winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].SlotID)
 	}
 
-	//TODO : Config time
 	return aredis.HMSet(
-		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp), time.Hour,
+		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+		config.Config.Clickyab.MegaImpExpire,
 		tmp,
 	)
 }
 
-func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.WebsiteData, *mr.CountryInfo, error) {
+func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.CountryInfo, error) {
 	rd := middlewares.MustGetRequestData(c)
 
 	params := c.QueryParams()
@@ -183,7 +192,7 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 }
 
 //FetchWebsite website and check if the minimum floor is applied
-func (selectController) fetchWebsite(publicID int64) (*mr.WebsiteData, error) {
+func (selectController) fetchWebsite(publicID int) (*mr.Website, error) {
 	website, err := mr.NewManager().FetchWebsiteByPublicID(publicID)
 	if err != nil {
 		return nil, err
@@ -209,7 +218,7 @@ func (selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
 
 }
 
-func (tc selectController) slotSizeWeb(params map[string][]string, website mr.WebsiteData, mobile bool) (map[string]*slotData, map[string]int) {
+func (tc selectController) slotSizeWeb(params map[string][]string, website mr.Website, mobile bool) (map[string]*slotData, map[string]int) {
 	var size = make(map[string]string)
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
@@ -255,62 +264,95 @@ func (selectController) insertNewSlots(wID int64, newSlots ...int64) map[string]
 }
 
 // CalculateCtr calculate ctr
-func (selectController) calculateCTR(ad *mr.MinAdData, slot *slotData) float64 {
+func (selectController) calculateCTR(ad *mr.AdData, slot *slotData) float64 {
 	//fmt.Println(ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect),slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect),(ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100))
 	return (ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100)
 }
 
-func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares.RequestData, filteredAds map[int][]*mr.MinAdData, sizeNumSlice map[string]int, slotSize map[string]*slotData, website *mr.WebsiteData, multipleVideo bool) map[string]string {
+func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, sizeNumSlice map[string]int, slotSize map[string]*slotData, website *mr.Website, multipleVideo bool) map[string]string {
 
 	var (
-		winnerAd = make(map[string]*mr.MinAdData)
+		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
 		video    bool // once set, never unset it again
 	)
-
-	//go func() {
-
-	filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
-
-	// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
+	reserve := make(map[string]string)
 	for slotID := range slotSize {
-		exceedFloor := &mr.CappingLocker{}
-		for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
-			if tc.doBid(adData, website, slotSize[slotID], video) {
-				if exceedFloor.Len() == 0 {
-					exceedFloor.Set(adData.Capping.GetCapping())
-				}
-
-				//minimum capping
-				if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
-					exceedFloor.Append(adData)
-				}
-			}
-		}
-		if exceedFloor.Len() < 1 {
-			// TODO : send a warning, log it or anything else:)
-			logrus.Warnf("no ad for %s with floor %d ", website.WDomain, website.WFloorCpm)
-			show[slotID] = ""
-			continue
-		}
-		ef := mr.ByCPM(exceedFloor.GetData())
-		sort.Sort(ef)
-		sorted := []*mr.MinAdData(ef)
-
-		secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
-		sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
-		sorted[0].Capping.IncView(1)
-		winnerAd[slotID] = sorted[0]
-		winnerAd[slotID].SlotID = slotSize[slotID].ID
-		video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
-		show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&parent=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Referrer, rd.Parent, slotSize[slotID].ID)
-		assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
-		// TODO {fzerorubigd} : Can we check for inner capping increase?
+		tmp := config.Config.MachineName + <-utils.ID
+		store.Reserve(tmp)
+		reserve[slotID] = tmp
+		show[slotID] = fmt.Sprintf(
+			"%s://%s/show/%s/%s/%d/%s?tid=%s&ref=%s&s=%d",
+			rd.Proto,
+			rd.URL,
+			typ,
+			rd.MegaImp,
+			website.WID,
+			tmp,
+			rd.TID,
+			rd.Parent,
+			slotSize[slotID].ID,
+		)
 	}
 
-	err := tc.addMegaKey(rd, website, winnerAd)
-	assert.Nil(err)
-	//}()
+	go func() {
+
+		filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
+
+		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
+		for slotID := range slotSize {
+			exceedFloor := &mr.CappingLocker{}
+			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
+				fmt.Print("IN-1")
+				if tc.doBid(adData, website, slotSize[slotID], video) {
+					if exceedFloor.Len() == 0 {
+						exceedFloor.Set(adData.Capping.GetCapping())
+					}
+					fmt.Print("-BID-")
+					//minimum capping
+					if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
+						exceedFloor.Append(adData)
+						fmt.Print("-ADD-")
+					}
+
+				}
+			}
+			if exceedFloor.Len() < 1 {
+				go func() {
+					warn := transport.Warning{
+						Level:   "warning",
+						When:    time.Now(),
+						Where:   website.WDomain.String,
+						Message: fmt.Sprintf("no ad pass the bid, the floor was %d", website.WFloorCpm),
+					}
+					warn.Request, _ = httputil.DumpRequest(c.Request(), false)
+					err := rabbit.Publish("cy.warn", warn)
+					if err != nil {
+						logrus.Error(err)
+					}
+				}()
+				show[slotID] = ""
+				continue
+			}
+			ef := mr.ByCPM(exceedFloor.GetData())
+			sort.Sort(ef)
+			sorted := []*mr.AdData(ef)
+
+			secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
+			sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
+			sorted[0].Capping.IncView(1)
+			winnerAd[slotID] = sorted[0]
+			winnerAd[slotID].SlotID = slotSize[slotID].ID
+			video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
+			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
+			//show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
+			assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
+			// TODO {fzerorubigd} : Can we check for inner capping increase?
+		}
+
+		err := tc.addMegaKey(rd, website, winnerAd)
+		assert.Nil(err)
+	}()
 	return show
 }
 

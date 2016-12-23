@@ -138,13 +138,30 @@ func (tc *selectController) click(c echo.Context) error {
 		return c.String(http.StatusNotFound, "Not found")
 	}
 
-	// TODO : better handling
-	_, _ = aredis.IncHash(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, clikID), "OK", 1, config.Config.Clickyab.DailyClickExpire)
+	// Store a key in redis so conv worker can handle it
+	_, _ = aredis.IncHash(
+		fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, clikID),
+		"OK",
+		1,
+		config.Config.Clickyab.DailyClickExpire,
+	)
 	body := tc.replaceParameters(ads.AdURL.String, webSite.WDomain.String, ads.CampaignName.String, rand, result["IMPR"])
 	return c.HTML(200, body)
 }
 
-func (selectController) fillClick(ctx echo.Context, ads *mr.Ad, winnerBid int64, websiteID int64, slotID int64, inTime, outTime time.Time, slaID int64, impID int64, campaignAdID int64, status int64, rand string, tv bool) *transport.Click {
+func (selectController) fillClick(
+	ctx echo.Context,
+	ads *mr.Ad,
+	winnerBid int64,
+	websiteID int64,
+	slotID int64,
+	inTime, outTime time.Time,
+	slaID int64,
+	impID int64,
+	campaignAdID int64,
+	status int64,
+	rand string,
+	tv bool) *transport.Click {
 	rd := middlewares.MustGetRequestData(ctx)
 	adID, err := strconv.ParseInt(ctx.Param("ad"), 10, 0)
 	assert.Nil(err)
@@ -194,5 +211,7 @@ func (selectController) replaceParameters(url, domain, campaign, clickID, impID 
 	)
 
 	url = r.Replace(url)
-	return `<html><head><title>$imp_url</title><meta name="robots" content="nofollow"/></head><body><script>window.setTimeout( function() { window.location.href = '` + url + `' }, 500 );</script></body></html>`
+	return `<html><head><title>$imp_url</title><meta name="robots" content="nofollow"/></head>
+			<body><script>window.setTimeout( function() { window.location.href = '` + url + `' }, 500 );</script></body>
+			</html>`
 }

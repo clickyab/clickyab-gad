@@ -9,11 +9,11 @@ import (
 	"strings"
 )
 
-// SharpArray type @todo
+// SharpArray type is the hack to handle # splited text in our database
 type SharpArray string
 
 // MinAdData min data
-type MinAdData struct {
+type AdData struct {
 	CampaignData
 	AdID              int64                   `json:"ad_id" db:"ad_id"`
 	CampaignFrequency int                     `json:"cp_frequency" db:"cp_frequency"`
@@ -118,7 +118,7 @@ type CampaignData struct {
 }
 
 //ByCPM sort by cpm
-type ByCPM []*MinAdData
+type ByCPM []*AdData
 
 func (a ByCPM) Len() int {
 	return len(a)
@@ -134,7 +134,7 @@ func (a ByCPM) Less(i, j int) bool {
 }
 
 // ByCapping sort by Capping
-type ByCapping []*MinAdData
+type ByCapping []*AdData
 
 func (a ByCapping) Len() int {
 	return len(a)

@@ -7,22 +7,22 @@ import (
 	"middlewares"
 )
 
-// Context type @todo
+// Context is the context used in reducer functions
 type Context struct {
 	middlewares.RequestData
 	// TODO : its better to have a unique size array
 	Size    map[string]int
-	Website *mr.WebsiteData
+	Website *mr.Website
 	Country *mr.CountryInfo
 }
 
 // FilterFunc is the type use to filter the
-type FilterFunc func(*Context, mr.MinAdData) bool
+type FilterFunc func(*Context, mr.AdData) bool
 
 // Mix try to mix multiple filter to single function so there is no need to
 // call Apply more than once
 func Mix(f ...FilterFunc) FilterFunc {
-	return func(c *Context, a mr.MinAdData) bool {
+	return func(c *Context, a mr.AdData) bool {
 		for i := range f {
 			if !f[i](c, a) {
 				return false
@@ -34,8 +34,8 @@ func Mix(f ...FilterFunc) FilterFunc {
 
 // Apply get the data and then call filter on each of them concurrently, the
 // result is the accepted items
-func Apply(ctx *Context, in []mr.MinAdData, ff FilterFunc) map[int][]*mr.MinAdData {
-	m := make(map[int][]*mr.MinAdData)
+func Apply(ctx *Context, in []mr.AdData, ff FilterFunc) map[int][]*mr.AdData {
+	m := make(map[int][]*mr.AdData)
 	for i := range in {
 		if ff(ctx, in[i]) {
 			n := in[i]

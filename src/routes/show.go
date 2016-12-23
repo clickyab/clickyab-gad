@@ -22,6 +22,8 @@ import (
 
 	"net/url"
 
+	"store"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -71,7 +73,8 @@ func (tc *selectController) show(c echo.Context) error {
 	if typ != "web" && typ != "vast" {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	ad := c.Param("ad")
+
+	ad, _ := store.Get(c.Param("ad"))
 	adID, err := strconv.ParseInt(ad, 10, 64)
 	assert.Nil(err)
 	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
@@ -98,9 +101,10 @@ func (tc *selectController) show(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	rand := <-utils.ID
-	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s?tid=%s&ref=%s&parent=%s", rd.Proto, rd.URL, websiteID, mega, adID, rand, rd.TID, rd.Referrer, rd.Parent)
-	res, err := tc.makeAdData(c, typ, ads, url, long, pos)
+
+	rnd := <-utils.ID
+	clickUrl := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s?tid=%s&ref=%s&parent=%s", rd.Proto, rd.URL, websiteID, mega, adID, rnd, rd.TID, rd.Referrer, rd.Parent)
+	res, err := tc.makeAdData(c, typ, ads, clickUrl, long, pos)
 	if err != nil {
 		return err
 	}
@@ -108,7 +112,7 @@ func (tc *selectController) show(c echo.Context) error {
 	assert.Nil(err)
 	imp := tc.fillImp(rd, suspicious, ads, winnerFinalBid, websiteID, slotID)
 
-	go tc.callWorker(websiteID, slotID, adID, mega, rand, imp, rd)
+	go tc.callWorker(websiteID, slotID, adID, mega, rnd, imp, rd)
 	if typ == "vast" {
 		return c.XMLBlob(http.StatusOK, []byte(res))
 	}
@@ -148,8 +152,16 @@ func (selectController) callWorker(WID int64, slotID int64, adID int64, mega str
 		"CPADID": strconv.FormatInt(imp.CampaignAdID, 10),
 		"SLAID":  strconv.FormatInt(imp.SlaID, 10),
 	}
-	// TODO : Config time
-	err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%d", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, adID), 2*time.Hour, tmp)
+	err = aredis.HMSet(
+		fmt.Sprintf(
+			"%s%s%s%s%d",
+			transport.IMP,
+			transport.DELIMITER,
+			mega,
+			transport.DELIMITER,
+			adID),
+		config.Config.Clickyab.MegaImpExpire,
+		tmp)
 	if err != nil {
 		logrus.WithField("cy.imp", imp).Error("error in hmset", err)
 	}

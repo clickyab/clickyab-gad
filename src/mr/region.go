@@ -1,6 +1,6 @@
 package mr
 
-//RegionData type is @todo
+//RegionData type is a location structure
 type RegionData struct {
 	LocationID     int64  `json:"location_id" db:"location_id"`
 	LocationName   string `json:"location_name" db:"location_name"`

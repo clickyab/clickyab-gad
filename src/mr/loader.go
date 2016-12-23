@@ -12,9 +12,9 @@ import (
 	"utils"
 )
 
-// LoadAds function @todo
-func (m *Manager) LoadAds() ([]MinAdData, error) {
-	var res []MinAdData
+// LoadAds load all ads at once and return them
+func (m *Manager) LoadAds() ([]AdData, error) {
+	var res []AdData
 	//t:= strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 	t := time.Now()
 	u := t.Unix()                          //return date in unixtimestamp
@@ -59,7 +59,7 @@ func (m *Manager) LoadAds() ([]MinAdData, error) {
 	for i := range res {
 		//get redis key for ad
 		result, err := aredis.SumHMGetField(
-			utils.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)),
+			transport.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)),
 			config.Config.Redis.Days,
 			"i",
 			"c",
@@ -74,7 +74,7 @@ func (m *Manager) LoadAds() ([]MinAdData, error) {
 	return res, nil
 }
 
-// FetchRegion function @todo
+// FetchRegion get the list of all region in database
 func (m *Manager) FetchRegion() (*RegionData, error) {
 	var res = RegionData{}
 

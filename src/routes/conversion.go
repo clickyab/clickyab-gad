@@ -11,7 +11,7 @@ import (
 
 const message = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII="
 
-// TODO : send the conversion job and return an empty image
+// send the conversion job and return an empty image
 func (tc *selectController) conversion(c echo.Context) error {
 
 	//click_id

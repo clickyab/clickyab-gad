@@ -64,7 +64,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	return c.XMLBlob(http.StatusOK, result.Bytes())
 }
 
-func (tc *selectController) slotSizeVast(websitePublicID int64, length map[string][]string, website mr.WebsiteData) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
+func (tc *selectController) slotSizeVast(websitePublicID int64, length map[string][]string, website mr.Website) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
 	var vastSlot = make(map[string]vastSlotData)
@@ -90,7 +90,7 @@ func (tc *selectController) slotSizeVast(websitePublicID int64, length map[strin
 
 }
 
-func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.WebsiteData, *mr.CountryInfo, string, map[string][]string, error) {
+func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.CountryInfo, string, map[string][]string, error) {
 	rd := middlewares.MustGetRequestData(c)
 
 	publicID, err := strconv.ParseInt(c.QueryParam("a"), 10, 0)
@@ -149,7 +149,7 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 	}
 
 	for i := range answer {
-		result, err := aredis.SumHMGetField(utils.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), config.Config.Redis.Days, "i", "c")
+		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), config.Config.Redis.Days, "i", "c")
 		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
 			answer[i].Ctr = config.Config.Clickyab.DefaultCTR
 		} else {

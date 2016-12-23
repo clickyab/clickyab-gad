@@ -6,6 +6,6 @@ import (
 )
 
 // CheckWhiteList return boolean
-func CheckWhiteList(c *selector.Context, in mr.MinAdData) bool {
+func CheckWhiteList(c *selector.Context, in mr.AdData) bool {
 	return in.CampaignPlacement.Has(true, c.Website.WID)
 }

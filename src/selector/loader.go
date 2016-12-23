@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	loaded []mr.MinAdData
+	loaded []mr.AdData
 	lock   = &sync.RWMutex{}
 	once   = &sync.Once{}
 )
@@ -42,15 +42,15 @@ func interval() {
 	ticker.Stop()
 }
 
-// GetAdData function @todo
-func GetAdData() []mr.MinAdData {
+// GetAdData return the current stored ad data
+func GetAdData() []mr.AdData {
 	lock.RLock()
 	defer lock.RUnlock()
 
 	return loaded
 }
 
-// Initialize funct @todo
+// Initialize initialize the models
 func (m *myModel) Initialize() {
 	once.Do(func() {
 		var err error
