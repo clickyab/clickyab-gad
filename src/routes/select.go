@@ -289,7 +289,7 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 		}
 		if exceedFloor.Len() < 1 {
 			// TODO : send a warning, log it or anything else:)
-			logrus.Warn("no ad")
+			logrus.Warnf("no ad for %s with floor %d ", website.WDomain, website.WFloorCpm)
 			show[slotID] = ""
 			continue
 		}
@@ -303,7 +303,7 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 		winnerAd[slotID] = sorted[0]
 		winnerAd[slotID].SlotID = slotSize[slotID].ID
 		video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
-		show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
+		show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&parent=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Referrer, rd.Parent, slotSize[slotID].ID)
 		assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
 		// TODO {fzerorubigd} : Can we check for inner capping increase?
 	}

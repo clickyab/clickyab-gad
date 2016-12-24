@@ -176,7 +176,7 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.conv_retry", 8))
 	assert.Nil(d.SetDefault("clickyab.min_cpm_floor", 150))
 	assert.Nil(d.SetDefault("clickyab.max_load_fail", 3))
-	assert.Nil(d.SetDefault("clickyab.cop_len", 9))
+	assert.Nil(d.SetDefault("clickyab.cop_len", 10))
 	assert.Nil(d.SetDefault("clickyab.fast_click", 4))
 	assert.Nil(d.SetDefault("clickyab.ad_ctr_effect", 30))
 	assert.Nil(d.SetDefault("clickyab.slot_ctr_effect", 70))

@@ -99,7 +99,7 @@ func (tc *selectController) show(c echo.Context) error {
 		return c.String(http.StatusNotFound, "not found")
 	}
 	rand := <-utils.ID
-	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s&ref=%s", rd.Proto, rd.URL, websiteID, mega, adID, rand, rd.Parent)
+	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s?tid=%s&ref=%s&parent=%s", rd.Proto, rd.URL, websiteID, mega, adID, rand, rd.TID, rd.Referrer, rd.Parent)
 	res, err := tc.makeAdData(c, typ, ads, url, long, pos)
 	if err != nil {
 		return err

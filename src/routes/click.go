@@ -23,11 +23,11 @@ const (
 	suspFastClick      = 9
 	suspSlowClick      = 8
 	suspNoAdFound      = 16
-	suspWSMismatch     = 1024
-	suspRndMismatch    = 1025
-	suspIPMismatch     = 1026
-	suspUAMismatch     = 1027
-	suspInvalidWebsite = 1028
+	suspWSMismatch     = 94
+	suspRndMismatch    = 95
+	suspIPMismatch     = 96
+	suspUAMismatch     = 97
+	suspInvalidWebsite = 98
 )
 
 func assertNil(status bool, err error) {

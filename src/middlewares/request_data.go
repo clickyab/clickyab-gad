@@ -5,9 +5,7 @@ import (
 	"config"
 	"errors"
 	"mr"
-
 	"net"
-
 	"utils"
 
 	"github.com/mssola/user_agent"
@@ -45,7 +43,7 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.UserAgent = ctx.Request().UserAgent()
 		ua := user_agent.New(ctx.Request().UserAgent())
 		e.URL = ctx.Request().Host
-		e.Proto = ctx.Request().Proto
+		e.Proto = ctx.Scheme()
 		name, version := ua.Browser()
 		e.Browser = name
 		e.BrowserVersion = version
@@ -57,6 +55,9 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		e.Method = ctx.Request().Method
 		e.MegaImp = <-utils.ID
 		e.Parent = ctx.Request().URL.Query().Get("parent")
+		if e.Referrer == "" {
+			e.Referrer = ctx.Request().Referer()
+		}
 
 		if e.TID = ctx.Request().URL.Query().Get("tid"); len(e.TID) < config.Config.Clickyab.CopLen {
 			e.TID = utils.CreateCopID(e.UserAgent, e.IP, config.Config.Clickyab.CopLen)

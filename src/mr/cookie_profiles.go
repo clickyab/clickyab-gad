@@ -2,7 +2,6 @@ package mr
 
 import (
 	"assert"
-	"config"
 	"database/sql"
 	"fmt"
 	"net"
@@ -59,7 +58,13 @@ func (m *Manager) InsertCookieProfile(cop string, ip net.IP) (*CookieProfile, er
 		IP:   ipNullString,
 		Date: date,
 	}
-	err := m.GetWDbMap().Insert(co)
+
+	q := "INSERT INTO cookie_profiles (`cop_key`, `cop_last_ip`,`cop_active_date`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `cop_active_date`= ?"
+	d, err := m.GetWDbMap().Exec(q, co.Key, co.IP, co.Date, co.Date)
+	if err != nil {
+		return nil, err
+	}
+	co.ID, err = d.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +73,7 @@ func (m *Manager) InsertCookieProfile(cop string, ip net.IP) (*CookieProfile, er
 
 // CreateCookieProfile try to select/create a cookie profile
 func (m *Manager) CreateCookieProfile(key string, ip net.IP) *CookieProfile {
-	key = key[:config.Config.Clickyab.CopLen]
+	//key = key[:config.Config.Clickyab.CopLen]
 	res, err := m.FetchCookieProfile(key)
 	if err != nil {
 		res, err = m.InsertCookieProfile(key, ip)
