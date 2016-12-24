@@ -86,8 +86,11 @@ func IP2long(ip net.IP) (uint32, error) {
 	if ip == nil {
 		return 0, errors.New("wrong ipAddr format")
 	}
-	ip = ip.To4()
-	return binary.BigEndian.Uint32(ip), nil
+	ip2 := ip.To4()
+	if ip2 == nil {
+		return 0, fmt.Errorf("ipv6? the input was %s", ip.String())
+	}
+	return binary.BigEndian.Uint32(ip2), nil
 }
 
 // WaitSignal get os signal
