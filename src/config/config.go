@@ -136,10 +136,10 @@ func defaultLayer() onion.Layer {
 	assert.Nil(
 		d.SetDefault(
 			"mysql.rdsn",
-			"dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-1.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true",
+			"dev:cH3M7Z7I4sY8QP&ll130U&73&6KS$o@tcp(db-1.clickyab.ae:3306)/clickyab?charset=utf8&parseTime=true&charset=utf8",
 		),
 	)
-	assert.Nil(d.SetDefault("mysql.wdsn", "root:bita123@tcp(127.0.0.1:3306)/clickyab?charset=utf8&parseTime=true"))
+	assert.Nil(d.SetDefault("mysql.wdsn", "root:bita123@tcp(127.0.0.1:3306)/clickyab?charset=utf8&parseTime=true&charset=utf8"))
 	assert.Nil(d.SetDefault("mysql.max_connection", 30))
 	assert.Nil(d.SetDefault("mysql.max_idle_connection", 5))
 

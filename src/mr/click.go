@@ -70,7 +70,7 @@ func (m *Manager) InsertClick(click *transport.Click) error {
 		click.Web.ParentURL,
 		click.OutTime.Unix()-click.InTime.Unix(),
 		click.OS,
-		click.OutTime,
+		click.OutTime.Unix(),
 		click.OutTime.Format("20060102"),
 	)
 	if err != nil {
