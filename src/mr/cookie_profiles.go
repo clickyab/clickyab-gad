@@ -59,7 +59,8 @@ func (m *Manager) InsertCookieProfile(cop string, ip net.IP) (*CookieProfile, er
 		Date: date,
 	}
 
-	q := "INSERT INTO cookie_profiles (`cop_key`, `cop_last_ip`,`cop_active_date`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `cop_active_date`= ?"
+	q := "INSERT INTO cookie_profiles (`cop_key`, `cop_last_ip`,`cop_active_date`) " +
+		"VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `cop_active_date`= ?"
 	d, err := m.GetWDbMap().Exec(q, co.Key, co.IP, co.Date, co.Date)
 	if err != nil {
 		return nil, err

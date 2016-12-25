@@ -104,14 +104,14 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData, slot *slotData, video bool) bool {
+func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData, slot *slotData) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
 	)
 	adData.CPM = utils.Cpm(adData.CampaignMaxBid, adData.CTR)
 	//exceed cpm floor
-	return adData.CPM >= website.WFloorCpm.Int64 && (!video || adData.AdType != config.AdTypeVideo)
+	return adData.CPM >= website.WFloorCpm.Int64
 }
 
 func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.MinAdData) int64 {
@@ -275,33 +275,56 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 	// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 	for slotID := range slotSize {
 		exceedFloor := &mr.CappingLocker{}
+		underFloor := &mr.CappingLocker{}
 		for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
-			if tc.doBid(adData, website, slotSize[slotID], video) {
-				if exceedFloor.Len() == 0 {
-					exceedFloor.Set(adData.Capping.GetCapping())
-				}
+			if !video || adData.AdType != config.AdTypeVideo {
+				if tc.doBid(adData, website, slotSize[slotID]) {
+					if exceedFloor.Len() == 0 {
+						exceedFloor.Set(adData.Capping.GetCapping())
+					}
 
-				//minimum capping
-				if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
-					exceedFloor.Append(adData)
+					//minimum capping
+					if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
+						exceedFloor.Append(adData)
+					}
+				} else if adData.WinnerBid == 0 {
+					underFloor.Append(adData)
 				}
 			}
 		}
+		var sorted []*mr.MinAdData
 		if exceedFloor.Len() < 1 {
-			// TODO : send a warning, log it or anything else:)
-			logrus.Warnf("no ad for %s with floor %d ", website.WDomain, website.WFloorCpm)
-			show[slotID] = ""
-			continue
+			if !config.Config.Clickyab.UnderFloor || underFloor.Len() < 1 {
+				// TODO : send a warning, log it or anything else:)
+				logrus.Warnf(
+					"no ad for %s with floor %d try under floor : %b (under floor count : %d)",
+					website.WDomain.String,
+					website.WFloorCpm.Int64,
+					config.Config.Clickyab.UnderFloor,
+					underFloor.Len(),
+				)
+				show[slotID] = ""
+				continue
+			}
+			
+			ef := mr.ByCPM(underFloor.GetData())
+			sort.Sort(ef)
+			sorted = []*mr.MinAdData(ef)
+			// Do not do second biding pricing on this ads, they can not pass CPMFloor
+			sorted[0].WinnerBid = utils.WinnerBid(sorted[0].CPM, sorted[0].CTR)
+			sorted[0].Capping.IncView(1)
+			winnerAd[slotID] = sorted[0]
+			winnerAd[slotID].SlotID = slotSize[slotID].ID
+		} else {
+			ef := mr.ByCPM(exceedFloor.GetData())
+			sort.Sort(ef)
+			sorted = []*mr.MinAdData(ef)
+			secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
+			sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
+			sorted[0].Capping.IncView(1)
+			winnerAd[slotID] = sorted[0]
+			winnerAd[slotID].SlotID = slotSize[slotID].ID
 		}
-		ef := mr.ByCPM(exceedFloor.GetData())
-		sort.Sort(ef)
-		sorted := []*mr.MinAdData(ef)
-
-		secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
-		sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
-		sorted[0].Capping.IncView(1)
-		winnerAd[slotID] = sorted[0]
-		winnerAd[slotID].SlotID = slotSize[slotID].ID
 		video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
 		show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&parent=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Referrer, rd.Parent, slotSize[slotID].ID)
 		assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))

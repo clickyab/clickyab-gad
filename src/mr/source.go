@@ -25,6 +25,32 @@ type MinAdData struct {
 	CampaignID        int64            `json:"cp_id" db:"cp_id"`
 	AdType            int              `json:"ad_type" db:"ad_type"`
 	SlotID            int64            `json:"slot_id" db:"-"`
+	CampaignData
+	AdSize         int            `json:"ad_size" db:"ad_size"`
+	UserID         int64          `json:"u_id" db:"u_id"`
+	AdName         sql.NullString `json:"ad_name" db:"ad_name"`
+	AdURL          sql.NullString `json:"ad_url" db:"ad_url"`
+	AdCode         sql.NullString `json:"ad_code" db:"ad_code"`
+	AdTitle        sql.NullString `json:"ad_title" db:"ad_title"`
+	AdBody         sql.NullString `json:"ad_body" db:"ad_body"`
+	AdImg          sql.NullString `json:"ad_img" db:"ad_img"`
+	AdStatus       int            `json:"ad_status" db:"ad_status"`
+	AdRejectReason sql.NullString `json:"ad_reject_reason" db:"ad_reject_reason"`
+	AdConversion   int            `json:"ad_conv" db:"ad_conv"`
+	AdTime         int            `json:"ad_time" db:"ad_time"`
+
+	AdMainText      sql.NullString          `json:"ad_mainText" db:"ad_mainText"`
+	AdDefineText    sql.NullString          `json:"ad_defineText" db:"ad_defineText"`
+	AdTextColor     sql.NullString          `json:"ad_textColor" db:"ad_textColor"`
+	AdTarget        sql.NullString          `json:"ad_target" db:"ad_target"`
+	AdAttribute     common.GenericJSONField `json:"ad_attribute" db:"ad_attribute"`
+	AdHashAttribute sql.NullString          `json:"ad_hash_attribute" db:"ad_hash_attribute"`
+	CreatedAt       sql.NullString          `json:"created_at" db:"created_at"`
+	UpdatedAt       sql.NullString          `json:"updated_at" db:"updated_at"`
+	UserEmail       string                  `json:"u_email" db:"u_email"`
+	UserBalance     string                  `json:"u_balance" db:"u_balance"`
+	IsCrm           int                     `json:"is_crm" db:"is_crm"`
+	CpLock          int                     `json:"cp_lock" db:"cp_lock"`
 }
 
 // CampaignData is a single campaign data
@@ -95,32 +121,6 @@ type CampaignData struct {
 // AdData type @todo
 type AdData struct {
 	MinAdData
-	CampaignData
-	AdSize         int            `json:"ad_size" db:"ad_size"`
-	UserID         int64          `json:"u_id" db:"u_id"`
-	AdName         sql.NullString `json:"ad_name" db:"ad_name"`
-	AdURL          sql.NullString `json:"ad_url" db:"ad_url"`
-	AdCode         sql.NullString `json:"ad_code" db:"ad_code"`
-	AdTitle        sql.NullString `json:"ad_title" db:"ad_title"`
-	AdBody         sql.NullString `json:"ad_body" db:"ad_body"`
-	AdImg          sql.NullString `json:"ad_img" db:"ad_img"`
-	AdStatus       int            `json:"ad_status" db:"ad_status"`
-	AdRejectReason sql.NullString `json:"ad_reject_reason" db:"ad_reject_reason"`
-	AdConversion   int            `json:"ad_conv" db:"ad_conv"`
-	AdTime         int            `json:"ad_time" db:"ad_time"`
-
-	AdMainText      sql.NullString          `json:"ad_mainText" db:"ad_mainText"`
-	AdDefineText    sql.NullString          `json:"ad_defineText" db:"ad_defineText"`
-	AdTextColor     sql.NullString          `json:"ad_textColor" db:"ad_textColor"`
-	AdTarget        sql.NullString          `json:"ad_target" db:"ad_target"`
-	AdAttribute     common.GenericJSONField `json:"ad_attribute" db:"ad_attribute"`
-	AdHashAttribute sql.NullString          `json:"ad_hash_attribute" db:"ad_hash_attribute"`
-	CreatedAt       sql.NullString          `json:"created_at" db:"created_at"`
-	UpdatedAt       sql.NullString          `json:"updated_at" db:"updated_at"`
-	UserEmail       string                  `json:"u_email" db:"u_email"`
-	UserBalance     string                  `json:"u_balance" db:"u_balance"`
-	IsCrm           int                     `json:"is_crm" db:"is_crm"`
-	CpLock          int                     `json:"cp_lock" db:"cp_lock"`
 }
 
 //ByCPM sort by cpm
