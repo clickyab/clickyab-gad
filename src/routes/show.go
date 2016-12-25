@@ -106,7 +106,7 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, adID)], 10, 64)
 	assert.Nil(err)
-	imp := tc.fillImp(c, suspicious, ads, winnerFinalBid, websiteID, slotID)
+	imp := tc.fillImp(rd, suspicious, ads, winnerFinalBid, websiteID, slotID)
 
 	go tc.callWorker(websiteID, slotID, adID, mega, rand, imp, rd)
 	if typ == "vast" {
@@ -159,9 +159,7 @@ func (selectController) callWorker(WID int64, slotID int64, adID int64, mega str
 	}
 }
 
-func (selectController) fillImp(ctx echo.Context, sus bool, ads *mr.Ad, winnerBid int64, websiteID int64, slotID int64) transport.Impression {
-	rd := middlewares.MustGetRequestData(ctx)
-
+func (selectController) fillImp(rd *middlewares.RequestData, sus bool, ads *mr.Ad, winnerBid int64, websiteID int64, slotID int64) transport.Impression {
 	return transport.Impression{
 		Suspicious:   sus,
 		IP:           rd.IP,
@@ -169,14 +167,14 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads *mr.Ad, winnerBi
 		CopID:        rd.CopID,
 		CampaignAdID: ads.CampaignAdID.Int64,
 
-		URL:        rd.URL,
+		URL:        ads.AdURL.String,
 		CampaignID: ads.CampaignID.Int64,
 		UserAgent:  rd.UserAgent,
 		Time:       time.Now(),
 		WinnerBID:  winnerBid,
 		Status:     0,
 		Web: &transport.WebSiteImp{
-			Referrer:  ctx.Request().Referer(),
+			Referrer:  rd.Referrer,
 			ParentURL: rd.Parent,
 			SlotID:    slotID,
 			WebsiteID: websiteID,

@@ -68,7 +68,7 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-// GetRequestData is the hgelper function to extract request data from context
+// GetRequestData is the helper function to extract request data from context
 func GetRequestData(ctx echo.Context) (*RequestData, error) {
 	rd, ok := ctx.Get(requestDataToken).(*RequestData)
 	if !ok {
