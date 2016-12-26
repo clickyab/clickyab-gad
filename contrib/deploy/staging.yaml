@@ -66,8 +66,9 @@
         command: /app/bin/server
         state: started
         recreate: yes
+        restart_policy: always
         ports:
-          - 80:80
+          - 8000:80
         volumes:
           - /home/cy/gad:/app
 
@@ -81,6 +82,7 @@
         image: registry.clickyab.ae/clickyab/gad-runner
         command: /app/bin/clickworker
         state: started
+        restart_policy: always
         recreate: yes
         volumes:
           - /home/cy/gad:/app
@@ -95,6 +97,7 @@
         image: registry.clickyab.ae/clickyab/gad-runner
         command: /app/bin/impworker
         state: started
+        restart_policy: always
         recreate: yes
         volumes:
           - /home/cy/gad:/app
@@ -109,6 +112,7 @@
         image: registry.clickyab.ae/clickyab/gad-runner
         command: /app/bin/convworker
         state: started
+        restart_policy: always
         recreate: yes
         volumes:
           - /home/cy/gad:/app

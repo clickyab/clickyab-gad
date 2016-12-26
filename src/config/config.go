@@ -185,5 +185,10 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.vast.default_skipoff", "00:00:03"))
 	assert.Nil(d.SetDefault("clickyab.under_floor", false))
 
+	assert.Nil(d.SetDefault("slack.channel", "notifications"))
+	assert.Nil(d.SetDefault("slack.username", "LilBro"))
+	assert.Nil(d.SetDefault("slack.webhookurl", "https://hooks.slack.com/services/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"))
+	assert.Nil(d.SetDefault("slack.active", false))
+
 	return d
 }
