@@ -15,6 +15,7 @@ RABBIT_PORT=${AMQP_POST:-5672}
 
 # TODO : env re-write must be done here
 #export GAD_DEVEL_MODE=true
+export GAD_CLICKYAB_UNDER_FLOOR=true
 export GAD_SITE=a.clickyab.com
 export GAD_PROTO=http
 export GAD_REDIS_ADDRESS=${REDIS_HOST}:${REDIS_PORT}

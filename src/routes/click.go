@@ -83,7 +83,7 @@ func (tc *selectController) click(c echo.Context) error {
 	webSite, err := mr.NewManager().FetchWebsite(wID)
 	status = changeStatus(status, suspInvalidWebsite, err != nil || (webSite.WStatus != 0 && webSite.WStatus != 1))
 
-	clikID := <-utils.ID
+	clickID := <-utils.ID
 
 	go func() {
 
@@ -128,7 +128,7 @@ func (tc *selectController) click(c echo.Context) error {
 			status = suspDuplicateClick
 		}
 
-		click := tc.fillClick(c, ads, winnerBid, wID, slotID, inTime, outTime, slaID, impID, cpAdID, status, clikID, tv)
+		click := tc.fillClick(c, ads, winnerBid, wID, slotID, inTime, outTime, slaID, impID, cpAdID, status, clickID, tv)
 
 		err = rabbit.Publish("cy.click", click)
 		assert.Nil(err)
@@ -139,7 +139,7 @@ func (tc *selectController) click(c echo.Context) error {
 	}
 
 	// TODO : better handling
-	_, _ = aredis.IncHash(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, clikID), "OK", 1, config.Config.Clickyab.DailyClickExpire)
+	_, _ = aredis.IncHash(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, clickID), "OK", 1, config.Config.Clickyab.DailyClickExpire)
 	body := tc.replaceParameters(ads.AdURL.String, webSite.WDomain.String, ads.CampaignName.String, rand, result["IMPR"])
 	return c.HTML(200, body)
 }

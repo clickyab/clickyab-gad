@@ -201,7 +201,7 @@ func (selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
 	if err != nil || !ip.CountryName.Valid {
 		return nil, errors.New("Country not found")
 	}
-	country, err = mr.NewManager().ConvertCountry2Info(ip.CountryName.String)
+	country, err = mr.NewManager().ConvertCountry2Info(ip.CountryCode.String)
 	if err != nil {
 		return nil, errors.New("Country not found")
 	}
@@ -306,7 +306,7 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 				show[slotID] = ""
 				continue
 			}
-			
+
 			ef := mr.ByCPM(underFloor.GetData())
 			sort.Sort(ef)
 			sorted = []*mr.MinAdData(ef)
