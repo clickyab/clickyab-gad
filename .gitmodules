@@ -1,0 +1,3 @@
+[submodule "clickyab-server"]
+	path = clickyab-server
+	url = git@github.com:clickyab/clickyab-server.git

@@ -152,7 +152,7 @@ func (tc *selectController) click(c echo.Context) error {
 		domain = webSite.WDomain.String
 	}
 	body := tc.replaceParameters(url, domain, cpName, rand, result["IMPR"])
-	return c.HTML(200, body)
+	return c.HTML(http.StatusOK, body)
 }
 
 func (selectController) fillClick(ctx echo.Context, ads *mr.Ad, winnerBid int64, websiteID int64, slotID int64, inTime, outTime time.Time, slaID int64, impID int64, campaignAdID int64, status int64, rand string, tv bool) *transport.Click {

@@ -88,6 +88,7 @@ run-convworker: convworker
 	$(BIN)/convworker
 
 run-experiment: experiment
+	sudo setcap cap_net_bind_service=+ep $(BIN)/experiment
 	$(BIN)/experiment
 
 mysql-setup: needroot

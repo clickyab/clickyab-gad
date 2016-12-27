@@ -110,6 +110,11 @@ type AppConfig struct {
 		UnderFloor    bool  `onion:"under_floor"`
 		MinBid        int64 `onion:"min_bid"`
 	}
+
+	PHPCode struct {
+		Root string
+		FPM  string
+	} `onion:"php_code"`
 }
 
 func defaultLayer() onion.Layer {
@@ -186,6 +191,11 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.vast.default_skipoff", "00:00:03"))
 	assert.Nil(d.SetDefault("clickyab.under_floor", false))
 	assert.Nil(d.SetDefault("clickyab.min_bid", 2000))
+
+	p, err = expand.Path("$HOME/gad/clickyab-server/a")
+	assert.Nil(err)
+	assert.Nil(d.SetDefault("php_code.root", p))
+	assert.Nil(d.SetDefault("php_code.fpm", "127.0.0.1:9999"))
 
 	assert.Nil(d.SetDefault("slack.channel", "notifications"))
 	assert.Nil(d.SetDefault("slack.username", "LilBro"))
