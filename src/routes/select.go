@@ -124,14 +124,9 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.MinAd
 }
 
 func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.WebsiteData, winnerAd map[string]*mr.MinAdData) error {
-	// add mega imp
-	ip, err := utils.IP2long(rd.IP)
-	if err != nil {
-		logrus.Warn(err) // TODO : why????
-	}
 	// TODO : get interface from redis?
 	tmp := map[string]string{
-		"IP": fmt.Sprintf("%d", ip),
+		"IP": rd.IP.String(),
 		"UA": rd.UserAgent,
 		"WS": fmt.Sprintf("%d", website.WID),
 		"T":  fmt.Sprintf("%d", time.Now().Unix()),
