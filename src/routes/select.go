@@ -306,7 +306,7 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 			sort.Sort(ef)
 			sorted = []*mr.MinAdData(ef)
 			// Do not do second biding pricing on this ads, they can not pass CPMFloor
-			sorted[0].WinnerBid = utils.WinnerBid(sorted[0].CPM, sorted[0].CTR)
+			sorted[0].WinnerBid = sorted[0].CampaignMaxBid
 			sorted[0].Capping.IncView(1)
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
