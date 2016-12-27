@@ -28,6 +28,15 @@
         checksum: yes
         times: no
 
+    - name: sync the clcikyab-old code
+      synchronize:
+        src: "{{ playbook_dir }}/../../clickyab-server/"
+        dest: "/home/cy/gad/clickyab-server/"
+        delete: yes
+        rsync_opts: "--exclude=.git --exclude=gb* --exclude=go-bindata --exclude=fswatch --exclude=codegen --exclude=.gitignore"
+        checksum: yes
+        times: no
+
 - name: Run web server
   hosts: web
   tasks:

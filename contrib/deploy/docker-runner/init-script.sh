@@ -27,5 +27,27 @@ export GAD_MYSQL_DATABASE="${MYSQL_DB}"
 export GAD_PROFILE=disable
 export GAD_AMQP_DSN="amqp://${RABBIT_USER}:${RABBIT_PASS}@${RABBIT_HOST}:${RABBIT_PORT}/"
 export GAD_SLACK_ACTIVE=true
+export GAD_PHP_CODE_ROOT=/app/clickyab-server/a/
+export GAD_PHP_CODE_FPM=127.0.0.1:9000
 
-exec "$@"
+if [ "$1" = '/app/bin/server' ];
+then
+
+cat >>/app/clickyab-server/library/db.php <<-EOCONF
+<?php
+
+function client_addr_2(){
+    if(\$_SERVER['HTTP_CF_CONNECTING_IP']) return \$_SERVER['HTTP_CF_CONNECTING_IP'];
+    return str_in_db(\$_SERVER['REMOTE_ADDR']);
+}
+
+\$mysql_connect = mysqli_connect ( "db1", "${MYSQL_USER}", "${MYSQL_PASSWORD}", "clickyab" );
+mysqli_set_charset(\$mysql_connect,'utf8');
+
+EOCONF
+	chown www-data:www-data /app/clickyab-server/library/db.php
+	service php7.0-fpm start
+	exec "$@"
+else
+	exec "$@"
+fi;
