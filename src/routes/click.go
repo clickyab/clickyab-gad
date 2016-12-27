@@ -75,6 +75,7 @@ func (tc *selectController) click(c echo.Context) error {
 	if err != nil {
 		status = changeStatus(status, suspSlowClick, true)
 		noRedisKey = true
+		result = make(map[string]string)
 	}
 
 	wID, err := strconv.ParseInt(result["WS"], 10, 0)
@@ -140,7 +141,17 @@ func (tc *selectController) click(c echo.Context) error {
 
 	// TODO : better handling
 	_, _ = aredis.IncHash(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, clickID), "OK", 1, config.Config.Clickyab.DailyClickExpire)
-	body := tc.replaceParameters(ads.AdURL.String, webSite.WDomain.String, ads.CampaignName.String, rand, result["IMPR"])
+	url := ""
+	cpName := ""
+	if ads != nil {
+		url = ads.AdURL.String
+		cpName = ads.CampaignName.String
+	}
+	domain := ""
+	if webSite != nil {
+		domain = webSite.WDomain.String
+	}
+	body := tc.replaceParameters(url, domain, cpName, rand, result["IMPR"])
 	return c.HTML(200, body)
 }
 

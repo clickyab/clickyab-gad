@@ -108,6 +108,7 @@ type AppConfig struct {
 		AdCTREffect   int64 `onion:"ad_ctr_effect"`
 		SlotCTREffect int64 `onion:"slot_ctr_effect"`
 		UnderFloor    bool  `onion:"under_floor"`
+		MinBid        int64 `onion:"min_bid"`
 	}
 }
 
@@ -184,6 +185,7 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.vast.default_duration", "00:00:05"))
 	assert.Nil(d.SetDefault("clickyab.vast.default_skipoff", "00:00:03"))
 	assert.Nil(d.SetDefault("clickyab.under_floor", false))
+	assert.Nil(d.SetDefault("clickyab.min_bid", 2000))
 
 	assert.Nil(d.SetDefault("slack.channel", "notifications"))
 	assert.Nil(d.SetDefault("slack.username", "LilBro"))
