@@ -84,3 +84,26 @@ func (m *Manager) FetchWebsite(ID int64) (*WebsiteData, error) {
 	_ = store(key, &res, time.Hour)
 	return &res, nil
 }
+
+// FetchWebsiteByDomain return a function based on its domain
+func (m *Manager) FetchWebsiteByDomain(domain string) (*WebsiteData, error) {
+	var res = WebsiteData{}
+	key := utils.Sha1(fmt.Sprintf("WebsiteDomain_%s", domain))
+	err := fetch(key, &res)
+	if err == nil {
+		return &res, nil
+	}
+	query := `SELECT * FROM websites WHERE w_domain = ? AND w_status NOT IN (2,3)  LIMIT 1`
+
+	err = m.GetRDbMap().SelectOne(
+		&res,
+		query,
+		domain,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = store(key, &res, time.Hour)
+	return &res, nil
+}

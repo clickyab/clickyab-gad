@@ -8,10 +8,10 @@ RUN apt-get update \
     && dpkg -i dumb-init_*.deb \
     && rm dumb-init_*.deb \
     && mkdir /app \
-    && rm -rf /var/lib/apt/lists/*
-    && sed -i '/daemonize /c daemonize = no' /etc/php/7.0/fpm/php-fpm.conf
-    && sed -i 's/memory_limit = 128M/memory_limit = 256M/g' /etc/php/7.0/fpm/php.ini
-    && sed -i 's/;opcache.enable=0/opcache.enable=1/g' /etc/php/7.0/fpm/php.ini
+    && rm -rf /var/lib/apt/lists/* \
+    && sed -i '/daemonize /c daemonize = no' /etc/php/7.0/fpm/php-fpm.conf \
+    && sed -i 's/memory_limit = 128M/memory_limit = 256M/g' /etc/php/7.0/fpm/php.ini \
+    && sed -i 's/;opcache.enable=0/opcache.enable=1/g' /etc/php/7.0/fpm/php.ini \
     && rm /etc/php/7.0/fpm/pool.d/www.conf
 
 VOLUME /app

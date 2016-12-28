@@ -61,6 +61,11 @@ func GetSizeByNum(num int) (string, string) {
 	return "", ""
 }
 
+// GetAllSize return all sizes accepted by us
+func GetAllSize() map[string]int {
+	return sizes
+}
+
 // InVideoSize check if the size is available for video
 func InVideoSize(size int) bool {
 	for i := range videoSize {
