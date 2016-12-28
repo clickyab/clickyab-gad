@@ -33,7 +33,7 @@ export GAD_PHP_CODE_FPM=127.0.0.1:9000
 if [ "$1" = '/app/bin/server' ];
 then
 
-cat >>/app/clickyab-server/library/db.php <<-EOCONF
+cat >/app/clickyab-server/library/db.php <<-EOCONF
 <?php
 
 function client_addr_2(){
@@ -41,8 +41,12 @@ function client_addr_2(){
     return str_in_db(\$_SERVER['REMOTE_ADDR']);
 }
 
-\$mysql_connect = mysqli_connect ( "db1", "${MYSQL_USER}", "${MYSQL_PASSWORD}", "clickyab" );
+\$mysql_connect = mysqli_connect ( "${MYSQL_HOST}", "${MYSQL_USER}", "${MYSQL_PASSWORD}", "${MYSQL_DB}" );
 mysqli_set_charset(\$mysql_connect,'utf8');
+
+define("REDIS_HOST", "${REDIS_HOST}");
+define("REDIS_PORT", 2222); // this is different from gad for now
+define("REDIS_PASS", "${GAD_REDIS_PASSWORD}");
 
 EOCONF
 	chown www-data:www-data /app/clickyab-server/library/db.php
