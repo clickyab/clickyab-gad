@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"mr"
+	"rabbit"
 	"redis"
 	"strconv"
-	"time"
 	"transport"
 )
 
@@ -38,6 +38,7 @@ func convWorker(in *transport.Conversion) (bool, error) {
 	if count > config.Config.Clickyab.ConvRetry {
 		return false, errors.New("limit is done")
 	}
-	time.Sleep(config.Config.Clickyab.ConvDelay)
-	return true, errors.New("no data yet")
+
+	// first try to publish it after time, if it failed then re-queue it
+	return true, rabbit.PublishAfter("cy.conv", in, config.Config.Clickyab.ConvDelay)
 }

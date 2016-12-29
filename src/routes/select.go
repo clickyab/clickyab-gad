@@ -98,9 +98,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 
 	b, _ := json.MarshalIndent(show, "\t", "\t")
 	result := "renderFarm(" + string(b) + "); \n//" + time.Since(t).String()
-	go func() {
 
-	}()
 	return c.HTML(200, result)
 }
 
@@ -139,7 +137,8 @@ func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.
 
 	//TODO : Config time
 	return aredis.HMSet(
-		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp), time.Hour,
+		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+		time.Hour,
 		tmp,
 	)
 }

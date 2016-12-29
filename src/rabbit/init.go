@@ -135,6 +135,45 @@ func Initialize() {
 		conn, err = amqp.Dial(config.Config.AMQP.DSN)
 		assert.Nil(err)
 
+		chn, err := conn.Channel()
+		assert.Nil(err)
+		defer chn.Close()
+
+		assert.Nil(
+			chn.ExchangeDeclare(
+				config.Config.AMQP.Exchange,
+				"topic",
+				true,
+				false,
+				false,
+				false,
+				amqp.Table{},
+			),
+		)
+		assert.Nil(
+			chn.ExchangeDeclare(
+				config.Config.AMQP.Exchange+retryPostfix,
+				"topic",
+				true,
+				false,
+				false,
+				false,
+				amqp.Table{},
+			),
+		)
+		q, err := chn.QueueDeclare(
+			"publish"+retryPostfix,
+			true,
+			false,
+			false,
+			true,
+			amqp.Table{
+				"x-dead-letter-exchange": config.Config.AMQP.Exchange,
+			},
+		)
+		assert.Nil(err)
+		assert.Nil(chn.QueueBind(q.Name, "#", config.Config.AMQP.Exchange+retryPostfix, true, amqp.Table{}))
+
 	})
 
 	if config.Config.AMQP.Publisher < 1 {

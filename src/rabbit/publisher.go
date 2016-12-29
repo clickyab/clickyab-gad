@@ -10,8 +10,13 @@ import (
 
 	"utils"
 
+	"fmt"
+	"time"
+
 	"github.com/streadway/amqp"
 )
+
+const retryPostfix = "_retry"
 
 var (
 	rng *ring.Ring
@@ -53,14 +58,54 @@ func Publish(topic string, in interface{}) (err error) {
 		}
 	}()
 
-	err = v.chn.Publish(config.Config.AMQP.Exchange, topic, true, false, pub)
+	return v.chn.Publish(config.Config.AMQP.Exchange, topic, true, false, pub)
+}
 
-	return err
+// PublishAfter is the function to publish message after a period of time
+func PublishAfter(topic string, in interface{}, after time.Duration) (err error) {
+	rng = rng.Next()
+	v := rng.Value.(*chnlLock)
+	v.lock.Lock()
+	defer v.lock.Unlock()
+	if v.closed {
+		return errors.New("waiting for finalize, can not publish")
+	}
+
+	msg, err := json.Marshal(in)
+	if err != nil {
+		return err
+	}
+	s := int64(after.Seconds())
+	if s < 1 {
+		s = 1
+	}
+	exp := fmt.Sprintf("%d000", s)
+
+	pub := amqp.Publishing{
+		CorrelationId: <-utils.ID,
+		Body:          msg,
+		Expiration:    exp,
+	}
+
+	v.wg.Add(1)
+	defer func() {
+		// If the result is error, release the lock, there is no message to confirm!
+		if err != nil {
+			v.wg.Done()
+		}
+	}()
+
+	return v.chn.Publish(config.Config.AMQP.Exchange+retryPostfix, topic, true, false, pub)
 }
 
 // MustPublish publish an event with force
 func MustPublish(topic string, ei interface{}) {
 	assert.Nil(Publish(topic, ei))
+}
+
+// MustPublishAfter publish an event with force
+func MustPublishAfter(topic string, ei interface{}, after time.Duration) {
+	assert.Nil(PublishAfter(topic, ei, after))
 }
 
 // FinalizeWait is a function to wait for all publication to finish. after calling this,

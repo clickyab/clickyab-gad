@@ -131,8 +131,7 @@ func (tc *selectController) click(c echo.Context) error {
 
 		click := tc.fillClick(c, ads, winnerBid, wID, slotID, inTime, outTime, slaID, impID, cpAdID, status, clickID, tv)
 
-		err = rabbit.Publish("cy.click", click)
-		assert.Nil(err)
+		rabbit.MustPublish("cy.click", click)
 	}()
 
 	if status == suspNoAdFound {

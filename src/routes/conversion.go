@@ -6,6 +6,8 @@ import (
 	"rabbit"
 	"transport"
 
+	"time"
+
 	"gopkg.in/labstack/echo.v3"
 )
 
@@ -23,7 +25,7 @@ func (tc *selectController) conversion(c echo.Context) error {
 		ConvID:   clickID,
 		ActionID: actionID,
 	}
-	assert.Nil(rabbit.Publish("cy.conv", out))
+	rabbit.MustPublishAfter("cy.conv", out, time.Minute)
 	c.Response().Header().Set("Content-Type", "image/png")
 	return c.String(200, string(data))
 
