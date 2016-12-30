@@ -25,7 +25,7 @@ type gorpLogger struct {
 }
 
 func (g gorpLogger) Printf(format string, v ...interface{}) {
-	logrus.Infof(format, v...)
+	logrus.Debugf(format, v...)
 }
 
 // Initialize the modules, its safe to call this as many time as you want.

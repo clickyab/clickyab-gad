@@ -62,6 +62,7 @@ func Initialize() {
 	Config.Clickyab.DailyClickExpire = o.GetDuration("clickyab.daily_click_expire")
 	Config.Clickyab.DailyCapExpire = o.GetDuration("clickyab.daily_cap_expire")
 	Config.Clickyab.ConvDelay = o.GetDuration("clickyab.conv_delay")
+	Config.Clickyab.MegaImpExpire = o.GetDuration("clickyab.mega_imp_expire")
 	assert.True(
 		Config.Clickyab.AdCTREffect+Config.Clickyab.SlotCTREffect == 100,
 		"ad ctr effect and slot ctr effect dose not match",

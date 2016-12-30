@@ -12,6 +12,8 @@ import (
 	"utils"
 	"version"
 
+	"fmt"
+
 	"github.com/pkg/profile"
 )
 
@@ -27,7 +29,7 @@ func main() {
 
 	server := modules.Initialize(config.Config.MountPoint)
 	go func() {
-		_ = server.Start(config.Config.Port)
+		_ = server.Start(fmt.Sprintf(":%d", config.Config.Port))
 	}()
 
 	sig := make(chan os.Signal, 6)

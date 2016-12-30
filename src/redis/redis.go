@@ -146,3 +146,34 @@ func HMSet(key string, expire time.Duration, fields map[string]string) error {
 	Client.Expire(key, expire)
 	return nil
 }
+
+// StoreHashKey is a simple function to set hash key
+func StoreHashKey(key, subkey, data string, expire time.Duration) error {
+	err := Client.HSet(key, subkey, data).Err()
+	if err == nil {
+		err = Client.Expire(key, expire).Err()
+	}
+
+	return err
+}
+
+// RPush perform an rpush command
+func RPush(key string, value ...interface{}) error {
+	return Client.RPush(key, value...).Err()
+}
+
+// BRPopSingle is the function to pop a value from a single list
+func BRPopSingle(key string, t time.Duration) (string, bool) {
+	res := Client.BRPop(t, key)
+
+	v := res.Val()
+	if len(v) == 0 {
+		return "", false
+	}
+
+	if len(v) == 2 && v[0] == key {
+		return v[1], true
+	}
+
+	return "", false
+}

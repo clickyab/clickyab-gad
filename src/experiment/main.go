@@ -2,16 +2,15 @@ package main
 
 import (
 	"config"
-	"rabbit"
+	"fmt"
+	"redis"
 	"time"
-	"transport"
 )
 
 func main() {
 	config.Initialize()
 
-	rabbit.Initialize()
-	defer rabbit.FinalizeWait()
+	aredis.Initialize()
 
-	rabbit.PublishAfter("cy.click", transport.Click{}, time.Second)
+	fmt.Println(aredis.BRPopSingle("x", time.Second))
 }

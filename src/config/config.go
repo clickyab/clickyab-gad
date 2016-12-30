@@ -27,13 +27,13 @@ type AppConfig struct {
 	CORS            bool   `onion:"cors"`
 	MaxCPUAvailable int    `onion:"max_cpu_available"`
 	MountPoint      string `onion:"mount_point"`
-	MachineName     string `onion:"machine_name"`
 
 	Site  string
 	Proto string
 
-	Port       string
-	StaticRoot string `onion:"static_root"`
+	MachineName string `onion:"machine_name"`
+	Port        int
+	StaticRoot  string `onion:"static_root"`
 
 	TimeZone string `onion:"time_zone"`
 
@@ -126,7 +126,8 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("cors", true))
 	assert.Nil(d.SetDefault("max_cpu_available", runtime.NumCPU()))
 	assert.Nil(d.SetDefault("proto", "http"))
-	assert.Nil(d.SetDefault("port", ":80"))
+	assert.Nil(d.SetDefault("port", 80))
+	assert.Nil(d.SetDefault("ip", "127.0.0.1"))
 	assert.Nil(d.SetDefault("time_zone", "Asia/Tehran"))
 	assert.Nil(d.SetDefault("machine_name", "m1"))
 

@@ -103,7 +103,18 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 
 	rnd := <-utils.ID
-	clickUrl := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s?tid=%s&ref=%s&parent=%s", rd.Proto, rd.URL, websiteID, mega, adID, rnd, rd.TID, rd.Referrer, rd.Parent)
+	clickUrl := fmt.Sprintf(
+		"%s://%s/click/%d/%s/%d/%s?tid=%s&ref=%s&parent=%s",
+		rd.Proto,
+		rd.URL,
+		websiteID,
+		mega,
+		adID,
+		rnd,
+		rd.TID,
+		rd.Referrer,
+		rd.Parent,
+	)
 	res, err := tc.makeAdData(c, typ, ads, clickUrl, long, pos)
 	if err != nil {
 		return err

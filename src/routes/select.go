@@ -123,32 +123,42 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.AdDat
 	return secondCPM
 }
 
-func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.Website, winnerAd map[string]*mr.AdData) error {
+func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website *mr.Website) error {
 	tmp := map[string]string{
 		"IP": rd.IP.String(),
 		"UA": rd.UserAgent,
 		"WS": fmt.Sprintf("%d", website.WID),
 		"T":  fmt.Sprintf("%d", time.Now().Unix()),
 	}
-
-	for i := range winnerAd {
-		tmp[fmt.Sprintf(
-			"%s%s%d",
-			transport.ADVERTISE,
-			transport.DELIMITER,
-			winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].WinnerBid)
-		tmp[fmt.Sprintf(
-			"%s%s%d",
-			transport.SLOT,
-			transport.DELIMITER,
-			winnerAd[i].AdID)] = fmt.Sprintf("%d", winnerAd[i].SlotID)
-	}
-
+	assert.True(config.Config.Clickyab.MegaImpExpire > 1, "invalid config")
 	return aredis.HMSet(
 		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
 		config.Config.Clickyab.MegaImpExpire,
 		tmp,
 	)
+}
+
+func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int64, winnerBid int64, slotID string) {
+	assert.Nil(aredis.StoreHashKey(
+		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+		fmt.Sprintf(
+			"%s%s%d",
+			transport.ADVERTISE,
+			transport.DELIMITER,
+			adID),
+		fmt.Sprintf("%d", winnerBid),
+		config.Config.Clickyab.MegaImpExpire,
+	))
+	assert.Nil(aredis.StoreHashKey(
+		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+		fmt.Sprintf(
+			"%s%s%d",
+			transport.SLOT,
+			transport.DELIMITER,
+			adID),
+		slotID,
+		config.Config.Clickyab.MegaImpExpire,
+	))
 }
 
 func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.CountryInfo, error) {
@@ -262,7 +272,15 @@ func (selectController) calculateCTR(ad *mr.AdData, slot *slotData) float64 {
 	return (ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100)
 }
 
-func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, sizeNumSlice map[string]int, slotSize map[string]*slotData, website *mr.Website, multipleVideo bool) map[string]string {
+func (tc *selectController) makeShow(
+	c echo.Context,
+	typ string,
+	rd *middlewares.RequestData,
+	filteredAds map[int][]*mr.AdData,
+	sizeNumSlice map[string]int,
+	slotSize map[string]*slotData,
+	website *mr.Website,
+	multipleVideo bool) map[string]string {
 	var (
 		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
@@ -271,7 +289,6 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 	reserve := make(map[string]string)
 	for slotID := range slotSize {
 		tmp := config.Config.MachineName + <-utils.ID
-		store.Reserve(tmp)
 		reserve[slotID] = tmp
 		show[slotID] = fmt.Sprintf(
 			"%s://%s/show/%s/%s/%d/%s?tid=%s&ref=%s&s=%d",
@@ -286,11 +303,9 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 			slotSize[slotID].ID,
 		)
 	}
-
+	assert.Nil(tc.createMegaKey(rd, website))
 	go func() {
-
 		filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
-
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		for slotID := range slotSize {
 			exceedFloor := &mr.CappingLocker{}
@@ -309,55 +324,55 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 						underFloor.Append(adData)
 					}
 				}
-				var sorted []*mr.AdData
-				if exceedFloor.Len() < 1 {
-					if !config.Config.Clickyab.UnderFloor || underFloor.Len() < 1 {
-						go func() {
-							warn := transport.Warning{
-								Level:   "warning",
-								When:    time.Now(),
-								Where:   website.WDomain.String,
-								Message: fmt.Sprintf("no ad pass the bid, the floor was %d", website.WFloorCpm),
-							}
-							warn.Request, _ = httputil.DumpRequest(c.Request(), false)
-							err := rabbit.Publish("cy.warn", warn)
-							if err != nil {
-								logrus.Error(err)
-							}
-						}()
-						show[slotID] = ""
-						continue
-					}
-
-					ef := mr.ByCPM(underFloor.GetData())
-					sort.Sort(ef)
-					sorted = []*mr.AdData(ef)
-					// Do not do second biding pricing on this ads, they can not pass CPMFloor
-					sorted[0].WinnerBid = sorted[0].CampaignMaxBid
-					sorted[0].Capping.IncView(1)
-					winnerAd[slotID] = sorted[0]
-					winnerAd[slotID].SlotID = slotSize[slotID].ID
-				} else {
-					ef := mr.ByCPM(exceedFloor.GetData())
-					sort.Sort(ef)
-					sorted = []*mr.AdData(ef)
-					secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
-					sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
-					sorted[0].Capping.IncView(1)
-					winnerAd[slotID] = sorted[0]
-					winnerAd[slotID].SlotID = slotSize[slotID].ID
+			}
+			var sorted []*mr.AdData
+			if exceedFloor.Len() < 1 {
+				if !config.Config.Clickyab.UnderFloor || underFloor.Len() < 1 {
+					go func() {
+						warn := transport.Warning{
+							Level:   "warning",
+							When:    time.Now(),
+							Where:   website.WDomain.String,
+							Message: fmt.Sprintf("no ad pass the bid, the floor was %d", website.WFloorCpm),
+						}
+						warn.Request, _ = httputil.DumpRequest(c.Request(), false)
+						err := rabbit.Publish("cy.warn", warn)
+						if err != nil {
+							logrus.Error(err)
+						}
+					}()
+					show[slotID] = ""
+					store.Set(reserve[slotID], "no add")
+					continue
 				}
 
-				video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
-				store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
-				//show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
-				assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
-				// TODO {fzerorubigd} : Can we check for inner capping increase?
+				ef := mr.ByCPM(underFloor.GetData())
+				sort.Sort(ef)
+				sorted = []*mr.AdData(ef)
+				// Do not do second biding pricing on this ads, they can not pass CPMFloor
+				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
+				sorted[0].Capping.IncView(1)
+				winnerAd[slotID] = sorted[0]
+				winnerAd[slotID].SlotID = slotSize[slotID].ID
+			} else {
+				ef := mr.ByCPM(exceedFloor.GetData())
+				sort.Sort(ef)
+				sorted = []*mr.AdData(ef)
+				secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
+				sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
+				sorted[0].Capping.IncView(1)
+				winnerAd[slotID] = sorted[0]
+				winnerAd[slotID].SlotID = slotSize[slotID].ID
 			}
-		}
 
-		err := tc.addMegaKey(rd, website, winnerAd)
-		assert.Nil(err)
+			video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
+			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotID)
+			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
+			//show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
+			assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
+			// TODO {fzerorubigd} : Can we check for inner capping increase?
+
+		}
 	}()
 	return show
 }
