@@ -12,17 +12,20 @@ import (
 	"mr"
 	"net"
 	"net/http"
-	"net/http/httputil"
-	"rabbit"
 	"redis"
 	"regexp"
 	"selector"
-	"sort"
-	"store"
 	"strconv"
 	"time"
 	"transport"
 	"utils"
+
+	"net/http/httputil"
+	"rabbit"
+	"sort"
+	"store"
+
+	"net/url"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
@@ -59,10 +62,11 @@ type selectController struct {
 
 // SlotData is the single slot data in database
 type slotData struct {
-	SlotSize int
-	ID       int64
-	PublicID string
-	Ctr      float64
+	SlotSize   int
+	ID         int64
+	PublicID   string
+	Ctr        float64
+	ExtraParam map[string]string
 }
 
 type vastSlotData struct {
@@ -290,18 +294,22 @@ func (tc *selectController) makeShow(
 	for slotID := range slotSize {
 		tmp := config.Config.MachineName + <-utils.ID
 		reserve[slotID] = tmp
-		show[slotID] = fmt.Sprintf(
-			"%s://%s/show/%s/%s/%d/%s?tid=%s&ref=%s&s=%d",
-			rd.Proto,
-			rd.URL,
-			typ,
-			rd.MegaImp,
-			website.WID,
-			tmp,
-			rd.TID,
-			rd.Parent,
-			slotSize[slotID].ID,
-		)
+		u := url.URL{
+			Scheme: rd.Scheme,
+			Host:   rd.Host,
+			Path:   fmt.Sprintf("/show/%s/%s/%d/%s", typ, rd.MegaImp, website.WID, tmp),
+		}
+		v := url.Values{}
+		v.Set("tid", rd.TID)
+		v.Set("ref", rd.Referrer)
+		v.Set("parent", rd.Parent)
+		v.Set("s", fmt.Sprintf("%d", slotSize[slotID]))
+
+		for i, j := range slotSize[slotID].ExtraParam {
+			v.Set(i, j)
+		}
+		u.RawQuery = v.Encode()
+		show[slotID] = u.String()
 	}
 	assert.Nil(tc.createMegaKey(rd, website))
 	go func() {
@@ -329,11 +337,19 @@ func (tc *selectController) makeShow(
 			if exceedFloor.Len() < 1 {
 				if !config.Config.Clickyab.UnderFloor || underFloor.Len() < 1 {
 					go func() {
+						w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
 						warn := transport.Warning{
-							Level:   "warning",
-							When:    time.Now(),
-							Where:   website.WDomain.String,
-							Message: fmt.Sprintf("no ad pass the bid, the floor was %d", website.WFloorCpm),
+							Level: "warning",
+							When:  time.Now(),
+							Where: website.WDomain.String,
+							Message: fmt.Sprintf(
+								"no ad pass the bid, size was %sx%s the floor was %d, all count %d under floor %v under floor count %d",
+								w, h,
+								website.WFloorCpm.Int64,
+								len(filteredAds[slotSize[slotID].SlotSize]),
+								config.Config.Clickyab.UnderFloor,
+								underFloor.Len(),
+							),
 						}
 						warn.Request, _ = httputil.DumpRequest(c.Request(), false)
 						err := rabbit.Publish("cy.warn", warn)

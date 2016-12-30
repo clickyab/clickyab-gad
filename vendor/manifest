@@ -231,9 +231,9 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "gopkg.in/gorp.v1",
-			"repository": "https://gopkg.in/gorp.v1",
-			"revision": "c87af80f3cc5036b55b83d77171e156791085e2e",
+			"importpath": "gopkg.in/gorp.v2",
+			"repository": "https://gopkg.in/gorp.v2",
+			"revision": "4deece61034873cb5b5416e81abe4cea7bd0da72",
 			"branch": "master"
 		},
 		{

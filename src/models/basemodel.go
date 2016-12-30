@@ -9,7 +9,7 @@ import (
 	"utils"
 
 	"github.com/Sirupsen/logrus"
-	"gopkg.in/gorp.v1"
+	"gopkg.in/gorp.v2"
 )
 
 var (

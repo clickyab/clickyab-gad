@@ -41,6 +41,6 @@ func (m *Manager) ConvertCountry2Info(name string) (CountryInfo, error) {
 		return country, err
 	}
 
-	_ = store(key, &country, time.Hour)
+	_ = store(key, &country, 72*time.Hour)
 	return country, nil
 }

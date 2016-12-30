@@ -76,7 +76,10 @@ func (tc *selectController) show(c echo.Context) error {
 
 	ad, _ := store.Get(c.Param("ad"))
 	adID, err := strconv.ParseInt(ad, 10, 64)
-	assert.Nil(err)
+	if err != nil {
+		// Can not find ad
+		return c.String(http.StatusOK, "")
+	}
 	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
 
 	//TODO :validate Wid compare to us
@@ -103,19 +106,18 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 
 	rnd := <-utils.ID
-	clickUrl := fmt.Sprintf(
-		"%s://%s/click/%d/%s/%d/%s?tid=%s&ref=%s&parent=%s",
-		rd.Proto,
-		rd.URL,
-		websiteID,
-		mega,
-		adID,
-		rnd,
-		rd.TID,
-		rd.Referrer,
-		rd.Parent,
-	)
-	res, err := tc.makeAdData(c, typ, ads, clickUrl, long, pos)
+	u := url.URL{
+		Scheme: rd.Scheme,
+		Host:   rd.Host,
+		Path:   fmt.Sprintf("/click/%d/%s/%d/%s", websiteID, mega, adID, rnd),
+	}
+	v := url.Values{}
+	v.Set("tid", rd.TID)
+	v.Set("ref", rd.Referrer)
+	v.Set("parent", rd.Parent)
+	u.RawQuery = v.Encode()
+
+	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos)
 	if err != nil {
 		return err
 	}

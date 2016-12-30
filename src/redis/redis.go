@@ -57,7 +57,7 @@ func GetKey(key string, touch bool, expire time.Duration) (string, error) {
 			return "", err
 		}
 	}
-	return cmd.String(), nil
+	return cmd.Result()
 }
 
 // RemoveKey for removing a key in redis
@@ -158,8 +158,8 @@ func StoreHashKey(key, subkey, data string, expire time.Duration) error {
 }
 
 // RPush perform an rpush command
-func RPush(key string, value ...interface{}) error {
-	return Client.RPush(key, value...).Err()
+func LPush(key string, value ...interface{}) error {
+	return Client.LPush(key, value...).Err()
 }
 
 // BRPopSingle is the function to pop a value from a single list

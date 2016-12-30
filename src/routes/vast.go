@@ -39,6 +39,14 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	}
 	webPublicID := website.WPubID
 	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(webPublicID, length, *website)
+	// TODO : Move this to slotSizeVast func
+	for i := range slotSize {
+		slotSize[i].ExtraParam = map[string]string{
+			"pos":  vastSlotData[i].Offset,
+			"type": vastSlotData[i].Type,
+			"l":    lenType,
+		}
+	}
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -52,7 +60,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	var v = make([]vastAdTemplate, 0)
 	for i := range sizeNumSlice {
 		v = append(v, vastAdTemplate{
-			Link:   template.HTML(fmt.Sprintf("<![CDATA[\n%s&pos=%s&type=%s&l=%s\n]]>", show[i], vastSlotData[i].Offset, vastSlotData[i].Type, lenType)),
+			Link:   template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", show[i])),
 			Offset: vastSlotData[i].Offset,
 			Type:   vastSlotData[i].Type,
 			Repeat: vastSlotData[i].Repeat,

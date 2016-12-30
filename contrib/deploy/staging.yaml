@@ -48,9 +48,9 @@
         checksum: yes
         times: no
 
-#    - name: pull ubuntu image
-#      docker_image:
-#        name: registry.clickyab.ae/clickyab/ubuntu
+    - name: pull ubuntu image
+      docker_image:
+        name: registry.clickyab.ae/clickyab/ubuntu
 
     - name: sync the runner image
       synchronize:
@@ -78,7 +78,7 @@
         recreate: yes
         restart_policy: always
         ports:
-          - 80:80
+          - 8000:80
         volumes:
           - /home/cy/gad:/app
 
