@@ -102,7 +102,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData, slot *slotData) bool {
+func (tc *selectController) doBid(adData *mr.AdData, website *mr.WebsiteData, slot *slotData) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
@@ -112,7 +112,7 @@ func (tc *selectController) doBid(adData *mr.MinAdData, website *mr.WebsiteData,
 	return adData.CPM >= website.WFloorCpm.Int64
 }
 
-func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.MinAdData) int64 {
+func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.AdData) int64 {
 	var secondCPM = floorCPM
 	if len(exceedFloor) > 1 && exceedFloor[0].Capping.GetSelected() == exceedFloor[1].Capping.GetSelected() {
 		secondCPM = exceedFloor[1].CPM
@@ -121,7 +121,7 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.MinAd
 	return secondCPM
 }
 
-func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.WebsiteData, winnerAd map[string]*mr.MinAdData) error {
+func (tc *selectController) addMegaKey(rd *middlewares.RequestData, website *mr.WebsiteData, winnerAd map[string]*mr.AdData) error {
 	// TODO : get interface from redis?
 	tmp := map[string]string{
 		"IP": rd.IP.String(),
@@ -249,15 +249,15 @@ func (selectController) insertNewSlots(wID int64, newSlots ...int64) map[string]
 }
 
 // CalculateCtr calculate ctr
-func (selectController) calculateCTR(ad *mr.MinAdData, slot *slotData) float64 {
+func (selectController) calculateCTR(ad *mr.AdData, slot *slotData) float64 {
 	//fmt.Println(ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect),slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect),(ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100))
 	return (ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100)
 }
 
-func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares.RequestData, filteredAds map[int][]*mr.MinAdData, sizeNumSlice map[string]int, slotSize map[string]*slotData, website *mr.WebsiteData, multipleVideo bool) map[string]string {
+func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, sizeNumSlice map[string]int, slotSize map[string]*slotData, website *mr.WebsiteData, multipleVideo bool) map[string]string {
 
 	var (
-		winnerAd = make(map[string]*mr.MinAdData)
+		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
 		video    bool // once set, never unset it again
 	)
@@ -286,7 +286,7 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 				}
 			}
 		}
-		var sorted []*mr.MinAdData
+		var sorted []*mr.AdData
 		if exceedFloor.Len() < 1 {
 			if !config.Config.Clickyab.UnderFloor || underFloor.Len() < 1 {
 				// TODO : send a warning, log it or anything else:)
@@ -303,7 +303,7 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 
 			ef := mr.ByCPM(underFloor.GetData())
 			sort.Sort(ef)
-			sorted = []*mr.MinAdData(ef)
+			sorted = []*mr.AdData(ef)
 			// Do not do second biding pricing on this ads, they can not pass CPMFloor
 			sorted[0].WinnerBid = sorted[0].CampaignMaxBid
 			sorted[0].Capping.IncView(1)
@@ -312,7 +312,7 @@ func (tc *selectController) makeShow(c echo.Context, typ string, rd *middlewares
 		} else {
 			ef := mr.ByCPM(exceedFloor.GetData())
 			sort.Sort(ef)
-			sorted = []*mr.MinAdData(ef)
+			sorted = []*mr.AdData(ef)
 			secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
 			sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
 			sorted[0].Capping.IncView(1)

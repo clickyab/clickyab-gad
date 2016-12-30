@@ -26,7 +26,7 @@ type CappingInterface interface {
 type CappingLocker struct {
 	cap  int
 	lock sync.RWMutex
-	data []*MinAdData
+	data []*AdData
 }
 
 const (
@@ -91,7 +91,7 @@ func (c *CappingLocker) Get() int {
 }
 
 // GetData return the slice
-func (c *CappingLocker) GetData() []*MinAdData {
+func (c *CappingLocker) GetData() []*AdData {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
@@ -107,7 +107,7 @@ func (c *CappingLocker) Len() int {
 }
 
 // Append to slice
-func (c *CappingLocker) Append(m *MinAdData) {
+func (c *CappingLocker) Append(m *AdData) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 

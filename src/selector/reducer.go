@@ -34,11 +34,11 @@ func Mix(f ...FilterFunc) FilterFunc {
 
 // Apply get the data and then call filter on each of them concurrently, the
 // result is the accepted items
-func Apply(ctx *Context, in []mr.AdData, ff FilterFunc) map[int][]*mr.MinAdData {
-	m := make(map[int][]*mr.MinAdData)
+func Apply(ctx *Context, in []mr.AdData, ff FilterFunc) map[int][]*mr.AdData {
+	m := make(map[int][]*mr.AdData)
 	for i := range in {
 		if ff(ctx, in[i]) {
-			n := in[i].MinAdData
+			n := in[i]
 			if n.AdType == config.AdTypeVideo {
 				for _, j := range config.GetVideoSize() {
 					m[j] = append(m[j], &n)

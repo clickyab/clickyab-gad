@@ -13,7 +13,7 @@ import (
 type SharpArray string
 
 // MinAdData min data
-type MinAdData struct {
+type AdData struct {
 	AdID              int64            `json:"ad_id" db:"ad_id"`
 	CampaignFrequency int              `json:"cp_frequency" db:"cp_frequency"`
 	CTR               float64          `json:"ctr" db:"ctr"`
@@ -118,13 +118,8 @@ type CampaignData struct {
 	CampaignHourEnd         int            `json:"cp_hour_end" db:"cp_hour_end"`
 }
 
-// AdData type @todo
-type AdData struct {
-	MinAdData
-}
-
 //ByCPM sort by cpm
-type ByCPM []*MinAdData
+type ByCPM []*AdData
 
 func (a ByCPM) Len() int {
 	return len(a)
@@ -140,7 +135,7 @@ func (a ByCPM) Less(i, j int) bool {
 }
 
 // ByCapping sort by Capping
-type ByCapping []*MinAdData
+type ByCapping []*AdData
 
 func (a ByCapping) Len() int {
 	return len(a)

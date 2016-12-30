@@ -53,14 +53,14 @@ func (tc *selectController) allAds(c echo.Context) error {
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), fltr)
 
-	all := make([]*mr.MinAdData, 0)
+	all := make([]*mr.AdData, 0)
 	for i := range filteredAds {
 		all = append(all, filteredAds[i]...)
 	}
 
 	return c.JSON(200, struct {
 		Count int
-		All   []*mr.MinAdData
+		All   []*mr.AdData
 	}{
 		Count: len(all),
 		All:   all,
