@@ -136,7 +136,7 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("static_root", p))
 	fmt.Println(p)
 
-	assert.Nil(d.SetDefault("redis.size", 10))
+	assert.Nil(d.SetDefault("redis.size", 200))
 	assert.Nil(d.SetDefault("redis.network", "tcp"))
 	assert.Nil(d.SetDefault("redis.address", ":6379"))
 

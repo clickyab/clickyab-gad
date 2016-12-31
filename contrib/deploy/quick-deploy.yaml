@@ -37,23 +37,6 @@
         checksum: yes
         times: no
 
-- name: Run web server
-  hosts: web
-  tasks:
-
-    - name: Re-create a web container
-      docker_container:
-        name: gad-web
-        image: registry.clickyab.ae/clickyab/gad-runner
-        command: /app/bin/server
-        state: started
-        restart_policy: always
-        recreate: yes
-        ports:
-          - "{{ gad_port }}:80"
-        volumes:
-          - /home/cy/gad:/app
-
 - name: Run click worker
   hosts: click
   tasks:
@@ -114,3 +97,24 @@
         volumes:
           - /home/cy/gad:/app
 
+- name: Run web server
+  hosts: web
+  tasks:
+
+    - name: stop the nginx
+      docker_container:
+        name: nginx
+        state: stopped
+
+    - name: Re-create a web container
+      docker_container:
+        name: gad-web
+        image: registry.clickyab.ae/clickyab/gad-runner
+        command: /app/bin/server
+        state: started
+        recreate: yes
+        restart_policy: always
+        ports:
+          - "{{ gad_port }}:80"
+        volumes:
+          - /home/cy/gad:/app

@@ -29,6 +29,24 @@
         state: directory
 
 
+    - name: pull ubuntu image
+      docker_image:
+        name: registry.clickyab.ae/clickyab/ubuntu
+
+    - name: sync the runner image
+      synchronize:
+        src: "{{ playbook_dir }}/docker-runner/"
+        dest: /home/cy/gad/docker-runner
+        delete: yes
+        checksum: yes
+        times: no
+
+    - name: build the docker
+      docker_image:
+        path: /home/cy/gad/docker-runner
+        name: registry.clickyab.ae/clickyab/gad-runner
+
+
     - name: copy go binary files to web servers
       synchronize:
         src: "{{ playbook_dir }}/../../bin/"
@@ -47,23 +65,6 @@
         rsync_opts: "--exclude=.git --exclude=gb* --exclude=go-bindata --exclude=fswatch --exclude=codegen --exclude=.gitignore"
         checksum: yes
         times: no
-
-    - name: pull ubuntu image
-      docker_image:
-        name: registry.clickyab.ae/clickyab/ubuntu
-
-    - name: sync the runner image
-      synchronize:
-        src: "{{ playbook_dir }}/docker-runner/"
-        dest: /home/cy/gad/docker-runner
-        delete: yes
-        checksum: yes
-        times: no
-
-    - name: build the docker
-      docker_image:
-        path: /home/cy/gad/docker-runner
-        name: registry.clickyab.ae/clickyab/gad-runner
 
 - name: Run click worker
   hosts: click
@@ -117,7 +118,7 @@
     - name: stop the nginx
       docker_container:
         name: nginx
-        state: stoped
+        state: stopped
 
     - name: Re-create a web container
       docker_container:

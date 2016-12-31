@@ -108,7 +108,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *mr.AdData, website *mr.Website, slot *slotData, video bool) bool {
+func (tc *selectController) doBid(adData *mr.AdData, website *mr.Website, slot *slotData) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
@@ -288,7 +288,7 @@ func (tc *selectController) makeShow(
 	var (
 		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
-		video    bool // once set, never unset it again
+		noVideo  bool // once set, never unset it again
 	)
 	reserve := make(map[string]string)
 	for slotID := range slotSize {
@@ -320,20 +320,21 @@ func (tc *selectController) makeShow(
 			cappedFloor := &mr.CappingLocker{}
 			underFloor := &mr.CappingLocker{}
 			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
-				if !video || adData.AdType != config.AdTypeVideo {
-					if tc.doBid(adData, website, slotSize[slotID], video) {
-						if exceedFloor.Len() == 0 {
-							exceedFloor.Set(adData.Capping.GetCapping())
-						}
-						//minimum capping
-						if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
-							exceedFloor.Append(adData)
-						} else if adData.WinnerBid == 0 { // the campaign is lost based on capping
-							cappedFloor.Append(adData)
-						}
-					} else if adData.WinnerBid == 0 {
-						underFloor.Append(adData)
+				if adData.AdType == config.AdTypeVideo && noVideo {
+					continue
+				}
+				if tc.doBid(adData, website, slotSize[slotID]) {
+					if exceedFloor.Len() == 0 {
+						exceedFloor.Set(adData.Capping.GetCapping())
 					}
+					//minimum capping
+					if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
+						exceedFloor.Append(adData)
+					} else if adData.WinnerBid == 0 { // the campaign is lost based on capping
+						cappedFloor.Append(adData)
+					}
+				} else if adData.WinnerBid == 0 {
+					underFloor.Append(adData)
 				}
 			}
 			var sorted []*mr.AdData
@@ -400,7 +401,9 @@ func (tc *selectController) makeShow(
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
 
-			video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
+			if !multipleVideo {
+				noVideo = noVideo || sorted[0].AdType == config.AdTypeVideo
+			}
 			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotID)
 			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
 			//show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
