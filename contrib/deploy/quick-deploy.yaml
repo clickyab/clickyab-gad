@@ -50,7 +50,7 @@
         restart_policy: always
         recreate: yes
         ports:
-          - 80:80
+          - "{{ gad_port }}:80"
         volumes:
           - /home/cy/gad:/app
 

@@ -312,7 +312,7 @@ func (tc *selectController) makeShow(
 		show[slotID] = u.String()
 	}
 	assert.Nil(tc.createMegaKey(rd, website))
-	go func() {
+	middlewares.SafeGO(c, func() {
 		filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		for slotID := range slotSize {
@@ -356,7 +356,7 @@ func (tc *selectController) makeShow(
 			}
 
 			if len(ef) == 0 {
-				go func() {
+				middlewares.SafeGO(c, func() {
 					w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
 					warn := transport.Warning{
 						Level: "warning",
@@ -381,7 +381,7 @@ func (tc *selectController) makeShow(
 					if err != nil {
 						logrus.Error(err)
 					}
-				}()
+				})
 				show[slotID] = ""
 				store.Set(reserve[slotID], "no add")
 				continue
@@ -408,7 +408,7 @@ func (tc *selectController) makeShow(
 			// TODO {fzerorubigd} : Can we check for inner capping increase?
 
 		}
-	}()
+	})
 	return show
 }
 
