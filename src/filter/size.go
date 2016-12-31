@@ -27,5 +27,9 @@ func CheckWebSize(c *selector.Context, in mr.AdData) bool {
 
 // CheckVastSize check if the banner size fits for Vast Template
 func CheckVastSize(_ *selector.Context, in mr.AdData) bool {
-	return in.AdType != config.AdTypeDynamic && (in.AdType == config.AdTypeVideo || config.InVastSize(in.AdSize))
+	if in.AdTarget == config.AdTypeDynamic {
+		return false
+	}
+	
+	return in.AdType == config.AdTypeVideo || config.InVastSize(in.AdSize)
 }

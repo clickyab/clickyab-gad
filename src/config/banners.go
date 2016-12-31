@@ -44,7 +44,7 @@ const VastLinearSize = 9
 // VastNonLinearSize default non-linear size
 const VastNonLinearSize = 6
 
-var videoSize = []int{3, 4, 9, 16, 14, 17}
+var videoSize = []int{3, 4, 9, 16, 14}
 
 // GetSize return the size of a banner in clickyab std
 func GetSize(size string) (int, error) {
