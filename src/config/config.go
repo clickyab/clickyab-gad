@@ -194,7 +194,7 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.slot_ctr_effect", 70))
 	assert.Nil(d.SetDefault("clickyab.vast.default_duration", "00:00:05"))
 	assert.Nil(d.SetDefault("clickyab.vast.default_skipoff", "00:00:03"))
-	assert.Nil(d.SetDefault("clickyab.under_floor", false))
+	assert.Nil(d.SetDefault("clickyab.under_floor", true))
 	assert.Nil(d.SetDefault("clickyab.min_bid", 2000))
 
 	p, err = expand.Path("$HOME/gad/clickyab-server/a")

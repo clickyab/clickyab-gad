@@ -317,6 +317,7 @@ func (tc *selectController) makeShow(
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		for slotID := range slotSize {
 			exceedFloor := &mr.CappingLocker{}
+			cappedFloor := &mr.CappingLocker{}
 			underFloor := &mr.CappingLocker{}
 			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
 				if !video || adData.AdType != config.AdTypeVideo {
@@ -327,6 +328,8 @@ func (tc *selectController) makeShow(
 						//minimum capping
 						if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
 							exceedFloor.Append(adData)
+						} else if adData.WinnerBid == 0 { // the campaign is lost based on capping
+							cappedFloor.Append(adData)
 						}
 					} else if adData.WinnerBid == 0 {
 						underFloor.Append(adData)
@@ -334,52 +337,68 @@ func (tc *selectController) makeShow(
 				}
 			}
 			var sorted []*mr.AdData
-			if exceedFloor.Len() < 1 {
-				if !config.Config.Clickyab.UnderFloor || underFloor.Len() < 1 {
-					go func() {
-						w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
-						warn := transport.Warning{
-							Level: "warning",
-							When:  time.Now(),
-							Where: website.WDomain.String,
-							Message: fmt.Sprintf(
-								"no ad pass the bid, size was %sx%s the floor was %d, all count %d under floor %v under floor count %d",
-								w, h,
-								website.WFloorCpm.Int64,
-								len(filteredAds[slotSize[slotID].SlotSize]),
-								config.Config.Clickyab.UnderFloor,
-								underFloor.Len(),
-							),
-						}
-						warn.Request, _ = httputil.DumpRequest(c.Request(), false)
-						err := rabbit.Publish("cy.warn", warn)
-						if err != nil {
-							logrus.Error(err)
-						}
-					}()
-					show[slotID] = ""
-					store.Set(reserve[slotID], "no add")
-					continue
-				}
+			var (
+				ef     mr.ByCPM
+				secBid bool
+			)
 
-				ef := mr.ByCPM(underFloor.GetData())
-				sort.Sort(ef)
-				sorted = []*mr.AdData(ef)
-				// Do not do second biding pricing on this ads, they can not pass CPMFloor
-				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
-				sorted[0].Capping.IncView(1)
-				winnerAd[slotID] = sorted[0]
-				winnerAd[slotID].SlotID = slotSize[slotID].ID
-			} else {
-				ef := mr.ByCPM(exceedFloor.GetData())
-				sort.Sort(ef)
-				sorted = []*mr.AdData(ef)
+			// order is to get data from exceed flor, then capping passed and if the config allowed,
+			// use the under floor. for under floor there is no second biding pricing
+			if exceedFloor.Len() > 1 {
+				ef = mr.ByCPM(exceedFloor.GetData())
+				secBid = true
+			} else if cappedFloor.Len() > 1 {
+				ef = mr.ByCPM(cappedFloor.GetData())
+				secBid = true
+			} else if config.Config.Clickyab.UnderFloor && underFloor.Len() > 0 {
+				ef = mr.ByCPM(underFloor.GetData())
+				secBid = false
+			}
+
+			if len(ef) == 0 {
+				go func() {
+					w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
+					warn := transport.Warning{
+						Level: "warning",
+						When:  time.Now(),
+						Where: website.WDomain.String,
+						Message: fmt.Sprintf(
+							"no ad pass the bid \n "+
+								"size was %sx%s \n"+
+								"the floor was %d \n"+
+								"all add count in this size %d \n "+
+								"under floor is allowd? %v \n"+
+								"under floor count %d",
+							w, h,
+							website.WFloorCpm.Int64,
+							len(filteredAds[slotSize[slotID].SlotSize]),
+							config.Config.Clickyab.UnderFloor,
+							underFloor.Len(),
+						),
+					}
+					warn.Request, _ = httputil.DumpRequest(c.Request(), false)
+					err := rabbit.Publish("cy.warn", warn)
+					if err != nil {
+						logrus.Error(err)
+					}
+				}()
+				show[slotID] = ""
+				store.Set(reserve[slotID], "no add")
+				continue
+			}
+
+			sort.Sort(ef)
+			sorted = []*mr.AdData(ef)
+			// Do not do second biding pricing on this ads, they can not pass CPMFloor
+			if secBid {
 				secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
 				sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
-				sorted[0].Capping.IncView(1)
-				winnerAd[slotID] = sorted[0]
-				winnerAd[slotID].SlotID = slotSize[slotID].ID
+			} else {
+				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
 			}
+			sorted[0].Capping.IncView(1)
+			winnerAd[slotID] = sorted[0]
+			winnerAd[slotID].SlotID = slotSize[slotID].ID
 
 			video = !multipleVideo && (video || sorted[0].AdType == config.AdTypeVideo)
 			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotID)

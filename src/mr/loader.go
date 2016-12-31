@@ -40,7 +40,8 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 		LEFT JOIN users AS U ON C.u_id=U.u_id
 		WHERE A.ad_status=1 AND C.cp_status=1 AND (C.cp_start <= ? OR C.cp_start=0)
 				AND (C.cp_end >= ? OR C.cp_end=0)
-				AND cp_hour_start <= ? AND cp_hour_end >= ? AND C.cp_daily_budget > C.cp_today_spend AND C.cp_total_budget > C.cp_total_spend AND U.u_balance > U.u_today_spend`
+				AND cp_hour_start <= ? AND cp_hour_end >= ? AND C.cp_daily_budget > C.cp_today_spend
+				AND C.cp_total_budget > C.cp_total_spend AND U.u_balance > U.u_today_spend`
 
 	_, err := m.GetRDbMap().Select(
 		&res,

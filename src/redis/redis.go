@@ -158,8 +158,13 @@ func StoreHashKey(key, subkey, data string, expire time.Duration) error {
 }
 
 // RPush perform an rpush command
-func LPush(key string, value ...interface{}) error {
-	return Client.LPush(key, value...).Err()
+func LPush(key string, t time.Duration, value ...interface{}) error {
+	err := Client.LPush(key, value...).Err()
+	if err == nil {
+		err = Client.Expire(key, t).Err()
+	}
+
+	return err
 }
 
 // BRPopSingle is the function to pop a value from a single list
