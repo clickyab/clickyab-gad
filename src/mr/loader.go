@@ -77,23 +77,6 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	return res, nil
 }
 
-// FetchRegion get the list of all region in database
-func (m *Manager) FetchRegion() (*RegionData, error) {
-	var res = RegionData{}
-
-	query := `SELECT * FROM list_locations`
-
-	_, err := m.GetRDbMap().Select(
-		&res,
-		query,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
 // Build implode slice of string with ,
 func Build(slot []string) string {
 	sort.Strings(slot)
