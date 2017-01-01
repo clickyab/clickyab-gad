@@ -105,3 +105,4 @@ func (m *Manager) FetchWebsiteByDomain(domain string) (*Website, error) {
 	_ = store(key, &res, time.Hour)
 	return &res, nil
 }
+
