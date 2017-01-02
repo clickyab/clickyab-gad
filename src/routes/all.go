@@ -45,7 +45,6 @@ func (tc *selectController) allAds(c echo.Context) error {
 		RequestData: *middlewares.MustGetRequestData(c),
 		Website:     website,
 		Size:        config.GetAllSize(),
-		Country:     nil,
 	}
 	fltr := currentSelector
 	if vast {
