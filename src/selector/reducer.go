@@ -11,9 +11,10 @@ import (
 type Context struct {
 	middlewares.RequestData
 	// TODO : its better to have a unique size array
-	Size    map[string]int
-	Website *mr.Website
-	Country *mr.CountryInfo
+	Size     map[string]int
+	Website  *mr.Website
+	Province *mr.Province
+	Campaign int64
 }
 
 // FilterFunc is the type use to filter the

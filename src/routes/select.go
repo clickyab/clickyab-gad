@@ -39,7 +39,7 @@ var (
 		filter.CheckBlackList,
 		filter.IsWebNetwork,
 		filter.CheckCategory,
-		filter.CheckCountry,
+		filter.CheckProvince,
 	)
 
 	vastSelector = selector.Mix(
@@ -49,7 +49,7 @@ var (
 		filter.CheckBlackList,
 		filter.IsWebNetwork,
 		filter.CheckCategory,
-		filter.CheckCountry,
+		filter.CheckProvince,
 	)
 
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
@@ -79,7 +79,7 @@ type vastSlotData struct {
 func (tc *selectController) selectWebAd(c echo.Context) error {
 	t := time.Now()
 	params := c.QueryParams()
-	rd, website, country, err := tc.getWebDataFromCtx(c)
+	rd, website, province, err := tc.getWebDataFromCtx(c)
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
@@ -89,7 +89,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		RequestData: *rd,
 		Website:     website,
 		Size:        sizeNumSlice,
-		Country:     country,
+		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
 	show := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
@@ -165,7 +165,7 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 	))
 }
 
-func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.CountryInfo, error) {
+func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.Province, error) {
 	rd := middlewares.MustGetRequestData(c)
 
 	params := c.QueryParams()
@@ -186,7 +186,7 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 	if err != nil {
 		return nil, nil, nil, errors.New("invalid request")
 	}
-	country, err := tc.fetchCountry(rd.IP)
+	province, err := tc.fetchProvince(rd.IP)
 	if err != nil {
 		logrus.Debug(err)
 	}
@@ -195,11 +195,11 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 		return nil, nil, nil, errors.New("domain and public id mismatch")
 	}
 
-	return rd, website, country, nil
+	return rd, website, province, nil
 }
 
 //FetchWebsite website and check if the minimum floor is applied
-func (selectController) fetchWebsite(publicID int64) (*mr.Website, error) {
+func (tc *selectController) fetchWebsite(publicID int64) (*mr.Website, error) {
 	website, err := mr.NewManager().FetchWebsiteByPublicID(publicID)
 	if err != nil {
 		return nil, err
@@ -210,18 +210,46 @@ func (selectController) fetchWebsite(publicID int64) (*mr.Website, error) {
 	return website, err
 }
 
-//FetchCountry find country and set context
-func (selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
-	var country mr.CountryInfo
+//fetchIP2Location find ip
+func (tc *selectController) fetchIP2Location(c net.IP) (*mr.IP2Location, error) {
 	ip, err := mr.NewManager().GetLocation(c)
+	if err != nil {
+		return nil, errors.New("location not found")
+	}
+
+	return ip, nil
+
+}
+
+//FetchCountry find country and set context
+func (tc *selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
+	var country mr.CountryInfo
+	ip, err := tc.fetchIP2Location(c)
 	if err != nil || !ip.CountryName.Valid {
 		return nil, errors.New("Country not found")
 	}
+
 	country, err = mr.NewManager().ConvertCountry2Info(ip.CountryCode.String)
 	if err != nil {
 		return nil, errors.New("Country not found")
 	}
 	return &country, nil
+
+}
+
+//fetchProvince find province and set context
+func (tc *selectController) fetchProvince(c net.IP) (*mr.Province, error) {
+	var province mr.Province
+	ip, err := tc.fetchIP2Location(c)
+	if err != nil || !ip.RegionName.Valid {
+		return nil, errors.New("province not found")
+	}
+
+	province, err = mr.NewManager().ConvertProvince2Info(ip.RegionName.String)
+	if err != nil {
+		return nil, errors.New("province not found")
+	}
+	return &province, nil
 
 }
 
