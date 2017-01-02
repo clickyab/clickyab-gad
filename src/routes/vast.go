@@ -33,7 +33,7 @@ type vastAdTemplate struct {
 // Select function is the route that the real biding happen
 func (tc *selectController) selectVastAd(c echo.Context) error {
 
-	rd, website, country, lenType, length, err := tc.getVastDataFromCtx(c)
+	rd, website, province, lenType, length, err := tc.getVastDataFromCtx(c)
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
@@ -52,7 +52,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		RequestData: *rd,
 		Website:     website,
 		Size:        sizeNumSlice,
-		Country:     country,
+		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
 	show := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, website, true)
@@ -98,7 +98,7 @@ func (tc *selectController) slotSizeVast(websitePublicID int64, length map[strin
 
 }
 
-func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.CountryInfo, string, map[string][]string, error) {
+func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.Province, string, map[string][]string, error) {
 	rd := middlewares.MustGetRequestData(c)
 
 	publicID, err := strconv.ParseInt(c.QueryParam("a"), 10, 0)
@@ -110,12 +110,12 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 	if err != nil {
 		return nil, nil, nil, "", nil, errors.New("invalid request")
 	}
-	country, err := tc.fetchCountry(rd.IP)
+	province, err := tc.fetchProvince(rd.IP)
 	if err != nil {
 		logrus.Debug(err)
 	}
 	lenVast, vastCon := config.MakeVastLen(c.QueryParam("l"))
-	return rd, website, country, lenVast, vastCon, nil
+	return rd, website, province, lenVast, vastCon, nil
 }
 
 func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, sizeNumSlice map[string]int) (map[string]*slotData, map[string]int) {
