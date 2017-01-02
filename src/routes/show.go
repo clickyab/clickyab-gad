@@ -24,6 +24,8 @@ import (
 
 	"store"
 
+	"strings"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -301,7 +303,7 @@ func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, 
 		Tracking:    template.HTML(fmt.Sprintf("<![CDATA[\n%s?tv=1\n]]>", urll)),
 		Height:      h,
 		Width:       w,
-		Src:         template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", ad.AdImg.String)),
+		Src:         template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", strings.Replace(ad.AdImg.String, " ", "%20", -1))),
 		Tiny:        true,
 		RND:         r,
 		RND2:        r2,
