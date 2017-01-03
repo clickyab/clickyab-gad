@@ -21,7 +21,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder ".", "/home/develop/gad", owner: "develop", group: "develop", create: true
 
   config.vm.provider "docker" do |d|
-    d.image = "registry.clickyab.ae/clickyab/baseimage-go"
+    d.image = "registry.clickyab.ae/clickyab/baseimage-go-php"
     d.has_ssh = true
     d.cmd = ["/bin/bash", "/home/develop/gad/bin/init.sh"]
   end
