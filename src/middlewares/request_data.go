@@ -7,6 +7,7 @@ import (
 	"mr"
 	"net"
 	"utils"
+	"strings"
 
 	"github.com/mssola/user_agent"
 	"gopkg.in/labstack/echo.v3"
@@ -44,6 +45,9 @@ func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
 		ua := user_agent.New(ctx.Request().UserAgent())
 		e.Host = ctx.Request().Host
 		e.Scheme = ctx.Scheme()
+		if xh := strings.ToLower(ctx.Request().Header.Get("X-Forwarded-Proto")); xh == "https" {
+			e.Scheme = "https"
+		}
 		name, version := ua.Browser()
 		e.Browser = name
 		e.BrowserVersion = version
