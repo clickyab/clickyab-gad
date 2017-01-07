@@ -5,26 +5,21 @@ import (
 	"bytes"
 	"config"
 	"fmt"
+	"html/template"
+	"math/rand"
 	"middlewares"
 	"mr"
+	"net"
 	"net/http"
+	"net/url"
 	"rabbit"
 	"redis"
+	"store"
 	"strconv"
+	"strings"
 	"time"
 	"transport"
 	"utils"
-
-	"html/template"
-	"math/rand"
-
-	"net"
-
-	"net/url"
-
-	"store"
-
-	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
