@@ -14,7 +14,7 @@ var (
 		0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00}
 )
 
-func intToByte(i int) [4]byte {
+func intToByte(i int64) [4]byte {
 	var res [4]byte
 	pos := 4
 	for i > 0 && pos > 0 {
@@ -30,7 +30,7 @@ func byteToFloat(b1, b2, b3, b4 byte) float64 {
 }
 
 // LockUp try to lockup location
-func LockUp(mcc, mnc, lac, cid int) (float64, float64, error) {
+func LockUp(mcc, mnc, lac, cid int64) (float64, float64, error) {
 	dataCP := data
 	bMCC := intToByte(mcc)
 	for i := range bMCC {
