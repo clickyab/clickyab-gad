@@ -64,7 +64,7 @@ type Campaign struct {
 	CampaignWebsiteFilter   SharpArray     `json:"cp_wfilter" db:"cp_wfilter"`
 	CampaignRetargeting     sql.NullString `json:"cp_retargeting" db:"cp_retargeting"`
 	CampaignSegmentID       sql.NullInt64  `json:"cp_segment_id" db:"cp_segment_id"`
-	CampaignAppBrand        sql.NullString `json:"cp_app_brand" db:"cp_app_brand"`
+	CampaignAppBrand        SharpArray     `json:"cp_app_brand" db:"cp_app_brand"`
 	CampaignNetProvider     sql.NullString `json:"cp_net_provider" db:"cp_net_provider"`
 	CampaignAppLang         sql.NullString `json:"cp_app_lang" db:"cp_app_lang"`
 	CampaignAppMarket       sql.NullInt64  `json:"cp_app_market" db:"cp_app_market"`
@@ -72,7 +72,7 @@ type Campaign struct {
 	CampaignWeb             int            `json:"cp_web" db:"cp_web"`
 	CampaignApplication     int            `json:"cp_application" db:"cp_application"`
 	CampaignVideo           int            `json:"cp_video" db:"cp_video"`
-	CampaignAppsCarriers    sql.NullString `json:"cp_apps_carriers" db:"cp_apps_carriers"`
+	CampaignAppsCarriers    SharpArray     `json:"cp_apps_carriers" db:"cp_apps_carriers"`
 	CampaignLongMap         sql.NullString `json:"cp_longmap" db:"cp_longmap"`
 	CampaignLatMap          sql.NullString `json:"cp_latmap" db:"cp_latmap"`
 	CampaignRadius          int            `json:"cp_radius" db:"cp_radius"`
