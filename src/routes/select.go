@@ -27,6 +27,8 @@ import (
 
 	"net/url"
 
+	"strings"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -36,7 +38,7 @@ var (
 		filter.CheckWebSize,
 		filter.CheckOS,
 		filter.CheckWhiteList,
-		filter.CheckBlackList,
+		filter.CheckWebBlackList,
 		filter.IsWebNetwork,
 		filter.CheckCategory,
 		filter.CheckProvince,
@@ -46,7 +48,7 @@ var (
 		filter.CheckVastSize,
 		filter.CheckOS,
 		filter.CheckWhiteList,
-		filter.CheckBlackList,
+		filter.CheckWebBlackList,
 		filter.IsWebNetwork,
 		filter.CheckCategory,
 		filter.CheckProvince,
@@ -186,7 +188,7 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 	if err != nil {
 		return nil, nil, nil, errors.New("invalid request")
 	}
-	province, err := tc.fetchProvince(rd.IP)
+	province, err := tc.fetchProvince(rd.IP, c.Request().Header.Get("Cf-Ipcountry"))
 	if err != nil {
 		logrus.Debug(err)
 	}
@@ -221,24 +223,28 @@ func (tc *selectController) fetchIP2Location(c net.IP) (*mr.IP2Location, error) 
 
 }
 
+// The following code is not required anymore, but I keep it here as long as we are
+// in development, remove it when we are done
 //FetchCountry find country and set context
-func (tc *selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
-	var country mr.CountryInfo
-	ip, err := tc.fetchIP2Location(c)
-	if err != nil || !ip.CountryName.Valid {
-		return nil, errors.New("Country not found")
-	}
+// func (tc *selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
+// 	var country mr.CountryInfo
+// 	ip, err := tc.fetchIP2Location(c)
+// 	if err != nil || !ip.CountryName.Valid {
+// 		return nil, errors.New("Country not found")
+// 	}
 
-	country, err = mr.NewManager().ConvertCountry2Info(ip.CountryCode.String)
-	if err != nil {
-		return nil, errors.New("Country not found")
-	}
-	return &country, nil
-
-}
+// 	country, err = mr.NewManager().ConvertCountry2Info(ip.CountryCode.String)
+// 	if err != nil {
+// 		return nil, errors.New("Country not found")
+// 	}
+// 	return &country, nil
+// }
 
 //fetchProvince find province and set context
-func (tc *selectController) fetchProvince(c net.IP) (*mr.Province, error) {
+func (tc *selectController) fetchProvince(c net.IP, cfHeader string) (*mr.Province, error) {
+	if strings.ToUpper(cfHeader) != "IR" {
+		return nil, errors.New("not inside iran")
+	}
 	var province mr.Province
 	ip, err := tc.fetchIP2Location(c)
 	if err != nil || !ip.RegionName.Valid {
@@ -270,9 +276,7 @@ func (tc selectController) slotSizeWeb(params map[string][]string, website mr.We
 			//size[slice[1]] = strings.Trim(size[slice[1]], "a")
 			SizeNum, _ := config.GetSize(size[slice[1]])
 			sizeNumSlice[slice[1]] = SizeNum
-
 		}
-
 	}
 
 	if mobile {
@@ -331,7 +335,7 @@ func (tc *selectController) makeShow(
 		v.Set("tid", rd.TID)
 		v.Set("ref", rd.Referrer)
 		v.Set("parent", rd.Parent)
-		v.Set("s", fmt.Sprintf("%d", slotSize[slotID]))
+		v.Set("s", fmt.Sprintf("%d", slotSize[slotID].ID))
 
 		for i, j := range slotSize[slotID].ExtraParam {
 			v.Set(i, j)
@@ -340,7 +344,7 @@ func (tc *selectController) makeShow(
 		show[slotID] = u.String()
 	}
 	assert.Nil(tc.createMegaKey(rd, website))
-	middlewares.SafeGO(c, func() {
+	middlewares.SafeGO(c, false, func() {
 		filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		for slotID := range slotSize {
@@ -385,7 +389,7 @@ func (tc *selectController) makeShow(
 			}
 
 			if len(ef) == 0 {
-				middlewares.SafeGO(c, func() {
+				middlewares.SafeGO(c, false, func() {
 					w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
 					warn := transport.Warning{
 						Level: "warning",
