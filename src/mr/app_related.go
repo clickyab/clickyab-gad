@@ -1,9 +1,12 @@
 package mr
 
 import (
+	"assert"
 	"errors"
 	"fmt"
 	"gmaps"
+	"strconv"
+	"strings"
 	"time"
 	"utils"
 )
@@ -38,10 +41,12 @@ type App struct {
 
 // CellLocation is the location of the cell
 type CellLocation struct {
-	ID              int64  `db:"id"`
-	CellID          int64  `db:"cell_id"`
-	Location        string `db:"location"`
-	NeighborhoodsID int64  `db:"neighborhoods_id"`
+	ID              int64   `db:"id"`
+	CellID          int64   `db:"cell_id"`
+	Location        string  `db:"location"`
+	Lat             float64 `db:"-"`
+	Lon             float64 `db:"-"`
+	NeighborhoodsID int64   `db:"neighborhoods_id"`
 }
 
 // PhoneData is the phone data united in one structure for filtering
@@ -52,8 +57,8 @@ type PhoneData struct {
 	// ModelID   int64
 	Carrier   string
 	CarrierID int64
-	Lang      string
-	LangID    int64
+	// Lang      string
+	// LangID    int64
 	Network   string
 	NetworkID int64
 }
@@ -145,10 +150,10 @@ func (m *Manager) IsUserActive(u int64) bool {
 	q := "SELECT u_close FROM users WHERE u_id = ?"
 	res, err := m.GetRDbMap().SelectInt(q, u)
 	if err != nil || res != 0 {
-		return true
+		return false
 	}
 
-	return false
+	return true
 }
 
 func (m *Manager) findCell(lat, lon float64) (int64, int64, error) {
@@ -166,7 +171,7 @@ func (m *Manager) findCell(lat, lon float64) (int64, int64, error) {
 }
 
 // GetCellLocation try to get cell location from mmap database
-func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int, carrier string) (*CellLocation, error) {
+func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int64, carrier string) (*CellLocation, error) {
 	res := CellLocation{}
 	key := utils.Sha1(fmt.Sprintf("loc_%d%d%d%d", mcc, mnc, lac, cid))
 	err := fetch(key, &res)
@@ -177,6 +182,12 @@ func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int, carrier string) (*Cell
 	q := "SELECT id, cell_id, locations, neighborhoods_id FROM `finder_logs_sdk_true` WHERE `mcc`=? AND `mnc`=? AND `lac`=? AND `cid`=? LIMIT 1"
 	err = m.GetRDbMap().SelectOne(&res, q, mcc, mnc, lac, cid)
 	if err == nil {
+		arr := strings.Split(res.Location, ",")
+		assert.True(len(arr) == 2, fmt.Sprintf("[DATA-BUG] finder_logs_sdk_true location for %d is invalid", res.ID))
+		res.Lat, err = strconv.ParseFloat(arr[0], 64)
+		assert.Nil(err, fmt.Sprintf("[DATA-BUG] finder_logs_sdk_true location for %d is invalid", res.ID))
+		res.Lon, err = strconv.ParseFloat(arr[1], 64)
+		assert.Nil(err, fmt.Sprintf("[DATA-BUG] finder_logs_sdk_true location for %d is invalid", res.ID))
 		_ = store(key, &res, 72*time.Hour)
 		return &res, nil
 	}
@@ -203,6 +214,8 @@ func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int, carrier string) (*Cell
 	res.CellID = cellID
 	res.NeighborhoodsID = NeighborhoodID
 	res.Location = fmt.Sprintf("%f,%f", lat, lon)
+	res.Lat = lat
+	res.Lon = lon
 
 	return &res, nil
 }

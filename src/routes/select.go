@@ -12,22 +12,19 @@ import (
 	"mr"
 	"net"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"rabbit"
 	"redis"
 	"regexp"
 	"selector"
+	"sort"
+	"store"
 	"strconv"
+	"strings"
 	"time"
 	"transport"
 	"utils"
-
-	"net/http/httputil"
-	"rabbit"
-	"sort"
-	"store"
-
-	"net/url"
-
-	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
@@ -35,21 +32,21 @@ import (
 
 var (
 	webSelector = selector.Mix(
+		filter.IsWebNetwork,
 		filter.CheckWebSize,
 		filter.CheckOS,
 		filter.CheckWhiteList,
 		filter.CheckWebBlackList,
-		filter.IsWebNetwork,
 		filter.CheckCategory,
 		filter.CheckProvince,
 	)
 
 	vastSelector = selector.Mix(
+		filter.IsWebNetwork,
 		filter.CheckVastSize,
 		filter.CheckOS,
 		filter.CheckWhiteList,
 		filter.CheckWebBlackList,
-		filter.IsWebNetwork,
 		filter.CheckCategory,
 		filter.CheckProvince,
 	)
@@ -188,6 +185,11 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 	if err != nil {
 		return nil, nil, nil, errors.New("invalid request")
 	}
+
+	if !mr.NewManager().IsUserActive(website.UserID) {
+		return nil, nil, nil, errors.New("user is banned")
+	}
+
 	province, err := tc.fetchProvince(rd.IP, c.Request().Header.Get("Cf-Ipcountry"))
 	if err != nil {
 		logrus.Debug(err)
