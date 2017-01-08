@@ -65,7 +65,7 @@ type Campaign struct {
 	CampaignRetargeting     sql.NullString `json:"cp_retargeting" db:"cp_retargeting"`
 	CampaignSegmentID       sql.NullInt64  `json:"cp_segment_id" db:"cp_segment_id"`
 	CampaignAppBrand        sql.NullString `json:"cp_app_brand" db:"cp_app_brand"`
-	CampaignNetProvider     sql.NullString `json:"cp_net_provider" db:"cp_net_provider"`
+	CampaignNetProvider     SharpArray     `json:"cp_net_provider" db:"cp_net_provider"`
 	CampaignAppLang         sql.NullString `json:"cp_app_lang" db:"cp_app_lang"`
 	CampaignAppMarket       sql.NullInt64  `json:"cp_app_market" db:"cp_app_market"`
 	CampaignWebMobile       int            `json:"cp_web_mobile" db:"cp_web_mobile"`
