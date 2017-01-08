@@ -19,7 +19,9 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/conversion/", tc.conversion, middlewares.RequestCollector, middlewares.Header)
 	e.GET("/ads/vast/", tc.selectVastAd, middlewares.RequestCollector, middlewares.Header)
 	e.GET("/allads", tc.allAds, middlewares.RequestCollector, middlewares.Header)
-
+	
+	e.GET("/inapp.php", tc.inApp, middlewares.RequestCollector, middlewares.Header)
+	
 	postfix := "-min.js"
 	if config.Config.DevelMode {
 		postfix = ".js"
