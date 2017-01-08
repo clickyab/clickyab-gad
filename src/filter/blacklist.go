@@ -5,7 +5,7 @@ import (
 	"selector"
 )
 
-// CheckBlackList filter blacklist
-func CheckBlackList(c *selector.Context, in mr.AdData) bool {
+// CheckWebBlackList filter blacklist
+func CheckWebBlackList(c *selector.Context, in mr.AdData) bool {
 	return !in.CampaignWebsiteFilter.Has(false, c.Website.WID)
 }

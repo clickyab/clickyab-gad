@@ -69,7 +69,7 @@ func (tc *selectController) allAds(c echo.Context) error {
 	if w != "" {
 		website, err = mr.NewManager().FetchWebsiteByDomain(w)
 		if err == nil {
-			fltr = append(fltr, filter.CheckWhiteList, filter.CheckBlackList)
+			fltr = append(fltr, filter.CheckWhiteList, filter.CheckWebBlackList)
 		}
 	}
 	if cam != "" {
