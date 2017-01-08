@@ -9,3 +9,8 @@ import (
 func IsWebNetwork(c *selector.Context, in mr.AdData) bool {
 	return in.CampaignNetwork == 0 || in.CampaignNetwork == 2
 }
+
+// IsAppNetwork filter network for campaigns
+func IsAppNetwork(c *selector.Context, in mr.AdData) bool {
+	return in.CampaignNetwork == 1
+}
