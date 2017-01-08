@@ -23,9 +23,10 @@ type AdData struct {
 	WinnerBid         int64            `json:"winner_bid" db:"-"`
 	CampaignMaxBid    int64            `json:"cp_maxbid" db:"cp_maxbid"`
 	CampaignID        int64            `json:"cp_id" db:"cp_id"`
+	CampaignName      sql.NullString   `json:"cp_name" db:"cp_name"`
 	AdType            int              `json:"ad_type" db:"ad_type"`
 	SlotID            int64            `json:"slot_id" db:"-"`
-	CampaignData
+	Campaign
 	AdSize         int            `json:"ad_size" db:"ad_size"`
 	UserID         int64          `json:"u_id" db:"u_id"`
 	AdName         sql.NullString `json:"ad_name" db:"ad_name"`
@@ -53,11 +54,11 @@ type AdData struct {
 	CpLock          int                     `json:"cp_lock" db:"cp_lock"`
 }
 
-// CampaignData is a single campaign data
-type CampaignData struct {
-	CampaignType            int            `json:"cp_type" db:"cp_type"`
-	CampaignBillingType     sql.NullString `json:"cp_billing_type" db:"cp_billing_type"`
-	CampaignName            sql.NullString `json:"cp_name" db:"cp_name"`
+// Campaign is a single campaign data
+type Campaign struct {
+	CampaignType        int            `json:"cp_type" db:"cp_type"`
+	CampaignBillingType sql.NullString `json:"cp_billing_type" db:"cp_billing_type"`
+
 	CampaignNetwork         int            `json:"cp_network" db:"cp_network"`
 	CampaignPlacement       SharpArray     `json:"cp_placement" db:"cp_placement"`
 	CampaignWebsiteFilter   SharpArray     `json:"cp_wfilter" db:"cp_wfilter"`
