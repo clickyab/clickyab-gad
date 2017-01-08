@@ -110,6 +110,11 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 	if err != nil {
 		return nil, nil, nil, "", nil, errors.New("invalid request")
 	}
+
+	if !mr.NewManager().IsUserActive(website.UserID) {
+		return nil, nil, nil, "", nil, errors.New("user is banned")
+	}
+
 	province, err := tc.fetchProvince(rd.IP, c.Request().Header.Get("Cf-Ipcountry"))
 	if err != nil {
 		logrus.Debug(err)
