@@ -2,26 +2,42 @@ package routes
 
 import (
 	"config"
-	"middlewares"
-	"statics"
-
 	"fastcgi"
+	"middlewares"
+	"net"
+	"statics"
 	"time"
+	"utils"
 
 	"gopkg.in/labstack/echo.v3"
 )
 
+func webCopCreateor(ctx echo.Context, e *middlewares.RequestData, len int) string {
+	//return utils.CreateCopID(ctx.Request().UserAgent(), net.ParseIP(ctx.RealIP()), len)
+	return utils.CreateHash(len, []byte(ctx.Request().UserAgent()), []byte(net.ParseIP(ctx.RealIP())))
+}
+
+func appCopCreateor(ctx echo.Context, e *middlewares.RequestData, len int) string {
+	return utils.CreateHash(
+		len,
+		[]byte(ctx.Request().URL.Query().Get("androidid")),
+		[]byte(ctx.Request().URL.Query().Get("deviceid")),
+		[]byte(ctx.Request().URL.Query().Get("operator")),
+		[]byte(ctx.Request().URL.Query().Get("model")),
+	)
+}
+
 // Routes function register all routes in system
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
-	e.GET("/select", tc.selectWebAd, middlewares.RequestCollector, middlewares.Header)
-	e.GET("/show/:type/:mega/:wid/:ad", tc.show, middlewares.RequestCollector, middlewares.Header)
-	e.GET("/click/:wid/:mega/:ad/:rand", tc.click, middlewares.RequestCollector, middlewares.Header)
-	e.GET("/conversion/", tc.conversion, middlewares.RequestCollector, middlewares.Header)
-	e.GET("/ads/vast/", tc.selectVastAd, middlewares.RequestCollector, middlewares.Header)
-	e.GET("/allads", tc.allAds, middlewares.RequestCollector, middlewares.Header)
-	
-	e.GET("/inapp.php", tc.inApp, middlewares.RequestCollector, middlewares.Header)
-	
+	e.GET("/select", tc.selectWebAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.GET("/show/:type/:mega/:wid/:ad", tc.show, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.GET("/click/:typ/:wid/:mega/:ad/:rand", tc.click, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.GET("/conversion/", tc.conversion, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.GET("/ads/vast/", tc.selectVastAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.GET("/allads", tc.allAds, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
+
+	e.GET("/inapp.php", tc.inApp, middlewares.RequestCollectorGenerator(appCopCreateor), middlewares.Header)
+
 	postfix := "-min.js"
 	if config.Config.DevelMode {
 		postfix = ".js"

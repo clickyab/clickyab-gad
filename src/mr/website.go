@@ -38,6 +38,26 @@ type Website struct {
 	UpdatedAt          sql.NullString `json:"updated_at" db:"updated_at"`
 }
 
+// GetID return the id of app
+func (w *Website) GetID() int64 {
+	return w.WID
+}
+
+// GetName return the name of object
+func (w *Website) GetName() string {
+	return w.WDomain.String
+}
+
+// FloorCPM is the floor value for this site
+func (w *Website) FloorCPM() int64 {
+	return w.WFloorCpm.Int64
+}
+
+// GetActive return if app is active or not
+func (w *Website) GetActive() bool {
+	return w.WStatus == 0 || w.WStatus == 1
+}
+
 // FetchWebsiteByPublicID function @todo
 func (m *Manager) FetchWebsiteByPublicID(publicID int64) (*Website, error) {
 	var res = Website{}
@@ -105,4 +125,3 @@ func (m *Manager) FetchWebsiteByDomain(domain string) (*Website, error) {
 	_ = store(key, &res, time.Hour)
 	return &res, nil
 }
-

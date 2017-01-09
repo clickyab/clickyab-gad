@@ -55,7 +55,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
-	show := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, website, true)
+	show, _ := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, website, true)
 
 	var v = make([]vastAdTemplate, 0)
 	for i := range sizeNumSlice {
@@ -111,6 +111,10 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 		return nil, nil, nil, "", nil, errors.New("invalid request")
 	}
 
+	if !website.GetActive() {
+		return nil, nil, nil, "", nil, errors.New("web is not active")
+	}
+
 	if !mr.NewManager().IsUserActive(website.UserID) {
 		return nil, nil, nil, "", nil, errors.New("user is banned")
 	}
@@ -125,7 +129,7 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 
 func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, sizeNumSlice map[string]int) (map[string]*slotData, map[string]int) {
 	slotPublicString := mr.Build(slotPublic)
-	res, err := mr.NewManager().FetchSlots(slotPublicString, webID)
+	res, err := mr.NewManager().FetchWebSlots(slotPublicString, webID)
 	assert.Nil(err)
 
 	answer := make(map[string]*slotData)

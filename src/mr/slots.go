@@ -9,6 +9,8 @@ import (
 
 	"time"
 
+	"assert"
+
 	"github.com/go-sql-driver/mysql"
 )
 
@@ -29,8 +31,8 @@ type Slot struct {
 	UpdatedAt        mysql.NullTime `json:"updated_at" db:"updated_at"`
 }
 
-// FetchSlots fetch all slots
-func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slot, error) {
+// FetchWebSlots fetch all slots
+func (m *Manager) FetchWebSlots(publicID string, wID int64) ([]Slot, error) {
 	var res []Slot
 
 	key := utils.Sha1(fmt.Sprintf("slot_%s_%d", publicID, wID))
@@ -55,10 +57,17 @@ func (m *Manager) FetchSlots(publicID string, wID int64) ([]Slot, error) {
 }
 
 // InsertSlots create as many slots you want
-func (m *Manager) InsertSlots(wID int64, slotsPublic ...int64) ([]Slot, error) {
+func (m *Manager) InsertSlots(wID int64, appID int64, slotsPublic ...int64) ([]Slot, error) {
+	assert.True((appID == 0 && wID > 0) || (appID > 0 && wID == 0), "[BUG] invalid input")
 	var slot []interface{}
 	for s := range slotsPublic {
-		slot = append(slot, &Slot{PublicID: slotsPublic[s], WID: wID})
+		s := &Slot{PublicID: slotsPublic[s]}
+		if wID > 0 {
+			s.WID = wID
+		} else {
+			s.AppID = appID
+		}
+		slot = append(slot, s)
 	}
 	err := m.GetWDbMap().Insert(slot...)
 	if err != nil {
@@ -71,4 +80,28 @@ func (m *Manager) InsertSlots(wID int64, slotsPublic ...int64) ([]Slot, error) {
 	}
 	return result, nil
 
+}
+
+// FetchAppSlot is the app version of fetch slot
+func (m *Manager) FetchAppSlot(appID int64, slotID int64) (*Slot, error) {
+	var res Slot
+
+	key := utils.Sha1(fmt.Sprintf("slotapp_%d_%d", slotID, appID))
+	err := fetch(key, &res)
+	if err == nil {
+		return &res, nil
+	}
+
+	_, err = m.GetProperDBMap().Select(
+		&res,
+		`SELECT * FROM slots WHERE slot_pubilc_id = ? AND app_id = ?`,
+		slotID,
+		appID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = store(key, &res, time.Hour)
+	return &res, nil
 }
