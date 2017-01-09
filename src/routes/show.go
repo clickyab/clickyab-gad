@@ -106,7 +106,7 @@ func (tc *selectController) show(c echo.Context) error {
 	u := url.URL{
 		Scheme: rd.Scheme,
 		Host:   rd.Host,
-		Path:   fmt.Sprintf("/click/%d/%s/%d/%s", websiteID, mega, adID, rnd),
+		Path:   fmt.Sprintf("/click/%s/%d/%s/%d/%s", typ, websiteID, mega, adID, rnd),
 	}
 	v := url.Values{}
 	v.Set("tid", rd.TID)

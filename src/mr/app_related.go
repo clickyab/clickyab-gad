@@ -69,6 +69,26 @@ type tmpData struct {
 	Show int    `db:"show"`
 }
 
+// GetID return the id of app
+func (w *App) GetID() int64 {
+	return w.ID
+}
+
+// GetName return the name of object
+func (w *App) GetName() string {
+	return w.AppPackage
+}
+
+// FloorCPM is the floor value for this site
+func (w *App) FloorCPM() int64 {
+	return w.AppFloorCPM
+}
+
+// GetActive return if app is active or not
+func (w *App) GetActive() bool {
+	return w.AppStatus == 0 || w.AppStatus == 1
+}
+
 func (m *Manager) doCacheQuery(q string, p string) (*tmpData, error) {
 	res := tmpData{}
 	key := utils.Sha1(fmt.Sprintf("caca_%s", p))
@@ -86,7 +106,7 @@ func (m *Manager) doCacheQuery(q string, p string) (*tmpData, error) {
 }
 
 // GetPhoneData try to insert/retrieve brand for phone
-func (m *Manager) GetPhoneData(brand, carrier, network string) (*PhoneData, error) {
+func (m *Manager) GetPhoneData(brand, carrier, network string) *PhoneData {
 	result := PhoneData{
 		Brand: brand,
 		// Model:   model,
@@ -123,7 +143,7 @@ func (m *Manager) GetPhoneData(brand, carrier, network string) (*PhoneData, erro
 		// Found one
 		result.NetworkID = t.ID
 	}
-	return &result, nil
+	return &result
 }
 
 // GetApp try to get application from the system
@@ -137,6 +157,25 @@ func (m *Manager) GetApp(token string) (*App, error) {
 
 	q := "SELECT * FROM `apps` WHERE `app_token`=?"
 	err = m.GetRDbMap().SelectOne(&res, q, token)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = store(key, &res, 72*time.Hour)
+	return &res, nil
+}
+
+// GetAppByID try to get application from the system
+func (m *Manager) GetAppByID(id int64) (*App, error) {
+	res := App{}
+	key := utils.Sha1(fmt.Sprintf("app_%d", id))
+	err := fetch(key, &res)
+	if err == nil {
+		return &res, nil
+	}
+
+	q := "SELECT * FROM `apps` WHERE `app_id`=?"
+	err = m.GetRDbMap().SelectOne(&res, q, id)
 	if err != nil {
 		return nil, err
 	}
