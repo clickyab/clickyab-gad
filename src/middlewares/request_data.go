@@ -6,8 +6,8 @@ import (
 	"errors"
 	"mr"
 	"net"
-	"utils"
 	"strings"
+	"utils"
 
 	"github.com/mssola/user_agent"
 	"gopkg.in/labstack/echo.v3"
@@ -36,39 +36,41 @@ type RequestData struct {
 
 const requestDataToken = "__request_data__"
 
-// RequestCollector try to collect data from request
-func RequestCollector(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(ctx echo.Context) error {
-		e := &RequestData{}
-		e.IP = net.ParseIP(ctx.RealIP())
-		e.UserAgent = ctx.Request().UserAgent()
-		ua := user_agent.New(ctx.Request().UserAgent())
-		e.Host = ctx.Request().Host
-		e.Scheme = ctx.Scheme()
-		if xh := strings.ToLower(ctx.Request().Header.Get("X-Forwarded-Proto")); xh == "https" {
-			e.Scheme = "https"
-		}
-		name, version := ua.Browser()
-		e.Browser = name
-		e.BrowserVersion = version
-		e.OS = ua.OS()
-		e.Mobile = ua.Mobile()
-		e.Platform = ua.Platform()
-		e.PlatformID = config.FindOsID(ua.Platform())
-		e.Referrer = ctx.Request().URL.Query().Get("ref")
-		e.Method = ctx.Request().Method
-		e.MegaImp = <-utils.ID
-		e.Parent = ctx.Request().URL.Query().Get("parent")
-		if e.Referrer == "" {
-			e.Referrer = ctx.Request().Referer()
-		}
+// RequestCollectorGenerator try to collect data from request
+func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) string) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ctx echo.Context) error {
+			e := &RequestData{}
+			e.IP = net.ParseIP(ctx.RealIP())
+			e.UserAgent = ctx.Request().UserAgent()
+			ua := user_agent.New(ctx.Request().UserAgent())
+			e.Host = ctx.Request().Host
+			e.Scheme = ctx.Scheme()
+			if xh := strings.ToLower(ctx.Request().Header.Get("X-Forwarded-Proto")); xh == "https" {
+				e.Scheme = "https"
+			}
+			name, version := ua.Browser()
+			e.Browser = name
+			e.BrowserVersion = version
+			e.OS = ua.OS()
+			e.Mobile = ua.Mobile()
+			e.Platform = ua.Platform()
+			e.PlatformID = config.FindOsID(ua.Platform())
+			e.Referrer = ctx.Request().URL.Query().Get("ref")
+			e.Method = ctx.Request().Method
+			e.MegaImp = <-utils.ID
+			e.Parent = ctx.Request().URL.Query().Get("parent")
+			if e.Referrer == "" {
+				e.Referrer = ctx.Request().Referer()
+			}
 
-		if e.TID = ctx.Request().URL.Query().Get("tid"); len(e.TID) < config.Config.Clickyab.CopLen {
-			e.TID = utils.CreateCopID(e.UserAgent, e.IP, config.Config.Clickyab.CopLen)
+			if e.TID = ctx.Request().URL.Query().Get("tid"); len(e.TID) < config.Config.Clickyab.CopLen {
+				e.TID = copKey(ctx, e, config.Config.Clickyab.CopLen)
+			}
+			e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
+			ctx.Set(requestDataToken, e)
+			return next(ctx)
 		}
-		e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
-		ctx.Set(requestDataToken, e)
-		return next(ctx)
 	}
 }
 

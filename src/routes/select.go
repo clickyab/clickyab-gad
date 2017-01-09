@@ -37,7 +37,7 @@ var (
 		filter.CheckOS,
 		filter.CheckWhiteList,
 		filter.CheckWebBlackList,
-		filter.CheckCategory,
+		filter.CheckWebCategory,
 		filter.CheckProvince,
 	)
 
@@ -47,7 +47,7 @@ var (
 		filter.CheckOS,
 		filter.CheckWhiteList,
 		filter.CheckWebBlackList,
-		filter.CheckCategory,
+		filter.CheckWebCategory,
 		filter.CheckProvince,
 	)
 
@@ -91,7 +91,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
 
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
@@ -107,14 +107,14 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *mr.AdData, website *mr.Website, slot *slotData) bool {
+func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
 	)
 	adData.CPM = utils.Cpm(adData.CampaignMaxBid, adData.CTR)
 	//exceed cpm floor
-	return adData.CPM >= website.WFloorCpm.Int64
+	return adData.CPM >= website.FloorCPM()
 }
 
 func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.AdData) int64 {
@@ -126,11 +126,11 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.AdDat
 	return secondCPM
 }
 
-func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website *mr.Website) error {
+func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website Publisher) error {
 	tmp := map[string]string{
 		"IP": rd.IP.String(),
 		"UA": rd.UserAgent,
-		"WS": fmt.Sprintf("%d", website.WID),
+		"WS": fmt.Sprintf("%d", website.GetID()),
 		"T":  fmt.Sprintf("%d", time.Now().Unix()),
 	}
 	assert.True(config.Config.Clickyab.MegaImpExpire > 1, "invalid config")
@@ -184,6 +184,10 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 	website, err := tc.fetchWebsite(publicID)
 	if err != nil {
 		return nil, nil, nil, errors.New("invalid request")
+	}
+
+	if !website.GetActive() {
+		return nil, nil, nil, errors.New("web is not active")
 	}
 
 	if !mr.NewManager().IsUserActive(website.UserID) {
@@ -292,7 +296,7 @@ func (tc selectController) slotSizeWeb(params map[string][]string, website mr.We
 func (selectController) insertNewSlots(wID int64, newSlots ...int64) map[string]int64 {
 	result := make(map[string]int64)
 	if len(newSlots) > 0 {
-		insertedSlots, err := mr.NewManager().InsertSlots(wID, newSlots...)
+		insertedSlots, err := mr.NewManager().InsertSlots(wID, 0, newSlots...)
 		if err == nil {
 			for i := range insertedSlots {
 				p := fmt.Sprintf("%d", insertedSlots[i].PublicID)
@@ -317,8 +321,8 @@ func (tc *selectController) makeShow(
 	filteredAds map[int][]*mr.AdData,
 	sizeNumSlice map[string]int,
 	slotSize map[string]*slotData,
-	website *mr.Website,
-	multipleVideo bool) map[string]string {
+	publisher Publisher,
+	multipleVideo bool) (map[string]string, map[string]*mr.AdData) {
 	var (
 		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
@@ -331,7 +335,7 @@ func (tc *selectController) makeShow(
 		u := url.URL{
 			Scheme: rd.Scheme,
 			Host:   rd.Host,
-			Path:   fmt.Sprintf("/show/%s/%s/%d/%s", typ, rd.MegaImp, website.WID, tmp),
+			Path:   fmt.Sprintf("/show/%s/%s/%d/%s", typ, rd.MegaImp, publisher.GetID(), tmp),
 		}
 		v := url.Values{}
 		v.Set("tid", rd.TID)
@@ -345,8 +349,19 @@ func (tc *selectController) makeShow(
 		u.RawQuery = v.Encode()
 		show[slotID] = u.String()
 	}
-	assert.Nil(tc.createMegaKey(rd, website))
+
+	var wait chan map[string]*mr.AdData
+	if typ == "sync" {
+		wait = make(chan map[string]*mr.AdData)
+	}
+	assert.Nil(tc.createMegaKey(rd, publisher))
 	middlewares.SafeGO(c, false, func() {
+		ads := make(map[string]*mr.AdData)
+		defer func() {
+			if typ == "sync" {
+				wait <- ads
+			}
+		}()
 		filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		for slotID := range slotSize {
@@ -357,7 +372,7 @@ func (tc *selectController) makeShow(
 				if adData.AdType == config.AdTypeVideo && noVideo {
 					continue
 				}
-				if tc.doBid(adData, website, slotSize[slotID]) {
+				if tc.doBid(adData, publisher, slotSize[slotID]) {
 					if exceedFloor.Len() == 0 {
 						exceedFloor.Set(adData.Capping.GetCapping())
 					}
@@ -396,7 +411,7 @@ func (tc *selectController) makeShow(
 					warn := transport.Warning{
 						Level: "warning",
 						When:  time.Now(),
-						Where: website.WDomain.String,
+						Where: publisher.GetName(),
 						Message: fmt.Sprintf(
 							"no ad pass the bid \n "+
 								"size was %sx%s \n"+
@@ -405,7 +420,7 @@ func (tc *selectController) makeShow(
 								"under floor is allowd? %v \n"+
 								"under floor count %d",
 							w, h,
-							website.WFloorCpm.Int64,
+							publisher.FloorCPM(),
 							len(filteredAds[slotSize[slotID].SlotSize]),
 							config.Config.Clickyab.UnderFloor,
 							underFloor.Len(),
@@ -417,7 +432,7 @@ func (tc *selectController) makeShow(
 						logrus.Error(err)
 					}
 				})
-				show[slotID] = ""
+				ads[slotID] = nil
 				store.Set(reserve[slotID], "no add")
 				continue
 			}
@@ -426,7 +441,7 @@ func (tc *selectController) makeShow(
 			sorted = []*mr.AdData(ef)
 			// Do not do second biding pricing on this ads, they can not pass CPMFloor
 			if secBid {
-				secondCPM := tc.getSecondCPM(website.WFloorCpm.Int64, sorted)
+				secondCPM := tc.getSecondCPM(publisher.FloorCPM(), sorted)
 				sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
 			} else {
 				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
@@ -434,19 +449,23 @@ func (tc *selectController) makeShow(
 			sorted[0].Capping.IncView(1)
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
+			ads[slotID] = sorted[0]
 
 			if !multipleVideo {
 				noVideo = noVideo || sorted[0].AdType == config.AdTypeVideo
 			}
 			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotID)
 			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
-			//show[slotID] = fmt.Sprintf("%s://%s/show/%s/%s/%d/%d?tid=%s&ref=%s&s=%d", rd.Proto, rd.URL, typ, rd.MegaImp, website.WID, sorted[0].AdID, rd.TID, rd.Parent, slotSize[slotID].ID)
 			assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
 			// TODO {fzerorubigd} : Can we check for inner capping increase?
 
 		}
 	})
-	return show
+	var allAds map[string]*mr.AdData
+	if typ == "sync" {
+		allAds = <-wait
+	}
+	return show, allAds
 }
 
 func init() {

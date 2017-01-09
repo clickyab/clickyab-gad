@@ -28,6 +28,7 @@ const (
 	suspIPMismatch     = 96
 	suspUAMismatch     = 97
 	suspInvalidWebsite = 98
+	suspInvalidApp     = 99
 )
 
 func assertNil(status bool, err error) {
@@ -60,6 +61,7 @@ func (tc *selectController) click(c echo.Context) error {
 
 	rand := c.Param("rand")
 	mega := c.Param("mega")
+	typ := c.Param("typ")
 	tv := c.QueryParam("tv") != ""
 
 	ads, err := mr.NewManager().GetAd(adID)
@@ -81,9 +83,14 @@ func (tc *selectController) click(c echo.Context) error {
 	wID, err := strconv.ParseInt(result["WS"], 10, 0)
 	assertNil(noRedisKey, err)
 
-	webSite, err := mr.NewManager().FetchWebsite(wID)
-	status = changeStatus(status, suspInvalidWebsite, err != nil || (webSite.WStatus != 0 && webSite.WStatus != 1))
-
+	var pub Publisher
+	if typ != "app" {
+		pub, err = mr.NewManager().FetchWebsite(wID)
+		status = changeStatus(status, suspInvalidWebsite, err != nil || (webSite.WStatus != 0 && webSite.WStatus != 1))
+	} else {
+		pub, err = mr.NewManager().GetAppByID(wID)
+		status = changeStatus(status, suspInvalidApp, err != nil || (app.AppStatus != 0 && app.AppStatus != 1))
+	}
 	clickID := <-utils.ID
 
 	go func() {
@@ -95,8 +102,10 @@ func (tc *selectController) click(c echo.Context) error {
 
 		status = changeStatus(status, suspIPMismatch, rd.IP.String() != result["IP"])
 
-		status = changeStatus(status, suspUAMismatch, rd.UserAgent != result["UA"])
-
+		// App is special case, since the app is clicked via browser and the UA is changed
+		if typ != "app" {
+			status = changeStatus(status, suspUAMismatch, rd.UserAgent != result["UA"])
+		}
 		status = changeStatus(status, suspRndMismatch, rand != result["RND"])
 
 		slotID, err := strconv.ParseInt(result["S"], 10, 0)
