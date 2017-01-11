@@ -19,6 +19,7 @@ type CountryInfo struct {
 }
 
 //ConvertCountry2Info get data country from string
+// @DEPRICATED
 func (m *Manager) ConvertCountry2Info(name string) (CountryInfo, error) {
 	var country CountryInfo
 	if len(name) < 2 {

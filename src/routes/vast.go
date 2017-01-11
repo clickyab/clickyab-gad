@@ -4,6 +4,7 @@ import (
 	"assert"
 	"bytes"
 	"config"
+	"errors"
 	"fmt"
 	"html/template"
 	"middlewares"
@@ -14,8 +15,6 @@ import (
 	"strconv"
 	"transport"
 	"utils"
-
-	"errors"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
