@@ -2,6 +2,7 @@ package mr
 
 import (
 	"assert"
+	"database/sql"
 	"errors"
 	"fmt"
 	"gmaps"
@@ -16,27 +17,27 @@ const UnknownNetwork = 2
 
 // App is the applications structure
 type App struct {
-	ID                   int64      `db:"app_id"`
-	UserID               int64      `db:"u_id"`
-	AppToken             string     `db:"app_token"`
-	AppName              string     `db:"app_name"`
-	EnAppName            string     `db:"en_app_name"`
-	AppPackage           string     `db:"app_package"`
-	AmID                 int        `db:"am_id"`
-	MinBID               int64      `db:"app_minbid"`
-	AppFloorCPM          int64      `db:"app_floor_cpm"`
-	AppDIV               float64    `db:"app_div"`
-	AppStatus            int        `db:"app_status"`
-	AppReview            int        `db:"app_review"`
-	AppTodayCTR          int64      `db:"app_today_ctr"`
-	AppTodayIMPs         int64      `db:"app_today_imps"`
-	AppTodayClicks       int64      `db:"app_today_clicks"`
-	AppDate              int        `db:"app_date"`
-	Appcat               SharpArray `db:"app_cat"`
-	AppNotApprovedReason string     `db:"app_notapprovedreason"`
-	AppFatFinger         string     `db:"app_fatfinger"`
-	CreatedAt            time.Time  `db:"created_at"`
-	UpdatedAt            time.Time  `db:"updated_at"`
+	ID                   int64          `db:"app_id"`
+	UserID               int64          `db:"u_id"`
+	AppToken             string         `db:"app_token"`
+	AppName              string         `db:"app_name"`
+	EnAppName            string         `db:"en_app_name"`
+	AppPackage           string         `db:"app_package"`
+	AmID                 int            `db:"am_id"`
+	MinBID               int64          `db:"app_minbid"`
+	AppFloorCPM          int64          `db:"app_floor_cpm"`
+	AppDIV               float64        `db:"app_div"`
+	AppStatus            int            `db:"app_status"`
+	AppReview            int            `db:"app_review"`
+	AppTodayCTR          int64          `db:"app_today_ctr"`
+	AppTodayIMPs         int64          `db:"app_today_imps"`
+	AppTodayClicks       int64          `db:"app_today_clicks"`
+	AppDate              int            `db:"app_date"`
+	Appcat               SharpArray     `db:"app_cat"`
+	AppNotApprovedReason sql.NullString `db:"app_notapprovedreason"`
+	AppFatFinger         sql.NullBool   `db:"app_fatfinger"`
+	CreatedAt            time.Time      `db:"created_at"`
+	UpdatedAt            time.Time      `db:"updated_at"`
 }
 
 // CellLocation is the location of the cell
@@ -87,6 +88,11 @@ func (w *App) FloorCPM() int64 {
 // GetActive return if app is active or not
 func (w *App) GetActive() bool {
 	return w.AppStatus == 0 || w.AppStatus == 1
+}
+
+// GetType of this object
+func (w *App) GetType() string {
+	return "app"
 }
 
 func (m *Manager) doCacheQuery(q string, p string) (*tmpData, error) {

@@ -50,15 +50,30 @@ func (m *Manager) InsertClick(click *transport.Click) error {
 	c_os,
 	c_time,
 	c_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+	web := sql.NullInt64{}
+	parent := sql.NullString{}
+	ref := sql.NullString{}
+	app := sql.NullInt64{}
+	if click.Web != nil {
+		web.Valid = true
+		web.Int64 = click.Web.WebsiteID
+		parent.Valid = true
+		parent.String = click.Web.ParentURL
+		ref.Valid = true
+		ref.String = click.Web.Referrer
+	} else if click.App != nil {
+		app.Valid = true
+		app.Int64 = click.App.AppID
+	}
+
 	res, err := m.GetWDbMap().Exec(query,
 		click.WinnerBid,
-		click.Web.WebsiteID,
-		0, //app id  TODO : integrate app later
-		0, //wp_id
+		web,
+		app, //app id
+		0,   //wp_id
 		click.CampaignID,
 		click.CampaignAdID, //default in mysql ca_id
 		click.SlotID,
-
 		//fetch slot AD
 		click.SlaID,
 		click.AdID,
@@ -66,8 +81,8 @@ func (m *Manager) InsertClick(click *transport.Click) error {
 		click.ImpID,
 		click.Status, // c_status
 		click.IP.String(),
-		click.Web.Referrer,
-		click.Web.ParentURL,
+		ref,
+		parent,
 		click.OutTime.Unix()-click.InTime.Unix(),
 		click.OS,
 		click.OutTime.Unix(),
@@ -95,14 +110,3 @@ func (m *Manager) InsertTrueView(clickID int64) error {
 	}
 	return nil
 }
-
-/*func(m *Manager) CountTodayClickByUser(copID int64) (int64,error){
-	query:=`SELECT * FROM clicks WHERE cop_id = ?`
-	res,err:=m.GetRDbMap().Exec(query,
-		copID,
-	)
-	if err!=nil{
-		return 0,err
-	}
-	return res.RowsAffected(),nil
-}*/
