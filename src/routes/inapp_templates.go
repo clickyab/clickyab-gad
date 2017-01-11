@@ -15,7 +15,7 @@ type inappContext struct {
 	ClickURL      string
 	Src           string
 	CloseClass    string
-	ImpID         int64
+	ImpID         int
 	SdkVersion    int64
 	RefreshMinute int
 	NoAd          bool

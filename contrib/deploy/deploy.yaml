@@ -115,10 +115,10 @@
   hosts: web
   tasks:
 
-    - name: stop the nginx
-      docker_container:
-        name: nginx
-        state: stopped
+    # - name: stop the nginx
+    #   docker_container:
+    #     name: nginx
+    #     state: stopped
 
     - name: Re-create a web container
       docker_container:

@@ -96,7 +96,7 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
 
-	ads, err := mr.NewManager().GetAd(adID)
+	ads, err := mr.NewManager().GetAd(adID, false)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}

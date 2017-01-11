@@ -31,7 +31,7 @@ func (m *Manager) GetLocation(ip net.IP) (*IP2Location, error) {
 		return &res, nil
 	}
 
-	query := `SELECT * FROM ip2location WHERE ip_from <= ? AND ip_to >= ? LIMIT 1`
+	query := `SELECT * FROM ip2location_ir WHERE ip_from <= ? AND ip_to >= ? LIMIT 1`
 	err = m.GetRDbMap().SelectOne(
 		&res,
 		query,
