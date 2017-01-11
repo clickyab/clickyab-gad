@@ -77,7 +77,7 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 		imp.URL, imp.WinnerBID, imp.Status,
 		0, 0, 0,
 		imp.Time.Unix(), imp.Time.Format("20060102"),
-		imp.SlaID,
+		imp.SLAID,
 		slot,
 	)
 	if err != nil {
