@@ -394,10 +394,10 @@ func (tc *selectController) makeShow(
 
 			// order is to get data from exceed flor, then capping passed and if the config allowed,
 			// use the under floor. for under floor there is no second biding pricing
-			if exceedFloor.Len() > 1 {
+			if exceedFloor.Len() > 0 {
 				ef = mr.ByCPM(exceedFloor.GetData())
 				secBid = true
-			} else if cappedFloor.Len() > 1 {
+			} else if cappedFloor.Len() > 0 {
 				ef = mr.ByCPM(cappedFloor.GetData())
 				secBid = true
 			} else if config.Config.Clickyab.UnderFloor && underFloor.Len() > 0 {
@@ -418,12 +418,14 @@ func (tc *selectController) makeShow(
 								"the floor was %d \n"+
 								"all add count in this size %d \n "+
 								"under floor is allowd? %v \n"+
-								"under floor count %d",
+								"under floor count %d \n"+
+								"capped count %d",
 							w, h,
 							publisher.FloorCPM(),
 							len(filteredAds[slotSize[slotID].SlotSize]),
 							config.Config.Clickyab.UnderFloor,
 							underFloor.Len(),
+							cappedFloor.Len(),
 						),
 					}
 					warn.Request, _ = httputil.DumpRequest(c.Request(), false)

@@ -27,6 +27,7 @@ type Click struct {
 	TrueView     bool      `json:"tv"`
 	// TODO : better status
 	Web *WebSiteImp `json:"web"`
+	App *AppImp     `json:"app"`
 }
 
 func (c Click) Validate() bool {
