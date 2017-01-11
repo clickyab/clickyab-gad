@@ -64,7 +64,7 @@ func (tc *selectController) click(c echo.Context) error {
 	typ := c.Param("typ")
 	tv := c.QueryParam("tv") != ""
 
-	ads, err := mr.NewManager().GetAd(adID)
+	ads, err := mr.NewManager().GetAd(adID, true)
 	status = changeStatus(0, suspNoAdFound, err != nil)
 
 	result, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s%s%d",

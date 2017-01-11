@@ -63,7 +63,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 	)
 	rnd := <-utils.ID
 	if !noAd {
-		ad, err := mr.NewManager().GetAd(ads[slotString].AdID)
+		ad, err := mr.NewManager().GetAd(ads[slotString].AdID, false)
 		assert.Nil(err)
 		imp := tc.fillImp(rd, false, ad, ads[slotString].WinnerBid, app, slotSize[slotString].ID)
 		u = url.URL{
@@ -95,7 +95,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 		ClickURL:      u.String(),
 		Src:           img,
 		CloseClass:    closeClass,
-		ImpID:         rand.Int63(),
+		ImpID:         rand.Int(),
 		SdkVersion:    sdkVers,
 		RefreshMinute: 2, // TODO : Config,
 		NoAd:          noAd,
