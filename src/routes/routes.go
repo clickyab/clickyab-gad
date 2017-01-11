@@ -2,11 +2,9 @@ package routes
 
 import (
 	"config"
-	"fastcgi"
 	"middlewares"
 	"net"
 	"statics"
-	"time"
 	"utils"
 
 	"gopkg.in/labstack/echo.v3"
@@ -46,7 +44,7 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/vastAD.js", tc.assetRoute("vastAD"+postfix))
 	e.GET("/conversion/clickyab-tracking.js", tc.assetRoute("clickyab-tracking"+postfix))
 
-	echo.NotFoundHandler = fcgi.NewPHPFastCGIHandler(config.Config.PHPCode.Root, "/", config.Config.PHPCode.FPM, 30*time.Second, 30*time.Second, 30*time.Second)
+	//echo.NotFoundHandler = fcgi.NewPHPFastCGIHandler(config.Config.PHPCode.Root, "/", config.Config.PHPCode.FPM, 30*time.Second, 30*time.Second, 30*time.Second)
 }
 
 func (selectController) assetRoute(asset string) echo.HandlerFunc {
