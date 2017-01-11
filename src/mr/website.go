@@ -58,6 +58,11 @@ func (w *Website) GetActive() bool {
 	return w.WStatus == 0 || w.WStatus == 1
 }
 
+// GetType of this object
+func (w *Website) GetType() string {
+	return "web"
+}
+
 // FetchWebsiteByPublicID function @todo
 func (m *Manager) FetchWebsiteByPublicID(publicID int64) (*Website, error) {
 	var res = Website{}

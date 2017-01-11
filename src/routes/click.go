@@ -86,11 +86,12 @@ func (tc *selectController) click(c echo.Context) error {
 	var pub Publisher
 	if typ != "app" {
 		pub, err = mr.NewManager().FetchWebsite(wID)
-		status = changeStatus(status, suspInvalidWebsite, err != nil || (webSite.WStatus != 0 && webSite.WStatus != 1))
 	} else {
 		pub, err = mr.NewManager().GetAppByID(wID)
-		status = changeStatus(status, suspInvalidApp, err != nil || (app.AppStatus != 0 && app.AppStatus != 1))
 	}
+
+	status = changeStatus(status, suspInvalidApp, err != nil || !pub.GetActive())
+
 	clickID := <-utils.ID
 
 	go func() {
@@ -138,7 +139,7 @@ func (tc *selectController) click(c echo.Context) error {
 			status = suspDuplicateClick
 		}
 
-		click := tc.fillClick(c, ads, winnerBid, wID, slotID, inTime, outTime, slaID, impID, cpAdID, status, clickID, tv)
+		click := tc.fillClick(c, ads, winnerBid, pub, slotID, inTime, outTime, slaID, impID, cpAdID, status, clickID, tv)
 
 		rabbit.MustPublish("cy.click", click)
 	}()
@@ -155,8 +156,8 @@ func (tc *selectController) click(c echo.Context) error {
 		cpName = ads.CampaignName.String
 	}
 	domain := ""
-	if webSite != nil {
-		domain = webSite.WDomain.String
+	if pub != nil {
+		domain = pub.GetName()
 	}
 	body := tc.replaceParameters(url, domain, cpName, rand, result["IMPR"])
 	return c.HTML(http.StatusOK, body)
@@ -166,7 +167,7 @@ func (selectController) fillClick(
 	ctx echo.Context,
 	ads *mr.Ad,
 	winnerBid int64,
-	websiteID int64,
+	pub Publisher,
 	slotID int64,
 	inTime, outTime time.Time,
 	slaID int64,
@@ -179,6 +180,23 @@ func (selectController) fillClick(
 	adID, err := strconv.ParseInt(ctx.Param("ad"), 10, 0)
 	assert.Nil(err)
 
+	var (
+		web *transport.WebSiteImp
+		app *transport.AppImp
+	)
+	if pub.GetType() == "web" {
+		web = &transport.WebSiteImp{
+			WebsiteID: pub.GetID(),
+			SlotID:    slotID,
+			Referrer:  rd.Referrer,
+			ParentURL: rd.Parent,
+		}
+	} else {
+		app = &transport.AppImp{
+			AppID:  pub.GetID(),
+			SlotID: slotID,
+		}
+	}
 	return &transport.Click{
 		CopID:        rd.CopID,
 		IP:           rd.IP,
@@ -196,23 +214,23 @@ func (selectController) fillClick(
 		CampaignAdID: campaignAdID,
 		Rand:         rand,
 		TrueView:     tv,
-		Web: &transport.WebSiteImp{
-			WebsiteID: websiteID,
-			SlotID:    slotID,
-			Referrer:  rd.Referrer,
-			ParentURL: rd.Parent,
-		},
+		Web:          web,
+		App:          app,
 	}
 }
 
 func (selectController) replaceParameters(url, domain, campaign, clickID, impID string) string {
 	r := strings.NewReplacer(
+		"[app]",
+		domain,
 		"[domain]",
 		domain,
 		"[campaign]",
 		campaign,
 		"[click_id]",
 		clickID,
+		"{app}",
+		domain,
 		"{domain}",
 		domain,
 		"{campaign}",

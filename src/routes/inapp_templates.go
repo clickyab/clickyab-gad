@@ -1,6 +1,9 @@
 package routes
 
-import "html/template"
+import (
+	"bytes"
+	"text/template"
+)
 
 type inappContext struct {
 	FullScreen    bool
@@ -12,10 +15,10 @@ type inappContext struct {
 	ClickURL      string
 	Src           string
 	CloseClass    string
-	Hide          bool
 	ImpID         int64
-	SdkVersion    int
+	SdkVersion    int64
 	RefreshMinute int
+	NoAd          bool
 }
 
 const inappTemplateText = `
@@ -124,7 +127,7 @@ a.largeclose{ width: 32px; height: 32px; line-height: 32px; font-size: 24px; }
     {{ end }}
 {{ end }}
 
-<a onclick="{{ if .Hide }}AndroidHide(){{ else }}AndroidClose(){{ end }};" class="{{ .CloseClass }}">x</a>
+<a onclick="{{ if .FullScreen }}AndroidHide(){{ else }}AndroidClose(){{ end }};" class="{{ .CloseClass }}">x</a>
 
 <script type="text/javascript">
 
@@ -199,7 +202,7 @@ a.largeclose{ width: 32px; height: 32px; line-height: 32px; font-size: 24px; }
             }, 100);// 0.1 sec
             {{ else }}
             setTimeout(function () {
-                {{ if .Hide }}AndroidHide(){{ else }}AndroidClose(){{ end }};
+                {{ if .FullScreen }}AndroidHide(){{ else }}AndroidClose(){{ end }};
             }, 100);// 0.1 sec
             {{ end }}
         {{ else }}
@@ -219,3 +222,9 @@ a.largeclose{ width: 32px; height: 32px; line-height: 32px; font-size: 24px; }
 </html>`
 
 var inappTemplate = template.Must(template.New("inapp-template").Parse(inappTemplateText))
+
+func renderInApp(data inappContext) (string, error) {
+	res := &bytes.Buffer{}
+	err := inappTemplate.Execute(res, data)
+	return res.String(), err
+}

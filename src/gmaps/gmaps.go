@@ -3,6 +3,7 @@ package gmaps
 import (
 	"assert"
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -67,8 +68,10 @@ func LockUp(mcc, mnc, lac, cid int64) (float64, float64, error) {
 	if err != nil {
 		return 0, 0, err
 	}
-
-	return byteToFloat(resp[10], resp[9], resp[8], resp[7]) / 1000000, byteToFloat(resp[14], resp[13], resp[12], resp[11]) / 1000000, nil
+	if len(resp) > 14 {
+		return byteToFloat(resp[10], resp[9], resp[8], resp[7]) / 1000000, byteToFloat(resp[14], resp[13], resp[12], resp[11]) / 1000000, nil
+	}
+	return 0, 0, errors.New("invalid response")
 }
 
 func init() {

@@ -12,7 +12,7 @@ import (
 // SharpArray type is the hack to handle # splited text in our database
 type SharpArray string
 
-// MinAdData min data
+// AdData min data
 type AdData struct {
 	AdID              int64            `json:"ad_id" db:"ad_id"`
 	CampaignFrequency int              `json:"cp_frequency" db:"cp_frequency"`

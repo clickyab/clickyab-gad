@@ -33,3 +33,17 @@ func CheckVastSize(_ *selector.Context, in mr.AdData) bool {
 
 	return in.AdType == config.AdTypeVideo || config.InVastSize(in.AdSize)
 }
+
+// CheckAppSize check if the banner size exists in the request
+func CheckAppSize(c *selector.Context, in mr.AdData) bool {
+	if in.AdType == config.AdTypeVideo || in.AdType == config.AdTypeDynamic {
+		return false
+	}
+
+	for _, size := range c.Size {
+		if size == in.AdSize {
+			return true
+		}
+	}
+	return false
+}

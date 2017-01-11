@@ -4,15 +4,16 @@ import (
 	"assert"
 	"errors"
 	"filter"
+	"fmt"
+	"math/rand"
 	"middlewares"
 	"mr"
 	"net/http"
+	"net/url"
 	"selector"
 	"strconv"
-
 	"strings"
-
-	"fmt"
+	"utils"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
@@ -21,7 +22,7 @@ import (
 var (
 	appSelector = selector.Mix(
 		filter.IsAppNetwork,
-		filter.CheckWebSize,
+		filter.CheckAppSize,
 		filter.CheckAppBlackList,
 		filter.CheckAppWhiteList,
 		filter.CheckAppCategory,
@@ -35,11 +36,12 @@ var (
 
 func (tc *selectController) inApp(c echo.Context) error {
 	//t := time.Now()
+	sdkVers, _ := strconv.ParseInt(c.Request().URL.Query().Get("clickyabVersion"), 10, 0)
 	rd, app, province, phone, cell, err := tc.getAppDataFromCtx(c)
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
-	slotSize, sizeNumSlice := tc.slotSizeApp(c, app)
+	slotSize, sizeNumSlice, slotString, full := tc.slotSizeApp(c, app)
 	//call context
 	m := selector.Context{
 		RequestData:  *rd,
@@ -54,21 +56,77 @@ func (tc *selectController) inApp(c echo.Context) error {
 	_, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, app, false)
 	assert.True(len(ads) == 1, "[BUG] why select no ad?")
 
-	return nil
+	var (
+		noAd = ads[slotString] == nil
+		u    url.URL
+		img  string
+	)
+	rnd := <-utils.ID
+	if !noAd {
+		ad, err := mr.NewManager().GetAd(ads[slotString].AdID)
+		assert.Nil(err)
+		imp := tc.fillImp(rd, false, ad, ads[slotString].WinnerBid, app, slotSize[slotString].ID)
+		u = url.URL{
+			Scheme: rd.Scheme,
+			Host:   rd.Host,
+			// mega in this case is the current request
+			Path: fmt.Sprintf("/click/%s/%d/%s/%d/%s", "app", app.ID, rd.MegaImp, ad.AdID, rnd),
+		}
+		v := url.Values{}
+		v.Set("tid", rd.TID)
+		v.Set("ref", rd.Referrer)
+		v.Set("parent", rd.Parent)
+		u.RawQuery = v.Encode()
+		// Pass it to worker
+		img = ad.AdImg.String
+		go tc.callWebWorker(app, slotSize[slotString].ID, ad.AdID, rd.MegaImp, rnd, imp, rd)
+	}
+	closeClass := "largeclose"
+	if slotSize[slotString].SlotSize == 8 {
+		closeClass = "close"
+	}
+	d, err := renderInApp(inappContext{
+		FullScreen:    full != "",
+		ExtraStyle:    "",
+		BodyClass:     full,
+		Dynamic:       false,
+		DynamicBody:   "",
+		FatFinger:     app.AppFatFinger.Bool,
+		ClickURL:      u.String(),
+		Src:           img,
+		CloseClass:    closeClass,
+		ImpID:         rand.Int63(),
+		SdkVersion:    sdkVers,
+		RefreshMinute: 2, // TODO : Config,
+		NoAd:          noAd,
+	})
+	assert.Nil(err)
+
+	// This is the actual imp so call the imp
+	return c.HTML(http.StatusOK, d)
 }
 
-func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[string]*slotData, map[string]int) {
+func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[string]*slotData, map[string]int, string, string) {
 	adsMedia := ctx.Request().URL.Query().Get("adsMedia")
-	var bs int
+	var (
+		bs   int
+		full string
+	)
 	switch strings.ToLower(adsMedia) {
 	case "banner":
 		bs = 8
 	case "largebanner":
 		bs = 3
-	case "xlargebannerportrait", "fullbannerportrait":
+	case "xlargebannerportrait":
 		bs = 16
-	case "xlargebannerlandscap", "fullbannerlandscape":
+	case "fullbannerportrait":
+		bs = 16
+		full = "portrait"
+	case "xlargebannerlandscap":
 		bs = 17
+	case "fullbannerlandscape":
+		bs = 17
+		full = "landscape"
 	}
 	slotString := fmt.Sprintf("%d0%d0%d", app.ID, app.UserID, bs)
 	slot, _ := strconv.ParseInt(slotString, 10, 0)
@@ -88,7 +146,7 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 	}
 	sizes := map[string]int{slotString: bs}
 
-	return data, sizes
+	return data, sizes, slotString, full
 }
 
 func (tc *selectController) getAppDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.App, *mr.Province, *mr.PhoneData, *mr.CellLocation, error) {

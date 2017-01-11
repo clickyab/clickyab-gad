@@ -1,11 +1,14 @@
 package filter
 
 import (
-	"selector"
 	"mr"
+	"selector"
 )
 
-// CheckAppBrand return boolean
-func CheckAppHood(c *selector.Context, in mr.AdData)bool{
-	return in.Campaign.CampaignHoods.Has(true,c.CellLocation.NeighborhoodsID)
+// CheckAppHood return boolean
+func CheckAppHood(c *selector.Context, in mr.AdData) bool {
+	if c.CellLocation == nil {
+		return in.Campaign.CampaignHoods == ""
+	}
+	return in.Campaign.CampaignHoods.Has(true, c.CellLocation.NeighborhoodsID)
 }
