@@ -68,30 +68,20 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 		} else {
 			res[i].AdCTR = utils.Ctr(result["i"], result["c"])
 		}
-		// TODO : put this in config
-		if res[i].CampaignMaxBid < config.Config.Clickyab.MinBid {
-			res[i].CampaignMaxBid = config.Config.Clickyab.MinBid
+		if res[i].CampaignNetwork != 1 {
+			// Web and vast
+			if res[i].CampaignMaxBid < config.Config.Clickyab.WebMinBid {
+				res[i].CampaignMaxBid = config.Config.Clickyab.WebMinBid
+			}
+		} else {
+			// app
+			if res[i].CampaignMaxBid < config.Config.Clickyab.AppMinBid {
+				res[i].CampaignMaxBid = config.Config.Clickyab.AppMinBid
+			}
 		}
 	}
 
 	return res, nil
-}
-
-// FetchRegion get the list of all region in database
-func (m *Manager) FetchRegion() (*RegionData, error) {
-	var res = RegionData{}
-
-	query := `SELECT * FROM list_locations`
-
-	_, err := m.GetRDbMap().Select(
-		&res,
-		query,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return &res, nil
 }
 
 // Build implode slice of string with ,

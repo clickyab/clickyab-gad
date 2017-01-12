@@ -15,7 +15,8 @@ type WebSiteImp struct {
 
 // AppImp is detail of app
 type AppImp struct {
-	AppID int64 `json:"aid"`
+	AppID  int64 `json:"aid"`
+	SlotID int64 `json:"sid"`
 }
 
 // Impression is the record for the single impression
@@ -25,7 +26,7 @@ type Impression struct {
 	AdID         int64     `json:"adid"`
 	CopID        int64     `json:"copid"`
 	CampaignAdID int64     `json:"caid"`
-	SlaID        int64     `json:"sla"`
+	SLAID        int64     `json:"sla"`
 	SlotID       int64     `json:"slot"`
 	URL          string    `json:"url"`
 	CampaignID   int64     `json:"cid"`
@@ -37,4 +38,14 @@ type Impression struct {
 	Suspicious bool        `json:"sp"`
 	Web        *WebSiteImp `json:"web"`
 	App        *AppImp     `json:"app"`
+}
+
+// GetTopic of the imperssion struct
+func (Impression) GetTopic() string {
+	return "cy.imp"
+}
+
+// GetQueue of the imperssion
+func (Impression) GetQueue() string {
+	return "cy_imp_queue"
 }

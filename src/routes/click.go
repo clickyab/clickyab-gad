@@ -28,6 +28,7 @@ const (
 	suspIPMismatch     = 96
 	suspUAMismatch     = 97
 	suspInvalidWebsite = 98
+	suspInvalidApp     = 99
 )
 
 func assertNil(status bool, err error) {
@@ -60,9 +61,10 @@ func (tc *selectController) click(c echo.Context) error {
 
 	rand := c.Param("rand")
 	mega := c.Param("mega")
+	typ := c.Param("typ")
 	tv := c.QueryParam("tv") != ""
 
-	ads, err := mr.NewManager().GetAd(adID)
+	ads, err := mr.NewManager().GetAd(adID, true)
 	status = changeStatus(0, suspNoAdFound, err != nil)
 
 	result, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s%s%d",
@@ -81,8 +83,14 @@ func (tc *selectController) click(c echo.Context) error {
 	wID, err := strconv.ParseInt(result["WS"], 10, 0)
 	assertNil(noRedisKey, err)
 
-	webSite, err := mr.NewManager().FetchWebsite(wID)
-	status = changeStatus(status, suspInvalidWebsite, err != nil || (webSite.WStatus != 0 && webSite.WStatus != 1))
+	var pub Publisher
+	if typ != "app" {
+		pub, err = mr.NewManager().FetchWebsite(wID)
+	} else {
+		pub, err = mr.NewManager().GetAppByID(wID)
+	}
+
+	status = changeStatus(status, suspInvalidApp, err != nil || !pub.GetActive())
 
 	clickID := <-utils.ID
 
@@ -95,8 +103,10 @@ func (tc *selectController) click(c echo.Context) error {
 
 		status = changeStatus(status, suspIPMismatch, rd.IP.String() != result["IP"])
 
-		status = changeStatus(status, suspUAMismatch, rd.UserAgent != result["UA"])
-
+		// App is special case, since the app is clicked via browser and the UA is changed
+		if typ != "app" {
+			status = changeStatus(status, suspUAMismatch, rd.UserAgent != result["UA"])
+		}
 		status = changeStatus(status, suspRndMismatch, rand != result["RND"])
 
 		slotID, err := strconv.ParseInt(result["S"], 10, 0)
@@ -129,9 +139,9 @@ func (tc *selectController) click(c echo.Context) error {
 			status = suspDuplicateClick
 		}
 
-		click := tc.fillClick(c, ads, winnerBid, wID, slotID, inTime, outTime, slaID, impID, cpAdID, status, clickID, tv)
+		click := tc.fillClick(c, ads, winnerBid, pub, slotID, inTime, outTime, slaID, impID, cpAdID, status, clickID, tv)
 
-		rabbit.MustPublish("cy.click", click)
+		rabbit.MustPublish(click)
 	}()
 
 	if status == suspNoAdFound {
@@ -146,8 +156,8 @@ func (tc *selectController) click(c echo.Context) error {
 		cpName = ads.CampaignName.String
 	}
 	domain := ""
-	if webSite != nil {
-		domain = webSite.WDomain.String
+	if pub != nil {
+		domain = pub.GetName()
 	}
 	body := tc.replaceParameters(url, domain, cpName, rand, result["IMPR"])
 	return c.HTML(http.StatusOK, body)
@@ -157,7 +167,7 @@ func (selectController) fillClick(
 	ctx echo.Context,
 	ads *mr.Ad,
 	winnerBid int64,
-	websiteID int64,
+	pub Publisher,
 	slotID int64,
 	inTime, outTime time.Time,
 	slaID int64,
@@ -170,6 +180,23 @@ func (selectController) fillClick(
 	adID, err := strconv.ParseInt(ctx.Param("ad"), 10, 0)
 	assert.Nil(err)
 
+	var (
+		web *transport.WebSiteImp
+		app *transport.AppImp
+	)
+	if pub.GetType() == "web" {
+		web = &transport.WebSiteImp{
+			WebsiteID: pub.GetID(),
+			SlotID:    slotID,
+			Referrer:  rd.Referrer,
+			ParentURL: rd.Parent,
+		}
+	} else {
+		app = &transport.AppImp{
+			AppID:  pub.GetID(),
+			SlotID: slotID,
+		}
+	}
 	return &transport.Click{
 		CopID:        rd.CopID,
 		IP:           rd.IP,
@@ -187,23 +214,23 @@ func (selectController) fillClick(
 		CampaignAdID: campaignAdID,
 		Rand:         rand,
 		TrueView:     tv,
-		Web: &transport.WebSiteImp{
-			WebsiteID: websiteID,
-			SlotID:    slotID,
-			Referrer:  rd.Referrer,
-			ParentURL: rd.Parent,
-		},
+		Web:          web,
+		App:          app,
 	}
 }
 
 func (selectController) replaceParameters(url, domain, campaign, clickID, impID string) string {
 	r := strings.NewReplacer(
+		"[app]",
+		domain,
 		"[domain]",
 		domain,
 		"[campaign]",
 		campaign,
 		"[click_id]",
 		clickID,
+		"{app}",
+		domain,
 		"{domain}",
 		domain,
 		"{campaign}",

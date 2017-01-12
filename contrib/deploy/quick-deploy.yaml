@@ -28,7 +28,7 @@
         checksum: yes
         times: no
 
-    - name: sync the clcikyab-old code
+    - name: sync the clickyab-old code
       synchronize:
         src: "{{ playbook_dir }}/../../clickyab-server/"
         dest: "/home/cy/gad/clickyab-server/"
@@ -51,6 +51,8 @@
         recreate: yes
         volumes:
           - /home/cy/gad:/app
+        env:
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"
 
 - name: Run imp worker
   hosts: imp
@@ -66,6 +68,8 @@
         recreate: yes
         volumes:
           - /home/cy/gad:/app
+        env:
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"
 
 - name: Run conv worker
   hosts: conv
@@ -81,6 +85,8 @@
         recreate: yes
         volumes:
           - /home/cy/gad:/app
+        env:
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"
 
 - name: Run warn worker
   hosts: warn
@@ -96,6 +102,8 @@
         recreate: yes
         volumes:
           - /home/cy/gad:/app
+        env:
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"
 
 - name: Run web server
   hosts: web
@@ -118,3 +126,5 @@
           - "{{ gad_port }}:80"
         volumes:
           - /home/cy/gad:/app
+        env:
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"

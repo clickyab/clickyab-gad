@@ -21,23 +21,18 @@ func main() {
 	version.PrintVersion().Info("Application started")
 	models.Initialize()
 	rabbit.Initialize()
+	defer rabbit.Finalize()
 	aredis.Initialize()
-
-	exit := make(chan chan struct{})
 
 	go func() {
 		err := rabbit.RunWorker(
-			config.Config.AMQP.Exchange,
-			"cy.warn",
-			"cy_warn_queue",
 			&transport.Warning{},
 			warnWorker,
 			10,
-			exit,
 		)
 		assert.Nil(err)
 	}()
 
-	utils.WaitSignal(exit)
+	utils.WaitSignal(nil)
 	logrus.Info("goodbye")
 }

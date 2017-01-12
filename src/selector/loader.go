@@ -4,6 +4,7 @@ import (
 	"assert"
 	"config"
 	"fmt"
+	"middlewares"
 	"models"
 	"mr"
 	"sync"
@@ -57,7 +58,7 @@ func (m *myModel) Initialize() {
 		manager := mr.NewManager()
 		loaded, err = manager.LoadAds()
 		assert.Nil(err)
-		go interval()
+		middlewares.SafeGO(nil, true, interval)
 	})
 }
 

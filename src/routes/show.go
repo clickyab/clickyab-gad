@@ -5,28 +5,20 @@ import (
 	"bytes"
 	"config"
 	"fmt"
+	"html/template"
+	"math/rand"
 	"middlewares"
 	"mr"
+	"net"
 	"net/http"
-	"rabbit"
+	"net/url"
 	"redis"
+	"store"
 	"strconv"
-	"time"
+	"strings"
 	"transport"
 	"utils"
 
-	"html/template"
-	"math/rand"
-
-	"net"
-
-	"net/url"
-
-	"store"
-
-	"strings"
-
-	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
 
@@ -83,6 +75,8 @@ func (tc *selectController) show(c echo.Context) error {
 		return c.String(http.StatusOK, "")
 	}
 	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
+	website, err := mr.NewManager().FetchWebsite(websiteID)
+	assert.Nil(err)
 
 	//TODO :validate Wid compare to us
 
@@ -102,7 +96,7 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
 
-	ads, err := mr.NewManager().GetAd(adID)
+	ads, err := mr.NewManager().GetAd(adID, false)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
@@ -111,7 +105,7 @@ func (tc *selectController) show(c echo.Context) error {
 	u := url.URL{
 		Scheme: rd.Scheme,
 		Host:   rd.Host,
-		Path:   fmt.Sprintf("/click/%d/%s/%d/%s", websiteID, mega, adID, rnd),
+		Path:   fmt.Sprintf("/click/%s/%d/%s/%d/%s", typ, websiteID, mega, adID, rnd),
 	}
 	v := url.Values{}
 	v.Set("tid", rd.TID)
@@ -125,88 +119,13 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, adID)], 10, 64)
 	assert.Nil(err)
-	imp := tc.fillImp(rd, suspicious, ads, winnerFinalBid, websiteID, slotID)
+	imp := tc.fillImp(rd, suspicious, ads, winnerFinalBid, website, slotID)
 
-	go tc.callWorker(websiteID, slotID, adID, mega, rnd, imp, rd)
+	go tc.callWebWorker(website, slotID, adID, mega, rnd, imp, rd)
 	if typ == "vast" {
 		return c.XMLBlob(http.StatusOK, []byte(res))
 	}
 	return c.HTML(http.StatusOK, res)
-}
-
-func (selectController) callWorker(WID int64, slotID int64, adID int64, mega string, rand string, imp transport.Impression, rd *middlewares.RequestData) {
-	m := mr.NewManager()
-	var err error
-	imp.SlaID, err = m.InsertSlotAd(slotID, adID)
-	if err != nil {
-		// not important error
-		logrus.Warn(err)
-	}
-	assert.Nil(m.InsertImpression(&imp))
-	//validate
-	res, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, mega), true, 2*time.Hour)
-	assert.Nil(err)
-
-	//check ip
-	wID, _ := strconv.ParseInt(res["WS"], 10, 64)
-	if res["IP"] != rd.IP.String() || res["UA"] != rd.UserAgent || wID != WID {
-		imp.Suspicious = true
-	}
-
-	// TODO : Use constant not strings
-	//set mega ip in redis
-	tmp := map[string]string{
-		"IP":     rd.IP.String(),
-		"UA":     rd.UserAgent,
-		"WS":     strconv.FormatInt(WID, 10),
-		"T":      strconv.FormatInt(time.Now().Unix(), 10),
-		"S":      strconv.FormatInt(slotID, 10),
-		"IMPR":   strconv.FormatInt(imp.ID, 10),
-		"RND":    rand,
-		"WIN":    strconv.FormatInt(imp.WinnerBID, 10),
-		"CPADID": strconv.FormatInt(imp.CampaignAdID, 10),
-		"SLAID":  strconv.FormatInt(imp.SlaID, 10),
-	}
-	err = aredis.HMSet(
-		fmt.Sprintf(
-			"%s%s%s%s%d",
-			transport.IMP,
-			transport.DELIMITER,
-			mega,
-			transport.DELIMITER,
-			adID),
-		config.Config.Clickyab.MegaImpExpire,
-		tmp)
-	if err != nil {
-		logrus.WithField("cy.imp", imp).Error("error in hmset", err)
-	}
-	err = rabbit.Publish("cy.imp", imp)
-	if err != nil {
-		logrus.WithField("cy.imp", imp).Error("error in  publishing job", err)
-	}
-}
-
-func (selectController) fillImp(rd *middlewares.RequestData, sus bool, ads *mr.Ad, winnerBid int64, websiteID int64, slotID int64) transport.Impression {
-	return transport.Impression{
-		Suspicious:   sus,
-		IP:           rd.IP,
-		AdID:         ads.AdID,
-		CopID:        rd.CopID,
-		CampaignAdID: ads.CampaignAdID.Int64,
-
-		URL:        ads.AdURL.String,
-		CampaignID: ads.CampaignID.Int64,
-		UserAgent:  rd.UserAgent,
-		Time:       time.Now(),
-		WinnerBID:  winnerBid,
-		Status:     0,
-		Web: &transport.WebSiteImp{
-			Referrer:  rd.Referrer,
-			ParentURL: rd.Parent,
-			SlotID:    slotID,
-			WebsiteID: websiteID,
-		},
-	}
 }
 
 func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string) (string, error) {

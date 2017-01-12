@@ -5,7 +5,12 @@ import (
 	"selector"
 )
 
-// CheckCategory is the filter for category
-func CheckCategory(c *selector.Context, in mr.AdData) bool {
+// CheckWebCategory is the filter for category
+func CheckWebCategory(c *selector.Context, in mr.AdData) bool {
 	return in.CampaignCat.Match(true, c.Website.WCategories)
+}
+
+// CheckAppCategory is the filter for category
+func CheckAppCategory(c *selector.Context, in mr.AdData) bool {
+	return in.CampaignCat.Match(true, c.App.Appcat)
 }
