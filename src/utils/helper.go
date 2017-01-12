@@ -105,11 +105,12 @@ func WaitSignal(exit chan chan struct{}) {
 	)
 
 	<-quit
+	if exit != nil {
+		tmp := make(chan struct{})
+		exit <- tmp
 
-	tmp := make(chan struct{})
-	exit <- tmp
-
-	<-tmp
+		<-tmp
+	}
 }
 
 //IncKeyDaily function increase redis daily key

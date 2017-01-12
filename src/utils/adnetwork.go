@@ -4,6 +4,7 @@ import (
 	"config"
 	"crypto/sha1"
 	"fmt"
+	"math"
 	"net"
 )
 
@@ -36,4 +37,29 @@ func CreateCopID(useragent string, ip net.IP, l int) string {
 	_, _ = h.Write([]byte(useragent))
 	_, _ = h.Write([]byte(ip))
 	return fmt.Sprintf("%x", h.Sum(nil))[:l]
+}
+
+// CreateHash is used to handle the cop key
+func CreateHash(l int, items ...[]byte) string {
+	h := sha1.New()
+	for i := range items {
+		_, _ = h.Write(items[i])
+	}
+	sum := fmt.Sprintf("%x", h.Sum(nil))
+	if l >= len(sum) {
+		l = len(sum)
+	}
+	if l < 1 {
+		l = 1
+	}
+	return sum[:l]
+}
+
+// AreaInGlob is a helper fuunction to handle check point in a globe
+func AreaInGlob(lat, lon, centerLat, centerLon, radius float64) bool {
+	var ky = 40000.0 / 360.0
+	var kx = math.Cos(math.Pi*centerLat/180.0) * ky
+	dx := math.Abs(centerLon-lon) * kx
+	dy := math.Abs(centerLat-lat) * ky
+	return (math.Sqrt(dx*dx+dy*dy) <= radius)
 }

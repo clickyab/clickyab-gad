@@ -8,12 +8,12 @@ import (
 )
 
 //Province struct province info
-type ProvinceList struct {
-	ID          int64  `id:"location_id" db:"location_id"`
-	Name        string `json:"location_name" db:"location_name"`
-	NamePersian string `json:"location_name_persian" db:"location_name_persian"`
-	Master      int    `json:"location_master" db:"location_master"`
-	Selected    int    `json:"location_select" db:"location_select"`
+type Province struct {
+	ID     int64  `id:"location_id" db:"location_id"`
+	Name   string `json:"location_name" db:"location_name"`
+	NameFa string `json:"location_name_persian" db:"location_name_persian"`
+	Master int    `json:"location_master" db:"location_master"`
+	Select int    `json:"location_select" db:"location_select"`
 }
 
 //ConvertProvince2Info get data province from string

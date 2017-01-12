@@ -3,6 +3,7 @@ package gmaps
 import (
 	"assert"
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -14,7 +15,7 @@ var (
 		0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00}
 )
 
-func intToByte(i int) [4]byte {
+func intToByte(i int64) [4]byte {
 	var res [4]byte
 	pos := 4
 	for i > 0 && pos > 0 {
@@ -30,7 +31,7 @@ func byteToFloat(b1, b2, b3, b4 byte) float64 {
 }
 
 // LockUp try to lockup location
-func LockUp(mcc, mnc, lac, cid int) (float64, float64, error) {
+func LockUp(mcc, mnc, lac, cid int64) (float64, float64, error) {
 	dataCP := data
 	bMCC := intToByte(mcc)
 	for i := range bMCC {
@@ -67,8 +68,10 @@ func LockUp(mcc, mnc, lac, cid int) (float64, float64, error) {
 	if err != nil {
 		return 0, 0, err
 	}
-
-	return byteToFloat(resp[10], resp[9], resp[8], resp[7]) / 1000000, byteToFloat(resp[14], resp[13], resp[12], resp[11]) / 1000000, nil
+	if len(resp) > 14 {
+		return byteToFloat(resp[10], resp[9], resp[8], resp[7]) / 1000000, byteToFloat(resp[14], resp[13], resp[12], resp[11]) / 1000000, nil
+	}
+	return 0, 0, errors.New("invalid response")
 }
 
 func init() {

@@ -1,13 +1,14 @@
 package mr
 
 import (
+	"config"
 	"database/sql"
 	"fmt"
 	"time"
 	"utils"
 )
 
-// WebsiteData type for website
+// Website type for website
 type Website struct {
 	WID                int64          `json:"w_id" db:"w_id"`
 	UserID             int64          `json:"u_id" db:"u_id"`
@@ -36,6 +37,35 @@ type Website struct {
 	WNotApprovedReason SharpArray     `json:"w_notapprovedreason" db:"w_notapprovedreason"`
 	CreatedAt          sql.NullString `json:"created_at" db:"created_at"`
 	UpdatedAt          sql.NullString `json:"updated_at" db:"updated_at"`
+}
+
+// GetID return the id of app
+func (w *Website) GetID() int64 {
+	return w.WID
+}
+
+// GetName return the name of object
+func (w *Website) GetName() string {
+	return w.WDomain.String
+}
+
+// FloorCPM is the floor value for this site
+func (w *Website) FloorCPM() int64 {
+	if w.WFloorCpm.Int64 < config.Config.Clickyab.MinCPMFloorWeb {
+		w.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloorWeb
+		w.WFloorCpm.Valid = true
+	}
+	return w.WFloorCpm.Int64
+}
+
+// GetActive return if app is active or not
+func (w *Website) GetActive() bool {
+	return w.WStatus == 0 || w.WStatus == 1
+}
+
+// GetType of this object
+func (w *Website) GetType() string {
+	return "web"
 }
 
 // FetchWebsiteByPublicID function @todo
@@ -105,4 +135,3 @@ func (m *Manager) FetchWebsiteByDomain(domain string) (*Website, error) {
 	_ = store(key, &res, time.Hour)
 	return &res, nil
 }
-

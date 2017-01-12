@@ -1,9 +1,14 @@
 package mr
 
 import (
+	"assert"
+	"config"
+	"database/sql"
 	"errors"
 	"fmt"
 	"gmaps"
+	"strconv"
+	"strings"
 	"time"
 	"utils"
 )
@@ -13,35 +18,37 @@ const UnknownNetwork = 2
 
 // App is the applications structure
 type App struct {
-	ID                   int64      `db:"app_id"`
-	UserID               int64      `db:"u_id"`
-	AppToken             string     `db:"app_token"`
-	AppName              string     `db:"app_name"`
-	EnAppName            string     `db:"en_app_name"`
-	AppPackage           string     `db:"app_package"`
-	AmID                 int        `db:"am_id"`
-	MinBID               int64      `db:"app_minbid"`
-	AppFloorCPM          int64      `db:"app_floor_cpm"`
-	AppDIV               float64    `db:"app_div"`
-	AppStatus            int        `db:"app_status"`
-	AppReview            int        `db:"app_review"`
-	AppTodayCTR          int64      `db:"app_today_ctr"`
-	AppTodayIMPs         int64      `db:"app_today_imps"`
-	AppTodayClicks       int64      `db:"app_today_clicks"`
-	AppDate              int        `db:"app_date"`
-	Appcat               SharpArray `db:"app_cat"`
-	AppNotApprovedReason string     `db:"app_notapprovedreason"`
-	AppFatFinger         string     `db:"app_fatfinger"`
-	CreatedAt            time.Time  `db:"created_at"`
-	UpdatedAt            time.Time  `db:"updated_at"`
+	ID                   int64          `db:"app_id"`
+	UserID               int64          `db:"u_id"`
+	AppToken             string         `db:"app_token"`
+	AppName              string         `db:"app_name"`
+	EnAppName            string         `db:"en_app_name"`
+	AppPackage           string         `db:"app_package"`
+	AmID                 int            `db:"am_id"`
+	MinBID               int64          `db:"app_minbid"`
+	AppFloorCPM          sql.NullInt64  `db:"app_floor_cpm"`
+	AppDIV               float64        `db:"app_div"`
+	AppStatus            int            `db:"app_status"`
+	AppReview            int            `db:"app_review"`
+	AppTodayCTR          int64          `db:"app_today_ctr"`
+	AppTodayIMPs         int64          `db:"app_today_imps"`
+	AppTodayClicks       int64          `db:"app_today_clicks"`
+	AppDate              int            `db:"app_date"`
+	Appcat               SharpArray     `db:"app_cat"`
+	AppNotApprovedReason sql.NullString `db:"app_notapprovedreason"`
+	AppFatFinger         sql.NullBool   `db:"app_fatfinger"`
+	CreatedAt            time.Time      `db:"created_at"`
+	UpdatedAt            time.Time      `db:"updated_at"`
 }
 
 // CellLocation is the location of the cell
 type CellLocation struct {
-	ID              int64  `db:"id"`
-	CellID          int64  `db:"cell_id"`
-	Location        string `db:"location"`
-	NeighborhoodsID int64  `db:"neighborhoods_id"`
+	ID              int64   `db:"id"`
+	CellID          int64   `db:"cell_id"`
+	Location        string  `db:"location"`
+	Lat             float64 `db:"-"`
+	Lon             float64 `db:"-"`
+	NeighborhoodsID int64   `db:"neighborhoods_id"`
 }
 
 // PhoneData is the phone data united in one structure for filtering
@@ -52,8 +59,8 @@ type PhoneData struct {
 	// ModelID   int64
 	Carrier   string
 	CarrierID int64
-	Lang      string
-	LangID    int64
+	// Lang      string
+	// LangID    int64
 	Network   string
 	NetworkID int64
 }
@@ -62,6 +69,35 @@ type tmpData struct {
 	ID   int64  `db:"id"`
 	Text string `db:"string"`
 	Show int    `db:"show"`
+}
+
+// GetID return the id of app
+func (w *App) GetID() int64 {
+	return w.ID
+}
+
+// GetName return the name of object
+func (w *App) GetName() string {
+	return w.AppPackage
+}
+
+// FloorCPM is the floor value for this site
+func (w *App) FloorCPM() int64 {
+	if w.AppFloorCPM.Int64 < config.Config.Clickyab.MinCPMFloorApp {
+		w.AppFloorCPM.Int64 = config.Config.Clickyab.MinCPMFloorApp
+		w.AppFloorCPM.Valid = true
+	}
+	return w.AppFloorCPM.Int64
+}
+
+// GetActive return if app is active or not
+func (w *App) GetActive() bool {
+	return w.AppStatus == 0 || w.AppStatus == 1
+}
+
+// GetType of this object
+func (w *App) GetType() string {
+	return "app"
 }
 
 func (m *Manager) doCacheQuery(q string, p string) (*tmpData, error) {
@@ -81,7 +117,7 @@ func (m *Manager) doCacheQuery(q string, p string) (*tmpData, error) {
 }
 
 // GetPhoneData try to insert/retrieve brand for phone
-func (m *Manager) GetPhoneData(brand, carrier, network string) (*PhoneData, error) {
+func (m *Manager) GetPhoneData(brand, carrier, network string) *PhoneData {
 	result := PhoneData{
 		Brand: brand,
 		// Model:   model,
@@ -96,15 +132,6 @@ func (m *Manager) GetPhoneData(brand, carrier, network string) (*PhoneData, erro
 		result.BrandID = t.ID
 	}
 
-	// q = "INSERT INTO apps_brand_models (`abm_model`,`ab_id` ) VALUES (?, ?) ON DUPLICATE KEY UPDATE ab_id=ab_id"
-	// d, err = m.GetWDbMap().Exec(q, result.Model, result.BrandID)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// result.ModelID, err = d.LastInsertId()
-	// if err != nil {
-	// 	return nil, err
-	// }
 	q = "SELECT ac_id as id, ac_carrier as string , ac_show as show FROM  apps_carriers WHERE ac_carrier = ? LIMIT 1"
 	t, err = m.doCacheQuery(q, result.Carrier)
 	if err == nil && t.Show > 0 {
@@ -118,7 +145,7 @@ func (m *Manager) GetPhoneData(brand, carrier, network string) (*PhoneData, erro
 		// Found one
 		result.NetworkID = t.ID
 	}
-	return &result, nil
+	return &result
 }
 
 // GetApp try to get application from the system
@@ -140,15 +167,34 @@ func (m *Manager) GetApp(token string) (*App, error) {
 	return &res, nil
 }
 
+// GetAppByID try to get application from the system
+func (m *Manager) GetAppByID(id int64) (*App, error) {
+	res := App{}
+	key := utils.Sha1(fmt.Sprintf("app_%d", id))
+	err := fetch(key, &res)
+	if err == nil {
+		return &res, nil
+	}
+
+	q := "SELECT * FROM `apps` WHERE `app_id`=?"
+	err = m.GetRDbMap().SelectOne(&res, q, id)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = store(key, &res, 72*time.Hour)
+	return &res, nil
+}
+
 // IsUserActive return if the user is active
 func (m *Manager) IsUserActive(u int64) bool {
 	q := "SELECT u_close FROM users WHERE u_id = ?"
 	res, err := m.GetRDbMap().SelectInt(q, u)
 	if err != nil || res != 0 {
-		return true
+		return false
 	}
 
-	return false
+	return true
 }
 
 func (m *Manager) findCell(lat, lon float64) (int64, int64, error) {
@@ -166,7 +212,7 @@ func (m *Manager) findCell(lat, lon float64) (int64, int64, error) {
 }
 
 // GetCellLocation try to get cell location from mmap database
-func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int, carrier string) (*CellLocation, error) {
+func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int64, carrier string) (*CellLocation, error) {
 	res := CellLocation{}
 	key := utils.Sha1(fmt.Sprintf("loc_%d%d%d%d", mcc, mnc, lac, cid))
 	err := fetch(key, &res)
@@ -177,6 +223,12 @@ func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int, carrier string) (*Cell
 	q := "SELECT id, cell_id, locations, neighborhoods_id FROM `finder_logs_sdk_true` WHERE `mcc`=? AND `mnc`=? AND `lac`=? AND `cid`=? LIMIT 1"
 	err = m.GetRDbMap().SelectOne(&res, q, mcc, mnc, lac, cid)
 	if err == nil {
+		arr := strings.Split(res.Location, ",")
+		assert.True(len(arr) == 2, fmt.Sprintf("[DATA-BUG] finder_logs_sdk_true location for %d is invalid", res.ID))
+		res.Lat, err = strconv.ParseFloat(arr[0], 64)
+		assert.Nil(err, fmt.Sprintf("[DATA-BUG] finder_logs_sdk_true location for %d is invalid", res.ID))
+		res.Lon, err = strconv.ParseFloat(arr[1], 64)
+		assert.Nil(err, fmt.Sprintf("[DATA-BUG] finder_logs_sdk_true location for %d is invalid", res.ID))
 		_ = store(key, &res, 72*time.Hour)
 		return &res, nil
 	}
@@ -203,6 +255,8 @@ func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int, carrier string) (*Cell
 	res.CellID = cellID
 	res.NeighborhoodsID = NeighborhoodID
 	res.Location = fmt.Sprintf("%f,%f", lat, lon)
+	res.Lat = lat
+	res.Lon = lon
 
 	return &res, nil
 }
