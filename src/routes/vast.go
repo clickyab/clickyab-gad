@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"config"
 	"errors"
+	"filter"
 	"fmt"
 	"html/template"
 	"middlewares"
@@ -18,6 +19,18 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
+)
+
+var (
+	vastSelector = selector.Mix(
+		filter.IsWebNetwork,
+		filter.CheckVastSize,
+		filter.CheckOS,
+		filter.CheckWhiteList,
+		filter.CheckWebBlackList,
+		filter.CheckWebCategory,
+		filter.CheckProvince,
+	)
 )
 
 type vastAdTemplate struct {
