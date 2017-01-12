@@ -2,11 +2,13 @@ package rabbit
 
 import (
 	"assert"
-	"sync"
-
 	"config"
 	"container/ring"
+	"sync"
 
+	"sync/atomic"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
 
@@ -127,6 +129,19 @@ type Connection interface {
 	Channel() (Channel, error)
 }
 
+// Job interface
+type Job interface {
+	// GetTopic return the topic of the current message to publish
+	GetTopic() string
+	// GetQueue return the queue to publish in
+	GetQueue() string
+}
+
+var (
+	quit        = make(chan chan struct{})
+	hasConsumer int64
+)
+
 // Initialize the module at the beginning of the application to create a publish channel
 func Initialize() {
 
@@ -134,7 +149,6 @@ func Initialize() {
 		var err error
 		conn, err = amqp.Dial(config.Config.AMQP.DSN)
 		assert.Nil(err)
-
 		chn, err := conn.Channel()
 		assert.Nil(err)
 		defer chn.Close()
@@ -173,7 +187,6 @@ func Initialize() {
 		)
 		assert.Nil(err)
 		assert.Nil(chn.QueueBind(q.Name, "#", config.Config.AMQP.Exchange+retryPostfix, true, amqp.Table{}))
-
 	})
 
 	if config.Config.AMQP.Publisher < 1 {
@@ -199,4 +212,16 @@ func Initialize() {
 		rng.Value = &tmp
 		rng = rng.Next()
 	}
+
+	logrus.Debug("Rabbit initialized")
+}
+
+// Finalize try to close rabbitmq connection
+func Finalize() {
+	if atomic.CompareAndSwapInt64(&hasConsumer, 1, 0) {
+		tmp := make(chan struct{})
+		quit <- tmp
+		<-tmp
+	}
+	logrus.Debug("Rabbit finalized")
 }

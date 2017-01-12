@@ -30,6 +30,7 @@ type Click struct {
 	App *AppImp     `json:"app"`
 }
 
+// Validate try to validate the click in
 func (c Click) Validate() bool {
 	if c.CopID == 0 ||
 		len(c.IP.String()) == 0 ||
@@ -37,9 +38,18 @@ func (c Click) Validate() bool {
 		c.AdID <= 0 ||
 		c.CampaignID <= 0 ||
 
-		c.Web == nil ||
-		c.Web.WebsiteID <= 0 {
+		(c.Web == nil || c.Web.WebsiteID <= 0) && (c.App == nil || c.App.AppID <= 0) {
 		return false
 	}
 	return true
+}
+
+// GetTopic return the click topic
+func (c Click) GetTopic() string {
+	return "cy.click"
+}
+
+// GetQueue return the click queue name to use
+func (c Click) GetQueue() string {
+	return "cy_click_queue"
 }
