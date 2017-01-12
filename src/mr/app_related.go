@@ -2,6 +2,7 @@ package mr
 
 import (
 	"assert"
+	"config"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -25,7 +26,7 @@ type App struct {
 	AppPackage           string         `db:"app_package"`
 	AmID                 int            `db:"am_id"`
 	MinBID               int64          `db:"app_minbid"`
-	AppFloorCPM          int64          `db:"app_floor_cpm"`
+	AppFloorCPM          sql.NullInt64  `db:"app_floor_cpm"`
 	AppDIV               float64        `db:"app_div"`
 	AppStatus            int            `db:"app_status"`
 	AppReview            int            `db:"app_review"`
@@ -82,7 +83,11 @@ func (w *App) GetName() string {
 
 // FloorCPM is the floor value for this site
 func (w *App) FloorCPM() int64 {
-	return w.AppFloorCPM
+	if w.AppFloorCPM.Int64 < config.Config.Clickyab.MinCPMFloorApp {
+		w.AppFloorCPM.Int64 = config.Config.Clickyab.MinCPMFloorApp
+		w.AppFloorCPM.Valid = true
+	}
+	return w.AppFloorCPM.Int64
 }
 
 // GetActive return if app is active or not
@@ -127,15 +132,6 @@ func (m *Manager) GetPhoneData(brand, carrier, network string) *PhoneData {
 		result.BrandID = t.ID
 	}
 
-	// q = "INSERT INTO apps_brand_models (`abm_model`,`ab_id` ) VALUES (?, ?) ON DUPLICATE KEY UPDATE ab_id=ab_id"
-	// d, err = m.GetWDbMap().Exec(q, result.Model, result.BrandID)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// result.ModelID, err = d.LastInsertId()
-	// if err != nil {
-	// 	return nil, err
-	// }
 	q = "SELECT ac_id as id, ac_carrier as string , ac_show as show FROM  apps_carriers WHERE ac_carrier = ? LIMIT 1"
 	t, err = m.doCacheQuery(q, result.Carrier)
 	if err == nil && t.Show > 0 {

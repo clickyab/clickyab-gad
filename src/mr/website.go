@@ -1,6 +1,7 @@
 package mr
 
 import (
+	"config"
 	"database/sql"
 	"fmt"
 	"time"
@@ -50,6 +51,10 @@ func (w *Website) GetName() string {
 
 // FloorCPM is the floor value for this site
 func (w *Website) FloorCPM() int64 {
+	if w.WFloorCpm.Int64 < config.Config.Clickyab.MinCPMFloorWeb {
+		w.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloorWeb
+		w.WFloorCpm.Valid = true
+	}
 	return w.WFloorCpm.Int64
 }
 

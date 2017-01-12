@@ -39,13 +39,13 @@ func (selectController) fillImp(rd *middlewares.RequestData, sus bool, ads *mr.A
 		AdID:         ads.AdID,
 		CopID:        rd.CopID,
 		CampaignAdID: ads.CampaignAdID.Int64,
-
-		URL:        ads.AdURL.String,
-		CampaignID: ads.CampaignID.Int64,
-		UserAgent:  rd.UserAgent,
-		Time:       time.Now(),
-		WinnerBID:  winnerBid,
-		Status:     0,
+		SlotID:       slotID,
+		URL:          ads.AdURL.String,
+		CampaignID:   ads.CampaignID.Int64,
+		UserAgent:    rd.UserAgent,
+		Time:         time.Now(),
+		WinnerBID:    winnerBid,
+		Status:       0,
 	}
 	if pub.GetType() == "web" {
 		imp.Web = &transport.WebSiteImp{
