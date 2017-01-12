@@ -41,16 +41,6 @@ var (
 		filter.CheckProvince,
 	)
 
-	vastSelector = selector.Mix(
-		filter.IsWebNetwork,
-		filter.CheckVastSize,
-		filter.CheckOS,
-		filter.CheckWhiteList,
-		filter.CheckWebBlackList,
-		filter.CheckWebCategory,
-		filter.CheckProvince,
-	)
-
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
 )
 
