@@ -23,9 +23,10 @@ type AdData struct {
 	WinnerBid         int64            `json:"winner_bid" db:"-"`
 	CampaignMaxBid    int64            `json:"cp_maxbid" db:"cp_maxbid"`
 	CampaignID        int64            `json:"cp_id" db:"cp_id"`
+	CampaignName      sql.NullString   `json:"cp_name" db:"cp_name"`
 	AdType            int              `json:"ad_type" db:"ad_type"`
 	SlotID            int64            `json:"slot_id" db:"-"`
-	CampaignData
+	Campaign
 	AdSize         int            `json:"ad_size" db:"ad_size"`
 	UserID         int64          `json:"u_id" db:"u_id"`
 	AdName         sql.NullString `json:"ad_name" db:"ad_name"`
@@ -53,25 +54,25 @@ type AdData struct {
 	CpLock          int                     `json:"cp_lock" db:"cp_lock"`
 }
 
-// CampaignData is a single campaign data
-type CampaignData struct {
-	CampaignType            int            `json:"cp_type" db:"cp_type"`
-	CampaignBillingType     sql.NullString `json:"cp_billing_type" db:"cp_billing_type"`
-	CampaignName            sql.NullString `json:"cp_name" db:"cp_name"`
+// Campaign is a single campaign data
+type Campaign struct {
+	CampaignType        int            `json:"cp_type" db:"cp_type"`
+	CampaignBillingType sql.NullString `json:"cp_billing_type" db:"cp_billing_type"`
+
 	CampaignNetwork         int            `json:"cp_network" db:"cp_network"`
 	CampaignPlacement       SharpArray     `json:"cp_placement" db:"cp_placement"`
 	CampaignWebsiteFilter   SharpArray     `json:"cp_wfilter" db:"cp_wfilter"`
 	CampaignRetargeting     sql.NullString `json:"cp_retargeting" db:"cp_retargeting"`
 	CampaignSegmentID       sql.NullInt64  `json:"cp_segment_id" db:"cp_segment_id"`
-	CampaignAppBrand        sql.NullString `json:"cp_app_brand" db:"cp_app_brand"`
-	CampaignNetProvider     sql.NullString `json:"cp_net_provider" db:"cp_net_provider"`
+	CampaignNetProvider     SharpArray     `json:"cp_net_provider" db:"cp_net_provider"`
+	CampaignAppBrand        SharpArray     `json:"cp_app_brand" db:"cp_app_brand"`
 	CampaignAppLang         sql.NullString `json:"cp_app_lang" db:"cp_app_lang"`
 	CampaignAppMarket       sql.NullInt64  `json:"cp_app_market" db:"cp_app_market"`
 	CampaignWebMobile       int            `json:"cp_web_mobile" db:"cp_web_mobile"`
 	CampaignWeb             int            `json:"cp_web" db:"cp_web"`
 	CampaignApplication     int            `json:"cp_application" db:"cp_application"`
 	CampaignVideo           int            `json:"cp_video" db:"cp_video"`
-	CampaignAppsCarriers    sql.NullString `json:"cp_apps_carriers" db:"cp_apps_carriers"`
+	CampaignAppsCarriers    SharpArray     `json:"cp_apps_carriers" db:"cp_apps_carriers"`
 	CampaignLongMap         sql.NullString `json:"cp_longmap" db:"cp_longmap"`
 	CampaignLatMap          sql.NullString `json:"cp_latmap" db:"cp_latmap"`
 	CampaignRadius          int            `json:"cp_radius" db:"cp_radius"`
