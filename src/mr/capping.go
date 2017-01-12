@@ -11,15 +11,23 @@ type capping struct {
 	View      int
 	Frequency int
 	Selected  bool
+	Target    bool
 }
 
 // CappingInterface interface capping
 type CappingInterface interface {
+	// GetView return the view of this campaign for this user
 	GetView() int
+	// GetFrequency return the frequency for this user
 	GetFrequency() int
+	// GetCapping return the frequency capping value, the view/frequency
 	GetCapping() int
+	// IncView increase the vie
 	IncView(int)
+	// GetSelected return if this campaign is already selected in this batch
 	GetSelected() bool
+	// IsTargeted return if the current campaign is targeted for this user?
+	IsTargeted() bool
 }
 
 // CappingLocker is the safe capping counter for min capping
@@ -34,7 +42,7 @@ const (
 )
 
 // NewCapping create new capping
-func NewCapping(ctx echo.Context, cpID int64, view, freq int) CappingInterface {
+func NewCapping(ctx echo.Context, cpID int64, view, freq int, target bool) CappingInterface {
 	var caps map[int64]*capping
 	var ok bool
 	if caps, ok = ctx.Get(cappingCtx).(map[int64]*capping); !ok {
@@ -45,6 +53,7 @@ func NewCapping(ctx echo.Context, cpID int64, view, freq int) CappingInterface {
 		caps[cpID] = &capping{
 			View:      view,
 			Frequency: freq,
+			Target:    target,
 		}
 	}
 
@@ -60,6 +69,9 @@ func (c *capping) GetFrequency() int {
 }
 
 func (c *capping) GetCapping() int {
+	if c.Target {
+		return 0
+	}
 	return c.View / c.Frequency
 }
 
@@ -70,6 +82,10 @@ func (c *capping) IncView(a int) {
 
 func (c *capping) GetSelected() bool {
 	return c.Selected
+}
+
+func (c *capping) IsTargeted() bool {
+	return c.Target
 }
 
 // Set the capping value
