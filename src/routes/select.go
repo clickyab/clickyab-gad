@@ -229,23 +229,6 @@ func (tc *selectController) fetchIP2Location(c net.IP) (*mr.IP2Location, error) 
 
 }
 
-// The following code is not required anymore, but I keep it here as long as we are
-// in development, remove it when we are done
-//FetchCountry find country and set context
-// func (tc *selectController) fetchCountry(c net.IP) (*mr.CountryInfo, error) {
-// 	var country mr.CountryInfo
-// 	ip, err := tc.fetchIP2Location(c)
-// 	if err != nil || !ip.CountryName.Valid {
-// 		return nil, errors.New("Country not found")
-// 	}
-
-// 	country, err = mr.NewManager().ConvertCountry2Info(ip.CountryCode.String)
-// 	if err != nil {
-// 		return nil, errors.New("Country not found")
-// 	}
-// 	return &country, nil
-// }
-
 //fetchProvince find province and set context
 func (tc *selectController) fetchProvince(c net.IP, cfHeader string) (*mr.Province, error) {
 	if strings.ToUpper(cfHeader) != "IR" {
@@ -429,7 +412,7 @@ func (tc *selectController) makeShow(
 						),
 					}
 					warn.Request, _ = httputil.DumpRequest(c.Request(), false)
-					err := rabbit.Publish("cy.warn", warn)
+					err := rabbit.Publish(warn)
 					if err != nil {
 						logrus.Error(err)
 					}

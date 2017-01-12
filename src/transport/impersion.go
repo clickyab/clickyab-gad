@@ -39,3 +39,13 @@ type Impression struct {
 	Web        *WebSiteImp `json:"web"`
 	App        *AppImp     `json:"app"`
 }
+
+// GetTopic of the imperssion struct
+func (Impression) GetTopic() string {
+	return "cy.imp"
+}
+
+// GetQueue of the imperssion
+func (Impression) GetQueue() string {
+	return "cy_imp_queue"
+}

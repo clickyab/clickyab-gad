@@ -8,6 +8,10 @@ import (
 	"sync"
 	"utils"
 
+	"config"
+
+	"sync/atomic"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
@@ -19,7 +23,7 @@ type validator interface {
 // goodFunc verifies that the function satisfies the signature, represented as a slice of types.
 // The last type is the single result type; the others are the input types.
 // A final type of nil means any result type is accepted.
-func goodFunc(fn reflect.Value, rtrn int, types ...reflect.Type) bool {
+func goodFunc(fn reflect.Value, rtrn int, types ...reflect.Type) (e bool) {
 	if fn.Kind() != reflect.Func {
 		return false
 	}
@@ -28,7 +32,7 @@ func goodFunc(fn reflect.Value, rtrn int, types ...reflect.Type) bool {
 		return false
 	}
 	for i := 0; i < len(types)-rtrn; i++ {
-		if fn.Type().In(i) != types[i] {
+		if !fn.Type().In(i).AssignableTo(types[i]) {
 			return false
 		}
 	}
@@ -37,7 +41,6 @@ func goodFunc(fn reflect.Value, rtrn int, types ...reflect.Type) bool {
 	for i := len(types) - rtrn + 1; i < len(types); i++ {
 		outType := types[i]
 		if outType != nil && fn.Type().Out(j) != outType {
-			panic(outType)
 			return false
 		}
 		j++
@@ -46,8 +49,12 @@ func goodFunc(fn reflect.Value, rtrn int, types ...reflect.Type) bool {
 	return true
 }
 
-// RunWorker listen on a topic in amqp
-func RunWorker(exchange, topic, queue string, jobPattern interface{}, function interface{}, prefetch int, quit chan chan struct{}) error {
+// RunWorker listen on a topic in Amqp
+func RunWorker(
+	jobPattern Job,
+	function interface{},
+	prefetch int) error {
+
 	in := reflect.ValueOf(jobPattern)
 
 	fn := reflect.ValueOf(function)
@@ -66,20 +73,20 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 		return err
 	}
 	err = c.ExchangeDeclare(
-		exchange, // name
-		"topic",  // type
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
+		config.Config.AMQP.Exchange, // name
+		"topic",                     // type
+		true,                        // durable
+		false,                       // auto-deleted
+		false,                       // internal
+		false,                       // no-wait
+		nil,                         // arguments
 	)
 
 	if err != nil {
 		return err
 	}
 
-	q, err := c.QueueDeclare(queue, true, false, false, false, nil)
+	q, err := c.QueueDeclare(jobPattern.GetQueue(), true, false, false, false, nil)
 	if err != nil {
 		return err
 	}
@@ -95,9 +102,9 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 	}
 
 	err = c.QueueBind(
-		q.Name,   // queue name
-		topic,    // routing key
-		exchange, // exchange
+		q.Name,                      // queue name
+		jobPattern.GetTopic(),       // routing key
+		config.Config.AMQP.Exchange, // exchange
 		false,
 		nil,
 	)
@@ -109,14 +116,20 @@ func RunWorker(exchange, topic, queue string, jobPattern interface{}, function i
 	if err != nil {
 		return err
 	}
-
-	consume(delivery, jobPattern, fn, quit, c, consumerTag)
+	logrus.Debug("Worker started")
+	consume(delivery, jobPattern, fn, c, consumerTag)
 
 	return nil
 }
 
-func consume(delivery <-chan amqp.Delivery, jobPattern interface{}, fn reflect.Value, quit chan chan struct{}, c *amqp.Channel, consumerTag string) {
+func consume(
+	delivery <-chan amqp.Delivery,
+	jobPattern interface{},
+	fn reflect.Value,
+	c *amqp.Channel,
+	consumerTag string) {
 	waiter := sync.WaitGroup{}
+	atomic.SwapInt64(&hasConsumer, 1)
 bigLoop:
 	for {
 		select {
@@ -151,13 +164,14 @@ bigLoop:
 				if out[1].Interface() == nil || out[1].Interface().(error) == nil {
 					assert.Nil(job.Ack(false))
 				} else {
+					logrus.Debug(out[1].Interface().(error))
 					assert.Nil(job.Nack(false, out[0].Interface().(bool)))
 				}
 			}()
 		case ok := <-quit:
 			_ = c.Cancel(consumerTag, false)
 			waiter.Wait()
-			FinalizeWait()
+			finalizeWait()
 			ok <- struct{}{}
 			break bigLoop
 		}
