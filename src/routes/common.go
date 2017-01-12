@@ -15,6 +15,8 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
+const message = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII="
+
 // Publisher is a publisher object, app, website
 type Publisher interface {
 	// GetID return the id of object
