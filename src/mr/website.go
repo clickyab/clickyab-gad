@@ -8,7 +8,7 @@ import (
 	"utils"
 )
 
-// WebsiteData type for website
+// Website type for website
 type Website struct {
 	WID                int64          `json:"w_id" db:"w_id"`
 	UserID             int64          `json:"u_id" db:"u_id"`

@@ -19,6 +19,8 @@ import (
 	"gopkg.in/labstack/echo.v3"
 )
 
+// AllData return all data required to render the all routes
+// TODO : Rename this
 type AllData struct {
 	Website  []*mr.Website
 	Province []*mr.Province

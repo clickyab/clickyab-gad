@@ -34,6 +34,7 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/ads/vast/", tc.selectVastAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/allads", tc.allAds, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 
+	e.GET("/version", tc.version, middlewares.Header)
 	e.GET("/ads/inapp.php", tc.inApp, middlewares.RequestCollectorGenerator(appCopCreateor), middlewares.Header)
 
 	postfix := "-min.js"
