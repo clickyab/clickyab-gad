@@ -58,6 +58,7 @@ type AppConfig struct {
 		Exchange   string
 		Publisher  int
 		ConfirmLen int
+		Debug      bool
 	}
 
 	Select struct {
@@ -97,7 +98,8 @@ type AppConfig struct {
 		DailyClickExpire time.Duration `onion:"daily_click_expire"`
 		DailyCapExpire   time.Duration `onion:"daily_cap_expire"`
 		MegaImpExpire    time.Duration `onion:"mega_imp_expire"`
-		MinCPMFloor      int64         `onion:"min_cpm_floor"`
+		MinCPMFloorWeb   int64         `onion:"min_cpm_floor_web"`
+		MinCPMFloorApp   int64         `onion:"min_cpm_floor_app"`
 		CopLen           int           `onion:"cop_len"`
 		FastClick        int64         `onion:"fast_click"`
 		ConvDelay        time.Duration `onion:"conv_delay"`
@@ -187,7 +189,8 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.mega_imp_expire", 2*time.Hour))
 	assert.Nil(d.SetDefault("clickyab.conv_delay", time.Second*10))
 	assert.Nil(d.SetDefault("clickyab.conv_retry", 8))
-	assert.Nil(d.SetDefault("clickyab.min_cpm_floor", 150))
+	assert.Nil(d.SetDefault("clickyab.min_cpm_floor_web", 210))
+	assert.Nil(d.SetDefault("clickyab.min_cpm_floor_app", 150))
 	assert.Nil(d.SetDefault("clickyab.max_load_fail", 3))
 	assert.Nil(d.SetDefault("clickyab.cop_len", 10))
 	assert.Nil(d.SetDefault("clickyab.fast_click", 2))
