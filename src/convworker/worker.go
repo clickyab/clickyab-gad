@@ -40,5 +40,5 @@ func convWorker(in *transport.Conversion) (bool, error) {
 	}
 
 	// first try to publish it after time, if it failed then re-queue it
-	return true, rabbit.PublishAfter("cy.conv", in, config.Config.Clickyab.ConvDelay)
+	return true, rabbit.PublishAfter(in, config.Config.Clickyab.ConvDelay)
 }
