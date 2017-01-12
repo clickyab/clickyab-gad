@@ -56,8 +56,11 @@ func Publish(in Job) (err error) {
 			v.wg.Done()
 		}
 	}()
-
-	return v.chn.Publish(config.Config.AMQP.Exchange, in.GetTopic(), true, false, pub)
+	topic := in.GetTopic()
+	if config.Config.AMQP.Debug {
+		topic = "debug." + topic
+	}
+	return v.chn.Publish(config.Config.AMQP.Exchange, topic, true, false, pub)
 }
 
 // PublishAfter is the function to publish message after a period of time
@@ -93,8 +96,11 @@ func PublishAfter(in Job, after time.Duration) (err error) {
 			v.wg.Done()
 		}
 	}()
-
-	return v.chn.Publish(config.Config.AMQP.Exchange+retryPostfix, in.GetTopic(), true, false, pub)
+	topic := in.GetTopic()
+	if config.Config.AMQP.Debug {
+		topic = "debug." + topic
+	}
+	return v.chn.Publish(config.Config.AMQP.Exchange+retryPostfix, topic, true, false, pub)
 }
 
 // MustPublish publish an event with force

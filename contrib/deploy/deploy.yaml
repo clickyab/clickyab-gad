@@ -80,7 +80,9 @@
         recreate: yes
         volumes:
           - /home/cy/gad:/app
-
+        env:
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"
+          
 - name: Run imp worker
   hosts: imp
   tasks:
@@ -95,6 +97,8 @@
         recreate: yes
         volumes:
           - /home/cy/gad:/app
+        env:
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"
 
 - name: Run conv worker
   hosts: conv
@@ -110,6 +114,8 @@
         recreate: yes
         volumes:
           - /home/cy/gad:/app
+        env:
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"
 
 - name: Run web server
   hosts: web
@@ -132,3 +138,5 @@
           - "{{ gad_port }}:80"
         volumes:
           - /home/cy/gad:/app
+        env:
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"          

@@ -212,8 +212,8 @@ func (tc *selectController) fetchWebsite(publicID int64) (*mr.Website, error) {
 	if err != nil {
 		return nil, err
 	}
-	if website.WFloorCpm.Int64 < config.Config.Clickyab.MinCPMFloor {
-		website.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloor
+	if website.WFloorCpm.Int64 < config.Config.Clickyab.MinCPMFloorWeb {
+		website.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloorWeb
 	}
 	return website, err
 }

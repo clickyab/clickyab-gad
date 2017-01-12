@@ -1,2 +1,3 @@
 ---
 gad_port: 80
+amqp_debug: false

@@ -87,12 +87,12 @@ func (m *Manager) FetchAppSlot(appID int64, slotID int64) (*Slot, error) {
 	var res Slot
 
 	key := utils.Sha1(fmt.Sprintf("slotapp_%d_%d", slotID, appID))
-	err := fetch(key, &res)
-	if err == nil {
-		return &res, nil
-	}
+	// err := fetch(key, &res)
+	// if err == nil {
+	// 	return &res, nil
+	// }
 
-	_, err = m.GetProperDBMap().Select(
+	err := m.GetProperDBMap().SelectOne(
 		&res,
 		`SELECT * FROM slots WHERE slot_pubilc_id = ? AND app_id = ?`,
 		slotID,

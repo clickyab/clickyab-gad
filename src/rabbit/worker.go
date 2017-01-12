@@ -85,8 +85,11 @@ func RunWorker(
 	if err != nil {
 		return err
 	}
-
-	q, err := c.QueueDeclare(jobPattern.GetQueue(), true, false, false, false, nil)
+	qu := jobPattern.GetQueue()
+	if config.Config.AMQP.Debug {
+		qu = "debug." + qu
+	}
+	q, err := c.QueueDeclare(qu, true, false, false, false, nil)
 	if err != nil {
 		return err
 	}
@@ -101,9 +104,13 @@ func RunWorker(
 		return err
 	}
 
+	topic := jobPattern.GetTopic()
+	if config.Config.AMQP.Debug {
+		topic = "debug." + topic
+	}
 	err = c.QueueBind(
-		q.Name,                      // queue name
-		jobPattern.GetTopic(),       // routing key
+		q.Name, // queue name
+		topic,  // routing key
 		config.Config.AMQP.Exchange, // exchange
 		false,
 		nil,
