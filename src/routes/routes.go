@@ -25,6 +25,11 @@ func appCopCreateor(ctx echo.Context, e *middlewares.RequestData, len int) strin
 	)
 }
 
+func retargetingCreator(ctx echo.Context, e *middlewares.RequestData, len int) string {
+	ctx.Set(invalidRedirect, false)
+	return utils.CreateHash(len, []byte(ctx.Request().UserAgent()), []byte(net.ParseIP(ctx.RealIP())))
+}
+
 // Routes function register all routes in system
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/select", tc.selectWebAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
@@ -33,7 +38,7 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/conversion/", tc.conversion, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/ads/vast/", tc.selectVastAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/allads", tc.allAds, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
-
+	e.GET("/:cpid/retarget", tc.allAds, middlewares.RequestCollectorGenerator(retargetingCreator), middlewares.Header)
 	e.GET("/version", tc.version, middlewares.Header)
 	e.GET("/ads/inapp.php", tc.inApp, middlewares.RequestCollectorGenerator(appCopCreateor), middlewares.Header)
 
