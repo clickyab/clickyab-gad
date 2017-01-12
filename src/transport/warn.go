@@ -10,3 +10,13 @@ type Warning struct {
 	Request []byte
 	Message string
 }
+
+// GetTopic of the Warning struct
+func (Warning) GetTopic() string {
+	return "cy.warn"
+}
+
+// GetQueue of the Warning
+func (Warning) GetQueue() string {
+	return "cy_warn_queue"
+}

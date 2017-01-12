@@ -25,7 +25,7 @@ func (tc *selectController) conversion(c echo.Context) error {
 		ConvID:   clickID,
 		ActionID: actionID,
 	}
-	rabbit.MustPublishAfter("cy.conv", out, time.Minute)
+	rabbit.MustPublishAfter(out, time.Minute)
 	c.Response().Header().Set("Content-Type", "image/png")
 	return c.String(200, string(data))
 
