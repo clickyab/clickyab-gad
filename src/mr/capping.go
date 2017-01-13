@@ -1,10 +1,6 @@
 package mr
 
-import (
-	"sync"
-
-	"gopkg.in/labstack/echo.v3"
-)
+import "sync"
 
 // Capping is the structure for capping
 type capping struct {
@@ -37,18 +33,11 @@ type CappingLocker struct {
 	data []*AdData
 }
 
-const (
-	cappingCtx = "__capping_context__"
-)
+// CappingContext is the type used to handle capping locker
+type CappingContext map[int64]CappingInterface
 
 // NewCapping create new capping
-func NewCapping(ctx echo.Context, cpID int64, view, freq int, target bool) CappingInterface {
-	var caps map[int64]*capping
-	var ok bool
-	if caps, ok = ctx.Get(cappingCtx).(map[int64]*capping); !ok {
-		caps = make(map[int64]*capping)
-		ctx.Set(cappingCtx, caps)
-	}
+func (caps CappingContext) NewCapping(cpID int64, view, freq int, target bool) CappingInterface {
 	if _, ok := caps[cpID]; !ok {
 		caps[cpID] = &capping{
 			View:      view,

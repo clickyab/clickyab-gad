@@ -188,12 +188,19 @@ func (m *Manager) GetAppByID(id int64) (*App, error) {
 
 // IsUserActive return if the user is active
 func (m *Manager) IsUserActive(u int64) bool {
+	key := utils.Sha1(fmt.Sprintf("user_active_%d", u))
+	var act bool
+	err := fetch(key, &act)
+	if err == nil {
+		return act
+	}
 	q := "SELECT u_close FROM users WHERE u_id = ?"
 	res, err := m.GetRDbMap().SelectInt(q, u)
 	if err != nil || res != 0 {
 		return false
 	}
-
+	x := true
+	_ = store(key, &x, 72*time.Hour)
 	return true
 }
 

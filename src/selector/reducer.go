@@ -43,6 +43,7 @@ func Apply(ctx *Context, in []mr.AdData, ff FilterFunc) map[int][]*mr.AdData {
 	for i := range in {
 		if ff(ctx, in[i]) {
 			n := in[i]
+			n.WinnerBid = 0
 			if n.AdType == config.AdTypeVideo {
 				for _, j := range config.GetVideoSize() {
 					m[j] = append(m[j], &n)

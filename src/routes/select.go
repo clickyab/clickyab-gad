@@ -335,13 +335,16 @@ func (tc *selectController) makeShow(
 				wait <- ads
 			}
 		}()
-		filteredAds = getCapping(c, rd.CopID, sizeNumSlice, filteredAds)
+		filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
+		selected := make(map[int]int)
+		total := make(map[int]int)
 		for slotID := range slotSize {
 			exceedFloor := &mr.CappingLocker{}
 			cappedFloor := &mr.CappingLocker{}
 			underFloor := &mr.CappingLocker{}
 			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
+				total[slotSize[slotID].SlotSize]++
 				if adData.AdType == config.AdTypeVideo && noVideo {
 					continue
 				}
@@ -390,15 +393,18 @@ func (tc *selectController) makeShow(
 								"size was %sx%s \n"+
 								"the floor was %d \n"+
 								"all add count in this size %d \n "+
+								"pass the floor %d \n"+
 								"under floor is allowd? %v \n"+
 								"under floor count %d \n"+
-								"capped count %d",
+								"capped count %d , currently %d item of %d in this request is filled",
 							w, h,
 							publisher.FloorCPM(),
 							len(filteredAds[slotSize[slotID].SlotSize]),
+							exceedFloor.Len(),
 							config.Config.Clickyab.UnderFloor,
 							underFloor.Len(),
 							cappedFloor.Len(),
+							selected[slotSize[slotID].SlotSize], total[slotSize[slotID].SlotSize],
 						),
 					}
 					warn.Request, _ = httputil.DumpRequest(c.Request(), false)
@@ -432,8 +438,8 @@ func (tc *selectController) makeShow(
 			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotID)
 			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
 			assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
+			selected[slotSize[slotID].SlotSize]++
 			// TODO {fzerorubigd} : Can we check for inner capping increase?
-
 		}
 	})
 	var allAds map[string]*mr.AdData
