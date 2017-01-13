@@ -58,7 +58,6 @@ func (tc *selectController) click(c echo.Context) error {
 	)
 	adID, _ := strconv.ParseInt(c.Param("ad"), 10, 64)
 	wIDStr := c.Param("wid")
-
 	rand := c.Param("rand")
 	mega := c.Param("mega")
 	typ := c.Param("typ")
@@ -80,18 +79,17 @@ func (tc *selectController) click(c echo.Context) error {
 		result = make(map[string]string)
 	}
 
-	wID, err := strconv.ParseInt(result["WS"], 10, 0)
+	wID, err := strconv.ParseInt(wIDStr, 10, 0)
 	assertNil(noRedisKey, err)
 
 	var pub Publisher
 	if typ != "app" {
 		pub, err = mr.NewManager().FetchWebsite(wID)
+		status = changeStatus(status, suspInvalidWebsite, err != nil || !pub.GetActive())
 	} else {
 		pub, err = mr.NewManager().GetAppByID(wID)
+		status = changeStatus(status, suspInvalidApp, err != nil || !pub.GetActive())
 	}
-
-	status = changeStatus(status, suspInvalidApp, err != nil || !pub.GetActive())
-
 	clickID := <-utils.ID
 
 	middlewares.SafeGO(c, false, func() {
@@ -181,16 +179,21 @@ func (selectController) fillClick(
 		web *transport.WebSiteImp
 		app *transport.AppImp
 	)
+	var id int64
+	// in some case (forged request) its possible to pub to be empty. just ignore it
+	if pub != nil {
+		id = pub.GetID()
+	}
 	if pub.GetType() == "web" {
 		web = &transport.WebSiteImp{
-			WebsiteID: pub.GetID(),
+			WebsiteID: id,
 			SlotID:    slotID,
 			Referrer:  rd.Referrer,
 			ParentURL: rd.Parent,
 		}
 	} else {
 		app = &transport.AppImp{
-			AppID:  pub.GetID(),
+			AppID:  id,
 			SlotID: slotID,
 		}
 	}
