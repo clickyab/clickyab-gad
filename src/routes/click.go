@@ -139,7 +139,7 @@ func (tc *selectController) click(c echo.Context) error {
 			status = suspDuplicateClick
 		}
 
-		click := tc.fillClick(c, ads, winnerBid, pub, slotID, inTime, outTime, slaID, impID, cpAdID, status, clickID, tv)
+		click := tc.fillClick(rd, ads, winnerBid, pub, slotID, inTime, outTime, slaID, impID, cpAdID, status, clickID, tv)
 
 		rabbit.MustPublish(click)
 	})
@@ -164,7 +164,7 @@ func (tc *selectController) click(c echo.Context) error {
 }
 
 func (selectController) fillClick(
-	ctx echo.Context,
+	rd *middlewares.RequestData,
 	ads *mr.Ad,
 	winnerBid int64,
 	pub Publisher,
@@ -176,9 +176,6 @@ func (selectController) fillClick(
 	status int64,
 	rand string,
 	tv bool) *transport.Click {
-	rd := middlewares.MustGetRequestData(ctx)
-	adID, err := strconv.ParseInt(ctx.Param("ad"), 10, 0)
-	assert.Nil(err)
 
 	var (
 		web *transport.WebSiteImp
@@ -200,7 +197,7 @@ func (selectController) fillClick(
 	return &transport.Click{
 		CopID:        rd.CopID,
 		IP:           rd.IP,
-		AdID:         adID,
+		AdID:         ads.AdID,
 		SlotID:       slotID,
 		CampaignID:   ads.CampaignAdID.Int64,
 		UserAgent:    rd.UserAgent,
