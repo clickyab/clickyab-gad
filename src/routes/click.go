@@ -94,7 +94,7 @@ func (tc *selectController) click(c echo.Context) error {
 
 	clickID := <-utils.ID
 
-	go func() {
+	middlewares.SafeGO(c, false, func() {
 
 		winnerBid, err := strconv.ParseInt(result["WIN"], 10, 0)
 		assertNil(noRedisKey, err)
@@ -142,7 +142,7 @@ func (tc *selectController) click(c echo.Context) error {
 		click := tc.fillClick(c, ads, winnerBid, pub, slotID, inTime, outTime, slaID, impID, cpAdID, status, clickID, tv)
 
 		rabbit.MustPublish(click)
-	}()
+	})
 
 	if status == suspNoAdFound {
 		return c.String(http.StatusNotFound, "Not found")
