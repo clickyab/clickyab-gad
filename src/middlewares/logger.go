@@ -21,12 +21,13 @@ func Logger(next echo.HandlerFunc) echo.HandlerFunc {
 		statusCode := c.Response().Status
 		logrus.WithFields(
 			logrus.Fields{
-				"Method":   c.Request().Method,
-				"Path":     c.Request().URL.Path,
-				"Latency":  latency,
-				"ClientIP": c.RealIP(),
-				"Status":   statusCode,
-				"Err":      err,
+				"Method":    c.Request().Method,
+				"Path":      c.Request().URL.Path,
+				"FullQuery": c.Request().URL.String(),
+				"Latency":   latency,
+				"ClientIP":  c.RealIP(),
+				"Status":    statusCode,
+				"Err":       err,
 			},
 		).Debug(http.StatusText(statusCode))
 
