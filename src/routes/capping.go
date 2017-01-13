@@ -10,8 +10,6 @@ import (
 	"transport"
 
 	"strconv"
-
-	"gopkg.in/labstack/echo.v3"
 )
 
 func getCappingKey(copID int64) string {
@@ -34,7 +32,7 @@ func retargetingKey(copID int64) string {
 	)
 }
 
-func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
+func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
 	// Retargeting structure is like this :
 	/*
 		map[string]int {
@@ -43,6 +41,7 @@ func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filter
 		}
 
 	*/
+	c := make(mr.CappingContext)
 	retargetings, _ := aredis.HGetAll(retargetingKey(copID), false, 0)
 	if retargetings == nil {
 		retargetings = make(map[string]int)
@@ -62,12 +61,11 @@ func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filter
 			}
 			retarget := false
 			if v, ok := retargetings[strconv.FormatInt(filteredAds[sizeNumSlice[i]][ad].CampaignID, 10)]; ok {
-				if time.Since(time.Unix(int64(v), 0)) > time.Duration(config.Config.Clickyab.RetargettingHour)*time.Hour {
+				if time.Since(time.Unix(int64(v), 0)) < time.Duration(config.Config.Clickyab.RetargettingHour)*time.Hour {
 					retarget = true
 				}
 			}
-			filteredAds[sizeNumSlice[i]][ad].Capping = mr.NewCapping(
-				c,
+			filteredAds[sizeNumSlice[i]][ad].Capping = c.NewCapping(
 				filteredAds[sizeNumSlice[i]][ad].CampaignID,
 				view,
 				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency,

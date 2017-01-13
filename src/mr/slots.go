@@ -34,7 +34,7 @@ type Slot struct {
 // FetchWebSlots fetch all slots
 func (m *Manager) FetchWebSlots(publicID string, wID int64) ([]Slot, error) {
 	var res []Slot
-
+	// TODO : this is dangerous to cache this one
 	key := utils.Sha1(fmt.Sprintf("slot_%s_%d", publicID, wID))
 	err := fetch(key, &res)
 	if err == nil {
@@ -53,6 +53,40 @@ func (m *Manager) FetchWebSlots(publicID string, wID int64) ([]Slot, error) {
 	}
 
 	_ = store(key, &res, time.Hour)
+	return res, nil
+}
+
+// insertSlotsTODO use this after making the slots table unique
+func (m *Manager) insertSlotsTODO(wID int64, appID int64, slotsPublic ...int64) ([]Slot, error) {
+	assert.True((appID == 0 && wID > 0) || (appID > 0 && wID == 0), "[BUG] invalid input")
+	var (
+		id int64
+		q  string
+	)
+	if wID > 0 {
+		q = "INSERT INTO slots (`slot_pubilc_id`, `w_id`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `slot_pubilc_id`=`slot_pubilc_id` "
+		id = wID
+	} else {
+		q = "INSERT INTO slots (`slot_pubilc_id`, `app_id`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `slot_pubilc_id`=`slot_pubilc_id` "
+		id = appID
+	}
+	res := []Slot{}
+	for s := range slotsPublic {
+		d, err := m.GetWDbMap().Exec(q, slotsPublic[s], id)
+		if err != nil {
+			return nil, err
+		}
+		sID, err := d.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, Slot{
+			AppID:    appID,
+			WID:      wID,
+			ID:       sID,
+			PublicID: slotsPublic[s],
+		})
+	}
 	return res, nil
 }
 

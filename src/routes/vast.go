@@ -139,6 +139,7 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 	return rd, website, province, lenVast, vastCon, nil
 }
 
+// TODO : Move this function to models and fix the cache problem
 func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, sizeNumSlice map[string]int) (map[string]*slotData, map[string]int) {
 	slotPublicString := mr.Build(slotPublic)
 	res, err := mr.NewManager().FetchWebSlots(slotPublicString, webID)
@@ -167,7 +168,11 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 			}
 		}
 	}
-
+	if len(newSlots) > 0 {
+		// Expire the cache for the select
+		key := utils.Sha1(fmt.Sprintf("slot_%s_%d", slotPublicString, webID))
+		aredis.RemoveKey(key)
+	}
 	insertedSlots := tc.insertNewSlots(webID, newSlots...)
 	for i := range insertedSlots {
 		answer[i] = &slotData{
