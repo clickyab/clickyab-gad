@@ -178,9 +178,9 @@ func (tc *selectController) getAppDataFromCtx(c echo.Context) (*middlewares.Requ
 	phone := m.GetPhoneData(c.Request().URL.Query().Get("brand"), c.Request().URL.Query().Get("carrier"), c.Request().URL.Query().Get("network"))
 	mcc, _ := strconv.ParseInt(c.Request().URL.Query().Get("mcc"), 10, 0)
 	mnc, _ := strconv.ParseInt(c.Request().URL.Query().Get("mnc"), 10, 0)
-	cid, _ := strconv.ParseInt(c.Request().URL.Query().Get("cid"), 10, 0)
-	lac, _ := strconv.ParseInt(c.Request().URL.Query().Get("lac"), 10, 0)
-	cell, err := m.GetCellLocation(mcc, mnc, lac, cid, phone.Carrier)
+	cid, _ := strconv.ParseFloat(c.Request().URL.Query().Get("cid"), 64)
+	lac, _ := strconv.ParseFloat(c.Request().URL.Query().Get("lac"), 64)
+	cell, err := m.GetCellLocation(mcc, mnc, int64(lac), int64(cid), phone.Carrier)
 	if err != nil {
 		logrus.Warn(err)
 	}

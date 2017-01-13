@@ -250,7 +250,7 @@ func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int64, carrier string) (*Ce
 		return nil, err
 	}
 
-	q = "INSERT INTO `finder_logs_sdk_true` (`cell_id`,`neighborhoods_id`, `carrier`, `mcc`, `mnc`, `lac`, `cid`, `locations`, `time`) VALUES (?,?,?,?,?,?,?,?)"
+	q = "INSERT INTO `finder_logs_sdk_true` (`cell_id`,`neighborhoods_id`, `carrier`, `mcc`, `mnc`, `lac`, `cid`, `locations`, `time`) VALUES (?,?,?,?,?,?,?,?,?)"
 	t, err := m.GetWDbMap().Exec(q, cellID, NeighborhoodID, carrier, mcc, mnc, lac, cid, fmt.Sprintf("%f,%f", lat, lon), time.Now().Unix())
 	if err != nil {
 		return nil, err
