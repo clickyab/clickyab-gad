@@ -37,6 +37,13 @@ func (tc *selectController) allAds(c echo.Context) error {
 	v := c.QueryParam("v")
 	cam := c.QueryParam("cam")
 	s := c.QueryParam("s")
+	ab := c.QueryParam("ab")
+	wa := c.QueryParam("wa")
+	ca := c.QueryParam("ca")
+	b := c.QueryParam("b")
+	pr := c.QueryParam("pr")
+	h := c.QueryParam("h")
+	ar := c.QueryParam("ar")
 
 	//cat := c.QueryParam("cat")
 	var campaign int64
@@ -45,9 +52,11 @@ func (tc *selectController) allAds(c echo.Context) error {
 
 	var sizeNumSlice = make(map[string]int)
 	var website *mr.Website
+	var app *mr.App
 	var err error
 	var vv bool
 	rd := middlewares.MustGetRequestData(c)
+	m := selector.Context{}
 
 	if v != "" || v == "on" {
 		fltr = append(fltr, filter.CheckVastSize)
@@ -69,10 +78,73 @@ func (tc *selectController) allAds(c echo.Context) error {
 		}
 	}
 	if w != "" {
-		website, err = mr.NewManager().FetchWebsiteByDomain(w)
-		if err == nil {
-			fltr = append(fltr, filter.CheckWhiteList, filter.CheckWebBlackList)
+		ww, err := strconv.ParseInt(w, 10, 0)
+		if err != nil {
+			website, err = mr.NewManager().FetchWebsite(ww)
+			if err == nil {
+				fltr = append(fltr, filter.CheckWhiteList, filter.CheckWebBlackList)
+			}
 		}
+	}
+	if ab != "" {
+		abab, err := strconv.ParseInt(w, 10, 0)
+		if err == nil {
+			app, err = mr.NewManager().GetAppByID(abab)
+			if err == nil {
+				fltr = append(fltr, filter.CheckAppBlackList)
+			}
+		}
+
+	}
+	if wa != "" {
+		wawa, err := strconv.ParseInt(wa, 10, 0)
+		if err == nil {
+			app, err = mr.NewManager().GetAppByID(wawa)
+			if err == nil {
+				fltr = append(fltr, filter.CheckAppWhiteList)
+			}
+		}
+
+	}
+	if ca != "" {
+		caca, err := strconv.ParseInt(ca, 10, 0)
+		if err == nil {
+			//todo
+			if true {
+				m.Website.WCategories = mr.SharpArray(fmt.Sprintf("#%d#", caca))
+				fltr = append(fltr, filter.CheckWebCategory)
+			}
+			//todo
+			if false {
+				m.App.Appcat = mr.SharpArray(fmt.Sprintf("#%d#", caca))
+				fltr = append(fltr, filter.CheckAppCategory)
+			}
+		}
+	}
+	if b != "" {
+		bb, err := strconv.ParseInt(b, 10, 0)
+		if err == nil {
+			m.PhoneData.BrandID = bb
+			fltr = append(fltr, filter.CheckAppBrand)
+		}
+	}
+	if pr != "" {
+		prpr, err := strconv.ParseInt(pr, 10, 0)
+		if err == nil {
+			m.PhoneData.NetworkID = prpr
+			fltr = append(fltr, filter.CheckProvder)
+		}
+	}
+	if h != "" {
+		hh, err := strconv.ParseInt(h, 10, 0)
+		if err == nil {
+			m.CellLocation.NeighborhoodsID = hh
+			fltr = append(fltr, filter.CheckAppHood)
+		}
+	}
+	if ar != "" {
+		m.CellLocation.Location = "asd"
+		fltr = append(fltr, filter.CheckAppAreaInGlob)
 	}
 	if cam != "" {
 
@@ -93,12 +165,13 @@ func (tc *selectController) allAds(c echo.Context) error {
 		}
 
 	}
-	m := selector.Context{
+	m = selector.Context{
 		RequestData: *rd,
 		Website:     website,
 		Size:        sizeNumSlice,
 		Province:    &province,
 		Campaign:    campaign,
+		App:         app,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), selector.Mix(fltr...))
 
