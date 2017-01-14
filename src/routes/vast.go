@@ -24,6 +24,7 @@ import (
 var (
 	vastSelector = selector.Mix(
 		filter.IsWebNetwork,
+		filter.IsWebMobile,
 		filter.CheckVastSize,
 		filter.CheckOS,
 		filter.CheckWhiteList,

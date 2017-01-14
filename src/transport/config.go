@@ -39,7 +39,7 @@ const (
 	// USER_APP is user related to apps
 	USER_APP = "UA"
 
-	USER_CAPPING     = "CAP"
+	USER_CAPPING     = "CAP2"
 	USER_RETARGETING = "RET"
 	IMP              = "IMP"
 	CLICK            = "CLK"
