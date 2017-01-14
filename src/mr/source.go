@@ -118,22 +118,6 @@ type Campaign struct {
 	CampaignHourEnd         int             `json:"cp_hour_end" db:"cp_hour_end"`
 }
 
-//ByCPM sort by cpm
-type ByCPM []*AdData
-
-func (a ByCPM) Len() int {
-	return len(a)
-}
-func (a ByCPM) Swap(i, j int) {
-	a[i], a[j] = a[j], a[i]
-}
-func (a ByCPM) Less(i, j int) bool {
-	if a[i].Capping.GetSelected() != a[j].Capping.GetSelected() {
-		return !a[i].Capping.GetSelected()
-	}
-	return a[i].CPM > a[j].CPM
-}
-
 // ByCapping sort by Capping
 type ByCapping []*AdData
 
@@ -144,10 +128,19 @@ func (a ByCapping) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
 func (a ByCapping) Less(i, j int) bool {
+
+	// This is a multisort function.
 	if a[i].Capping.GetSelected() != a[j].Capping.GetSelected() {
 		return !a[i].Capping.GetSelected()
 	}
-	return a[i].Capping.GetCapping() < a[j].Capping.GetCapping()
+	if a[i].Capping.GetAdCapping(a[i].AdID) != a[j].Capping.GetAdCapping(a[j].AdID) {
+		return a[i].Capping.GetAdCapping(a[i].AdID) < a[j].Capping.GetAdCapping(a[j].AdID)
+	}
+	if a[i].Capping.GetCapping() != a[j].Capping.GetCapping() {
+		return a[i].Capping.GetCapping() < a[j].Capping.GetCapping()
+	}
+
+	return a[i].CPM < a[j].CPM
 }
 
 // Scan convert the json array ino string slice

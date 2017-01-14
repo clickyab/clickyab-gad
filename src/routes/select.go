@@ -210,6 +210,12 @@ func (tc *selectController) fetchWebsite(publicID int64) (*mr.Website, error) {
 
 //fetchIP2Location find ip
 func (tc *selectController) fetchIP2Location(c net.IP) (*mr.IP2Location, error) {
+	if config.Config.DevelMode {
+		// change the local ip to tehran ip
+		if c.String() == net.IPv4(172, 17, 0, 1).String() {
+			c = net.IPv4(5, 116, 150, 199) // An Irancell IP in iran
+		}
+	}
 	ip, err := mr.NewManager().GetLocation(c)
 	if err != nil {
 		return nil, errors.New("location not found")
@@ -340,44 +346,33 @@ func (tc *selectController) makeShow(
 		selected := make(map[int]int)
 		total := make(map[int]int)
 		for slotID := range slotSize {
-			exceedFloor := &mr.CappingLocker{}
-			cappedFloor := &mr.CappingLocker{}
-			underFloor := &mr.CappingLocker{}
+			exceedFloor := []*mr.AdData{}
+			underFloor := []*mr.AdData{}
 			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
 				total[slotSize[slotID].SlotSize]++
 				if adData.AdType == config.AdTypeVideo && noVideo {
 					continue
 				}
-				if tc.doBid(adData, publisher, slotSize[slotID]) {
-					if exceedFloor.Len() == 0 {
-						exceedFloor.Set(adData.Capping.GetCapping())
-					}
-					//minimum capping
-					if adData.Capping.GetCapping() <= exceedFloor.Get() && adData.WinnerBid == 0 {
-						exceedFloor.Append(adData)
-					} else if adData.WinnerBid == 0 { // the campaign is lost based on capping
-						cappedFloor.Append(adData)
-					}
+				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID]) {
+					exceedFloor = append(exceedFloor, adData)
 				} else if adData.WinnerBid == 0 {
-					underFloor.Append(adData)
+					underFloor = append(underFloor, adData)
 				}
 			}
+
 			var sorted []*mr.AdData
 			var (
-				ef     mr.ByCPM
+				ef     mr.ByCapping
 				secBid bool
 			)
 
 			// order is to get data from exceed flor, then capping passed and if the config allowed,
 			// use the under floor. for under floor there is no second biding pricing
-			if exceedFloor.Len() > 0 {
-				ef = mr.ByCPM(exceedFloor.GetData())
+			if len(exceedFloor) > 0 {
+				ef = mr.ByCapping(exceedFloor)
 				secBid = true
-			} else if cappedFloor.Len() > 0 {
-				ef = mr.ByCPM(cappedFloor.GetData())
-				secBid = true
-			} else if config.Config.Clickyab.UnderFloor && underFloor.Len() > 0 {
-				ef = mr.ByCPM(underFloor.GetData())
+			} else if config.Config.Clickyab.UnderFloor && len(underFloor) > 0 {
+				ef = mr.ByCapping(underFloor)
 				secBid = false
 			}
 
@@ -389,21 +384,20 @@ func (tc *selectController) makeShow(
 						When:  time.Now(),
 						Where: publisher.GetName(),
 						Message: fmt.Sprintf(
-							"no ad pass the bid \n "+
+							"no ad pass the bid \n"+
 								"size was %sx%s \n"+
 								"the floor was %d \n"+
-								"all add count in this size %d \n "+
+								"all add count in this size %d \n"+
 								"pass the floor %d \n"+
 								"under floor is allowd? %v \n"+
 								"under floor count %d \n"+
-								"capped count %d , currently %d item of %d in this request is filled",
+								"currently %d item of %d in this request is filled",
 							w, h,
 							publisher.FloorCPM(),
 							len(filteredAds[slotSize[slotID].SlotSize]),
-							exceedFloor.Len(),
+							len(exceedFloor),
 							config.Config.Clickyab.UnderFloor,
-							underFloor.Len(),
-							cappedFloor.Len(),
+							len(underFloor),
 							selected[slotSize[slotID].SlotSize], total[slotSize[slotID].SlotSize],
 						),
 					}
@@ -427,7 +421,7 @@ func (tc *selectController) makeShow(
 			} else {
 				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
 			}
-			sorted[0].Capping.IncView(1)
+			sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
 			ads[slotID] = sorted[0]
@@ -437,7 +431,7 @@ func (tc *selectController) makeShow(
 			}
 			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotID)
 			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
-			assert.Nil(storeCapping(rd.CopID, sorted[0].CampaignID))
+			assert.Nil(storeCapping(rd.CopID, sorted[0].AdID))
 			selected[slotSize[slotID].SlotSize]++
 			// TODO {fzerorubigd} : Can we check for inner capping increase?
 		}
