@@ -47,3 +47,8 @@ func CheckAppSize(c *selector.Context, in mr.AdData) bool {
 	}
 	return false
 }
+
+// CheckWebMobileSize check if the banner size exists in the request
+func CheckWebMobileSize(c *selector.Context, in mr.AdData) bool {
+	return in.AdSize==8
+}

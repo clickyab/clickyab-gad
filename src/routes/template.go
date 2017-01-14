@@ -112,6 +112,9 @@ const allAds = `
 	.inputbar {
 		border-right: 1px solid azure;
 	}
+	img{
+		max-height:200px;
+	}
 </style>
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>

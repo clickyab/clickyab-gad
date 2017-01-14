@@ -3,17 +3,18 @@ package routes
 import (
 	"bytes"
 	"filter"
-	"fmt"
 	"math/rand"
 	"middlewares"
 	"mr"
+	"net/http"
 	"selector"
-	"strconv"
-	"strings"
 
 	"config"
 
-	"net/http"
+	"fmt"
+
+	"strconv"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
@@ -31,6 +32,44 @@ type AllData struct {
 	Len  int
 }
 
+var allFiter = map[string]selector.FilterFunc{
+	"isWebNetwork":  filter.IsWebNetwork,
+	"webSize":       filter.CheckWebSize,
+	"appSize":       filter.CheckAppSize,
+	"vastSize":      filter.CheckVastSize,
+	"os":            filter.CheckOS,
+	"whiteList":     filter.CheckWhiteList,
+	"blackList":     filter.CheckWebBlackList,
+	"webCategory":   filter.CheckWebCategory,
+	"checkProvince": filter.CheckProvince,
+	"isWebMobile":   filter.IsWebMobile,
+	"notWebMobile":  filter.IsNotWebMobile,
+	"checkCampaign": filter.CheckCampaign,
+	"webMobileSize": filter.CheckWebMobileSize,
+	"appBlackList":  filter.CheckAppBlackList,
+	"appWhiteList":  filter.CheckAppWhiteList,
+	"appCategory":   filter.CheckAppCategory,
+	"appBrand":      filter.CheckAppBrand,
+	"appHood":       filter.CheckAppHood,
+	"appProvider":   filter.CheckProvder,
+	"appAreaInGlob": filter.CheckAppAreaInGlob,
+}
+
+// Ints returns a unique subset of the int slice provided.
+func UniqueStr(input []string) []string {
+	u := make([]string, 0, len(input))
+	m := make(map[string]bool)
+
+	for _, val := range input {
+		if _, ok := m[val]; !ok {
+			m[val] = true
+			u = append(u, val)
+		}
+	}
+
+	return u
+}
+
 func (tc *selectController) allAds(c echo.Context) error {
 	w := c.QueryParam("w")
 	p := c.QueryParam("p")
@@ -44,11 +83,13 @@ func (tc *selectController) allAds(c echo.Context) error {
 	pr := c.QueryParam("pr")
 	h := c.QueryParam("h")
 	ar := c.QueryParam("ar")
+	webMobile := c.QueryParam("webmobile")
 
 	//cat := c.QueryParam("cat")
 	var campaign int64
 	var province mr.Province
-	var fltr = []selector.FilterFunc{filter.IsWebNetwork}
+	var resFilter = []selector.FilterFunc{}
+	var fltrString []string
 
 	var sizeNumSlice = make(map[string]int)
 	var website *mr.Website
@@ -59,7 +100,9 @@ func (tc *selectController) allAds(c echo.Context) error {
 	m := selector.Context{}
 
 	if v != "" || v == "on" {
-		fltr = append(fltr, filter.CheckVastSize)
+		fltrString = append(fltrString,
+			"isWebNetwork",
+		)
 		vv = true
 	} else {
 		if s != "" {
@@ -73,7 +116,9 @@ func (tc *selectController) allAds(c echo.Context) error {
 				}
 			}
 			if len(sizeNumSlice) > 0 {
-				fltr = append(fltr, filter.CheckWebSize)
+				fltrString = append(fltrString,
+					"webSize",
+				)
 			}
 		}
 	}
@@ -82,7 +127,7 @@ func (tc *selectController) allAds(c echo.Context) error {
 		if err != nil {
 			website, err = mr.NewManager().FetchWebsite(ww)
 			if err == nil {
-				fltr = append(fltr, filter.CheckWhiteList, filter.CheckWebBlackList)
+				fltrString = append(fltrString, "whiteList", "blackList")
 			}
 		}
 	}
@@ -91,7 +136,7 @@ func (tc *selectController) allAds(c echo.Context) error {
 		if err == nil {
 			app, err = mr.NewManager().GetAppByID(abab)
 			if err == nil {
-				fltr = append(fltr, filter.CheckAppBlackList)
+				fltrString = append(fltrString, "appBlackList")
 			}
 		}
 
@@ -101,7 +146,7 @@ func (tc *selectController) allAds(c echo.Context) error {
 		if err == nil {
 			app, err = mr.NewManager().GetAppByID(wawa)
 			if err == nil {
-				fltr = append(fltr, filter.CheckAppWhiteList)
+				fltrString = append(fltrString, "appWhiteList")
 			}
 		}
 
@@ -112,12 +157,12 @@ func (tc *selectController) allAds(c echo.Context) error {
 			//todo
 			if true {
 				m.Website.WCategories = mr.SharpArray(fmt.Sprintf("#%d#", caca))
-				fltr = append(fltr, filter.CheckWebCategory)
+				fltrString = append(fltrString, "webCategory")
 			}
 			//todo
 			if false {
 				m.App.Appcat = mr.SharpArray(fmt.Sprintf("#%d#", caca))
-				fltr = append(fltr, filter.CheckAppCategory)
+				fltrString = append(fltrString, "appCategory")
 			}
 		}
 	}
@@ -125,32 +170,32 @@ func (tc *selectController) allAds(c echo.Context) error {
 		bb, err := strconv.ParseInt(b, 10, 0)
 		if err == nil {
 			m.PhoneData.BrandID = bb
-			fltr = append(fltr, filter.CheckAppBrand)
+			fltrString = append(fltrString, "appBrand")
 		}
 	}
 	if pr != "" {
 		prpr, err := strconv.ParseInt(pr, 10, 0)
 		if err == nil {
 			m.PhoneData.NetworkID = prpr
-			fltr = append(fltr, filter.CheckProvder)
+			fltrString = append(fltrString, "appProvider")
 		}
 	}
 	if h != "" {
 		hh, err := strconv.ParseInt(h, 10, 0)
 		if err == nil {
 			m.CellLocation.NeighborhoodsID = hh
-			fltr = append(fltr, filter.CheckAppHood)
+			fltrString = append(fltrString, "appHood")
 		}
 	}
 	if ar != "" {
 		m.CellLocation.Location = "asd"
-		fltr = append(fltr, filter.CheckAppAreaInGlob)
+		fltrString = append(fltrString, "appAreaInGlob")
 	}
 	if cam != "" {
 
 		campaign, err = strconv.ParseInt(s, 10, 0)
 		if err == nil {
-			fltr = append(fltr, filter.CheckCampaign)
+			fltrString = append(fltrString, "checkCampaign")
 		}
 	} else {
 		campaign = 0
@@ -160,11 +205,38 @@ func (tc *selectController) allAds(c echo.Context) error {
 		if err == nil {
 			province, err = mr.NewManager().ConvertProvinceID2Info(i64)
 			if err == nil {
-				fltr = append(fltr, filter.CheckProvince)
+				fltrString = append(fltrString,
+					"checkCampaign",
+				)
 			}
 		}
 
 	}
+
+	//check webmobile filter
+	if webMobile == "" || webMobile == "all" {
+		fltrString = append(fltrString,
+			"isWebNetwork",
+		)
+	} else if webMobile == "on" {
+		fltrString = append(fltrString,
+			"isWebNetwork",
+			"isWebMobile",
+			"webMobileSize",
+		)
+	} else if webMobile == "off" {
+		fltrString = append(fltrString,
+			"isWebNetwork",
+			"notWebMobile",
+		)
+	}
+	uniquefltrStr := UniqueStr(fltrString)
+	for u := range uniquefltrStr {
+		logrus.Info(uniquefltrStr[u])
+		resFilter = append(resFilter, allFiter[uniquefltrStr[u]])
+	}
+	//resFilter1 := []selector.FilterFunc{filter.IsWebNetwork, filter.CheckOS, filter.CheckWhiteList}
+
 	m = selector.Context{
 		RequestData: *rd,
 		Website:     website,
@@ -173,8 +245,7 @@ func (tc *selectController) allAds(c echo.Context) error {
 		Campaign:    campaign,
 		App:         app,
 	}
-	filteredAds := selector.Apply(&m, selector.GetAdData(), selector.Mix(fltr...))
-
+	filteredAds := selector.Apply(&m, selector.GetAdData(), selector.Mix(resFilter...))
 	all := make([]*mr.AdData, 0)
 	for i := range filteredAds {
 		all = append(all, filteredAds[i]...)
