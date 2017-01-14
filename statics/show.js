@@ -253,6 +253,8 @@
     return Fingerprint;
 
 });
+
+
 function renderFarm(objectParameter, config) {
     for (var key in objectParameter) {
         var element = document.getElementById("clickyab_iframe_" +key);
@@ -284,11 +286,12 @@ function webMobile(url) {
         }
     }
 
-
     if (typeof window._clickyab_stack == 'undefined') {
         window._clickyab_stack = [];
+        window._clickyab_slot_ids = {};
         window.string = [];
     }
+
     function takeAllClickYabShowJS() {
         var count = 0;
         var scripts = [];
@@ -298,6 +301,7 @@ function webMobile(url) {
                 count = count + 1;
             }
         }
+
         return {
             scripts: scripts,
             count: count
@@ -357,6 +361,14 @@ function webMobile(url) {
     }
     function pushToClickYabStack(data, callback) {
         var showJsDomResult = takeAllClickYabShowJS();
+
+        if(typeof window._clickyab_slot_ids[data.slot] == 'undefined') {
+            window._clickyab_slot_ids[data.slot] = data.slot;
+        } else {
+            data.slot = data.slot + window._clickyab_slot_ids.length;
+            window._clickyab_slot_ids[data.slot] = data.slot;
+        }
+
         window._clickyab_stack.push(data);
         window.string.push(data);
 
@@ -379,16 +391,11 @@ function webMobile(url) {
             var divisions = [];
             for (var s = 0; s < scripts.length; s++) {
                 divisions.push(insertDivAfterClickYabJS(stack[s], scripts[s]));
-
             }
-
-            // do the job with the scripts
-            // do the job with the stack
         });
     });
 
     window.onload = function () {
-
         for (var i = 0; i < window.onLoadCallBack.length; i++) {
             window.onLoadCallBack[i]();
         }
