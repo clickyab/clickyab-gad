@@ -21,7 +21,6 @@ import (
 	"sort"
 	"store"
 	"strconv"
-	"strings"
 	"time"
 	"transport"
 	"utils"
@@ -33,6 +32,7 @@ import (
 var (
 	webSelector = selector.Mix(
 		filter.IsWebNetwork,
+		filter.IsWebMobile,
 		filter.CheckWebSize,
 		filter.CheckOS,
 		filter.CheckWhiteList,
@@ -221,9 +221,9 @@ func (tc *selectController) fetchIP2Location(c net.IP) (*mr.IP2Location, error) 
 
 //fetchProvince find province and set context
 func (tc *selectController) fetchProvince(c net.IP, cfHeader string) (*mr.Province, error) {
-	if strings.ToUpper(cfHeader) != "IR" {
-		return nil, errors.New("not inside iran")
-	}
+	// if strings.ToUpper(cfHeader) != "IR" {
+	// 	return nil, errors.New("not inside iran")
+	// }
 	var province mr.Province
 	ip, err := tc.fetchIP2Location(c)
 	if err != nil || !ip.RegionName.Valid {

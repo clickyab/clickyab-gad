@@ -14,3 +14,12 @@ func IsWebNetwork(c *selector.Context, in mr.AdData) bool {
 func IsAppNetwork(c *selector.Context, in mr.AdData) bool {
 	return in.CampaignNetwork == 1
 }
+
+// IsWebMobile return if the campaign is ok for web mobile
+func IsWebMobile(c *selector.Context, in mr.AdData) bool {
+	if c.Mobile {
+		return in.CampaignWebMobile == 1
+	}
+
+	return true
+}
