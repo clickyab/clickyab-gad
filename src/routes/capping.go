@@ -4,12 +4,14 @@ import (
 	"config"
 	"fmt"
 	"mr"
-	"redis"
+	aredis "redis"
 	"sort"
 	"time"
 	"transport"
 
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
 )
 
 func getCappingKey(copID int64) string {
@@ -48,14 +50,41 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 	}
 	results, _ := aredis.HGetAll(getCappingKey(copID), true, config.Config.Clickyab.DailyCapExpire)
 	for i := range sizeNumSlice {
+		found := false
+		sizeCap := map[string]string{}
 		for ad := range filteredAds[sizeNumSlice[i]] {
-			view := results[fmt.Sprintf(
+			key := fmt.Sprintf(
 				"%s%s%d",
-				transport.CAMPAIGN,
+				transport.ADVERTISE,
 				transport.DELIMITER,
-				filteredAds[sizeNumSlice[i]][ad].CampaignID,
-			)]
-
+				filteredAds[sizeNumSlice[i]][ad].AdID,
+			)
+			view := results[key]
+			sizeCap[key] = "0"
+			n := view / filteredAds[sizeNumSlice[i]][ad].CampaignFrequency
+			if n < 1 {
+				found = true
+				break // there is still one campaign
+			}
+		}
+		// if not found then reset all capping
+		if !found {
+			logrus.Debugf("Removing key for size %d", sizeNumSlice[i])
+			aredis.HMSet(getCappingKey(copID), config.Config.Clickyab.DailyCapExpire, sizeCap)
+			for i := range sizeCap {
+				results[i] = 0
+			}
+		}
+		for ad := range filteredAds[sizeNumSlice[i]] {
+			view := 0
+			if found {
+				view = results[fmt.Sprintf(
+					"%s%s%d",
+					transport.ADVERTISE,
+					transport.DELIMITER,
+					filteredAds[sizeNumSlice[i]][ad].AdID,
+				)]
+			}
 			if filteredAds[sizeNumSlice[i]][ad].CampaignFrequency <= 0 {
 				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency = config.Config.Clickyab.MinFrequency
 			}
@@ -65,12 +94,14 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 					retarget = true
 				}
 			}
-			filteredAds[sizeNumSlice[i]][ad].Capping = c.NewCapping(
+			capp := c.NewCapping(
 				filteredAds[sizeNumSlice[i]][ad].CampaignID,
-				view,
+				0,
 				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency,
 				retarget,
 			)
+			capp.IncView(filteredAds[sizeNumSlice[i]][ad].AdID, view, false)
+			filteredAds[sizeNumSlice[i]][ad].Capping = capp
 		}
 		sortCap := mr.ByCapping(filteredAds[sizeNumSlice[i]])
 		sort.Sort(sortCap)
@@ -82,7 +113,7 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 func storeCapping(copID int64, cpID int64) error {
 	_, err := aredis.IncHash(
 		getCappingKey(copID),
-		fmt.Sprintf("%s%s%d", transport.CAMPAIGN, transport.DELIMITER, cpID),
+		fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, cpID),
 		1,
 		config.Config.Clickyab.DailyCapExpire,
 	)
