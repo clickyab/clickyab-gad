@@ -55,7 +55,7 @@ func (w *Website) FloorCPM() int64 {
 		w.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloorWeb
 		w.WFloorCpm.Valid = true
 	}
-	return w.WFloorCpm.Int64
+	return w.WFloorCpm.Int64 / 3
 }
 
 // GetActive return if app is active or not

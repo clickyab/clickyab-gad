@@ -1,10 +1,10 @@
 package mr
 
-import "sync"
-
 // Capping is the structure for capping
 type capping struct {
 	View      int
+	Ads       map[int64]int
+	Sizes     map[int64]int
 	Frequency int
 	Selected  bool
 	Target    bool
@@ -14,23 +14,20 @@ type capping struct {
 type CappingInterface interface {
 	// GetView return the view of this campaign for this user
 	GetView() int
+	// GetView return the view of this campaign for this user
+	GetAdView(int64) int
 	// GetFrequency return the frequency for this user
 	GetFrequency() int
 	// GetCapping return the frequency capping value, the view/frequency
 	GetCapping() int
+	// GetCapping return the frequency capping value, the view/frequency
+	GetAdCapping(int64) int
 	// IncView increase the vie
-	IncView(int)
+	IncView(int64, int, bool)
 	// GetSelected return if this campaign is already selected in this batch
 	GetSelected() bool
 	// IsTargeted return if the current campaign is targeted for this user?
 	IsTargeted() bool
-}
-
-// CappingLocker is the safe capping counter for min capping
-type CappingLocker struct {
-	cap  int
-	lock sync.RWMutex
-	data []*AdData
 }
 
 // CappingContext is the type used to handle capping locker
@@ -43,6 +40,8 @@ func (caps CappingContext) NewCapping(cpID int64, view, freq int, target bool) C
 			View:      view,
 			Frequency: freq,
 			Target:    target,
+			Ads:       make(map[int64]int),
+			Sizes:     make(map[int64]int),
 		}
 	}
 
@@ -51,6 +50,10 @@ func (caps CappingContext) NewCapping(cpID int64, view, freq int, target bool) C
 
 func (c *capping) GetView() int {
 	return c.View
+}
+
+func (c *capping) GetAdView(ad int64) int {
+	return c.Ads[ad]
 }
 
 func (c *capping) GetFrequency() int {
@@ -64,9 +67,16 @@ func (c *capping) GetCapping() int {
 	return c.View / c.Frequency
 }
 
-func (c *capping) IncView(a int) {
+func (c *capping) GetAdCapping(ad int64) int {
+	return c.Ads[ad] / c.Frequency
+}
+
+func (c *capping) IncView(ad int64, a int, sel bool) {
 	c.View += a
-	c.Selected = true
+	c.Ads[ad] += a
+	if sel {
+		c.Selected = true
+	}
 }
 
 func (c *capping) GetSelected() bool {
@@ -75,46 +85,4 @@ func (c *capping) GetSelected() bool {
 
 func (c *capping) IsTargeted() bool {
 	return c.Target
-}
-
-// Set the capping value
-func (c *CappingLocker) Set(i int) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-	if c.cap > 0 { // Do not allow set capping if already set
-		return
-	}
-	c.cap = i
-}
-
-// Get the capping value
-func (c *CappingLocker) Get() int {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-
-	return c.cap
-}
-
-// GetData return the slice
-func (c *CappingLocker) GetData() []*AdData {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-
-	return c.data
-}
-
-// Len of the slice
-func (c *CappingLocker) Len() int {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-
-	return len(c.data)
-}
-
-// Append to slice
-func (c *CappingLocker) Append(m *AdData) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-
-	c.data = append(c.data, m)
 }

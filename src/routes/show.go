@@ -72,7 +72,7 @@ func (tc *selectController) show(c echo.Context) error {
 	adID, err := strconv.ParseInt(ad, 10, 64)
 	if err != nil {
 		// Can not find ad
-		return c.String(http.StatusOK, "")
+		return c.String(http.StatusNoContent, "")
 	}
 	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
 	website, err := mr.NewManager().FetchWebsite(websiteID)
