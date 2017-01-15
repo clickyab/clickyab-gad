@@ -15,6 +15,8 @@ import (
 	"strings"
 	"utils"
 
+	"config"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -53,7 +55,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 		CellLocation: cell,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), appSelector)
-	_, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, app, false)
+	_, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, app, false, config.Config.Clickyab.MinCPCApp)
 	assert.True(len(ads) == 1, "[BUG] why select no ad?")
 
 	var (

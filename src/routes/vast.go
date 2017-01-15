@@ -68,7 +68,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
-	show, _ := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, website, true)
+	show, _ := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, website, true, config.Config.Clickyab.MinCPCVast)
 
 	var v = make([]vastAdTemplate, 0)
 	for i := range sizeNumSlice {
