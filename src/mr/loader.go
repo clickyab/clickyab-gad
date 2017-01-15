@@ -68,17 +68,17 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 		} else {
 			res[i].AdCTR = utils.Ctr(result["i"], result["c"])
 		}
-		if res[i].CampaignNetwork != 1 {
-			// Web and vast
-			if res[i].CampaignMaxBid < config.Config.Clickyab.WebMinBid {
-				res[i].CampaignMaxBid = config.Config.Clickyab.WebMinBid
-			}
-		} else {
-			// app
-			if res[i].CampaignMaxBid < config.Config.Clickyab.AppMinBid {
-				res[i].CampaignMaxBid = config.Config.Clickyab.AppMinBid
-			}
-		}
+		// if res[i].CampaignNetwork != 1 {
+		// 	// Web and vast
+		// 	if res[i].CampaignMaxBid < config.Config.Clickyab.WebMinBid {
+		// 		res[i].CampaignMaxBid = config.Config.Clickyab.WebMinBid
+		// 	}
+		// } else {
+		// 	// app
+		// 	if res[i].CampaignMaxBid < config.Config.Clickyab.AppMinBid {
+		// 		res[i].CampaignMaxBid = config.Config.Clickyab.AppMinBid
+		// 	}
+		// }
 	}
 
 	return res, nil

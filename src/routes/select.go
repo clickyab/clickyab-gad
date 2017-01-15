@@ -81,7 +81,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false)
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb)
 
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
@@ -301,7 +301,8 @@ func (tc *selectController) makeShow(
 	sizeNumSlice map[string]int,
 	slotSize map[string]*slotData,
 	publisher Publisher,
-	multipleVideo bool) (map[string]string, map[string]*mr.AdData) {
+	multipleVideo bool,
+	minCPC int64) (map[string]string, map[string]*mr.AdData) {
 	var (
 		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
@@ -421,6 +422,11 @@ func (tc *selectController) makeShow(
 			} else {
 				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
 			}
+
+			if sorted[0].WinnerBid < minCPC {
+				sorted[0].WinnerBid = minCPC
+			}
+
 			sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID

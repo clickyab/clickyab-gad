@@ -82,7 +82,7 @@
           - /home/cy/gad:/app
         env:
           GAD_AMQP_DEBUG: "{{ amqp_debug }}"
-          
+
 - name: Run imp worker
   hosts: imp
   tasks:
@@ -139,4 +139,4 @@
         volumes:
           - /home/cy/gad:/app
         env:
-          GAD_AMQP_DEBUG: "{{ amqp_debug }}"          
+          GAD_AMQP_DEBUG: "{{ amqp_debug }}"

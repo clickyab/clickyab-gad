@@ -111,10 +111,12 @@ type AppConfig struct {
 		AdCTREffect   int64 `onion:"ad_ctr_effect"`
 		SlotCTREffect int64 `onion:"slot_ctr_effect"`
 		UnderFloor    bool  `onion:"under_floor"`
-		WebMinBid     int64 `onion:"web_min_bid"`
-		AppMinBid     int64 `onion:"app_min_bid"`
 
 		RetargettingHour int `onion:"retargetting_hour"`
+
+		MinCPCWeb  int64 `onion:"min_cpc_web"`
+		MinCPCApp  int64 `onion:"min_cpc_app"`
+		MinCPCVast int64 `onion:"min_cpc_vast"`
 	}
 
 	PHPCode struct {
@@ -203,7 +205,10 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.under_floor", true))
 	assert.Nil(d.SetDefault("clickyab.web_min_bid", 2000))
 	assert.Nil(d.SetDefault("clickyab.app_min_bid", 700))
-	assert.Nil(d.SetDefault("clickyab.retargetting_hour", 72))
+
+	assert.Nil(d.SetDefault("clickyab.min_cpc_web", 2000))
+	assert.Nil(d.SetDefault("clickyab.min_cpc_app", 700))
+	assert.Nil(d.SetDefault("clickyab.min_cpc_web", 2000))
 
 	p, err = expand.Path("$HOME/gad/clickyab-server/a")
 	assert.Nil(err)
