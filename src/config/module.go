@@ -8,9 +8,12 @@ import (
 	"runtime"
 	"time"
 
+	"fmt"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/fzerorubigd/onion.v2"
 	"gopkg.in/fzerorubigd/onion.v2/extraenv"
+	"encoding/json"
 )
 
 var (
@@ -57,15 +60,22 @@ func Initialize() {
 	o.AddLazyLayer(extraenv.NewExtraEnvLayer("GAD"))
 	o.GetStruct("", &Config)
 	// TODO {fzerorubigd}: Onion does not support slice in struct mapping
-	Config.Clickyab.CTRConst = o.GetStringSlice("clickyab.ctr_const")
+	//Config.Clickyab.CTRConst = o.GetStringSlice("clickyab.ctr_const")
 	Config.Clickyab.DailyImpExpire = o.GetDuration("clickyab.daily_imp_expire")
 	Config.Clickyab.DailyClickExpire = o.GetDuration("clickyab.daily_click_expire")
 	Config.Clickyab.DailyCapExpire = o.GetDuration("clickyab.daily_cap_expire")
+	Config.Clickyab.MegaImpExpire = o.GetDuration("clickyab.mega_imp_expire")
 	Config.Clickyab.ConvDelay = o.GetDuration("clickyab.conv_delay")
-	assert.True(Config.Clickyab.AdCTREffect+Config.Clickyab.SlotCTREffect==100,"ad ctr effect and slot ctr effect doesnt match")
+	assert.True(
+		Config.Clickyab.AdCTREffect+Config.Clickyab.SlotCTREffect == 100,
+		"ad ctr effect and slot ctr effect dose not match",
+	)
 	for i := range all {
 		all[i].Loaded()
 	}
+
+	j, _ := json.MarshalIndent(Config, "\t", "\t")
+	fmt.Println(string(j))
 
 }
 

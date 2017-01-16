@@ -5,10 +5,7 @@ import (
 	"selector"
 )
 
-// CheckNetwork filter network for campaigns
-func CheckNetwork(c *selector.Context, in mr.AdData) bool {
-	if c.Mobile {
-		return in.CampaignNetwork == 1
-	}
+// IsWebNetwork filter network for campaigns
+func IsWebNetwork(c *selector.Context, in mr.AdData) bool {
 	return in.CampaignNetwork == 0
 }

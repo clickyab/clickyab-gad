@@ -13,8 +13,6 @@ import (
 	"regexp"
 	"strings"
 	"syscall"
-	"time"
-	"transport"
 )
 
 var spaceMatch = regexp.MustCompile(`\s+`)
@@ -73,7 +71,7 @@ func Int64InArray(q int64, arr ...int64) bool {
 	return false
 }
 
-// Long2IP function @todo
+// Long2IP change the integer to ip
 func Long2IP(ipLong uint32) net.IP {
 	ipByte := make([]byte, 4)
 	binary.BigEndian.PutUint32(ipByte, ipLong)
@@ -81,32 +79,38 @@ func Long2IP(ipLong uint32) net.IP {
 	return ip
 }
 
-// IP2long function @todo
+// IP2long change ip to integer
 func IP2long(ip net.IP) (uint32, error) {
 	if ip == nil {
 		return 0, errors.New("wrong ipAddr format")
 	}
-	ip = ip.To4()
-	return binary.BigEndian.Uint32(ip), nil
+	ip2 := ip.To4()
+	if ip2 == nil {
+		return 0, fmt.Errorf("ipv6? the input was %s", ip.String())
+	}
+	return binary.BigEndian.Uint32(ip2), nil
 }
 
 // WaitSignal get os signal
 func WaitSignal(exit chan chan struct{}) {
-	quit := make(chan os.Signal, 5)
-	signal.Notify(quit, syscall.SIGABRT, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGKILL, syscall.SIGQUIT)
+	quit := make(chan os.Signal, 6)
+	signal.Notify(
+		quit,
+		syscall.SIGINT,
+		syscall.SIGABRT,
+		syscall.SIGHUP,
+		syscall.SIGTERM,
+		syscall.SIGKILL,
+		syscall.SIGQUIT,
+	)
 
 	<-quit
+	if exit != nil {
+		tmp := make(chan struct{})
+		exit <- tmp
 
-	tmp := make(chan struct{})
-	exit <- tmp
-
-	<-tmp
-}
-
-//KeyGenDaily function  generate a redis key
-func KeyGenDaily(prefix, value string) string {
-	date := time.Now().Format("060102")
-	return prefix + transport.DELIMITER + value + transport.DELIMITER + date
+		<-tmp
+	}
 }
 
 //IncKeyDaily function increase redis daily key

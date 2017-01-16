@@ -1,4 +1,4 @@
 package main
 
-import _ "selectroute"
+import _ "routes"
 import _ "selector"

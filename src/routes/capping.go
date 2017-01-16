@@ -1,4 +1,4 @@
-package selectroute
+package routes
 
 import (
 	"config"
@@ -10,7 +10,7 @@ import (
 
 	"redis"
 
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 func getCappingKey(copID int64) string {
@@ -24,10 +24,8 @@ func getCappingKey(copID int64) string {
 	)
 }
 
-func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.MinAdData) map[int][]*mr.MinAdData {
-	var userMinView int
-
-	results, _ := aredis.HGetAll(getCappingKey(copID), true, 72*time.Hour)
+func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
+	results, _ := aredis.HGetAll(getCappingKey(copID), true, config.Config.Clickyab.DailyCapExpire)
 	for i := range sizeNumSlice {
 		for ad := range filteredAds[sizeNumSlice[i]] {
 			view := results[fmt.Sprintf(
@@ -46,15 +44,10 @@ func getCapping(c echo.Context, copID int64, sizeNumSlice map[string]int, filter
 				view,
 				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency,
 			)
-			if userMinView == 0 {
-				userMinView = view
-			} else if view > 0 && userMinView > view {
-				userMinView = view
-			}
 		}
 		sortCap := mr.ByCapping(filteredAds[sizeNumSlice[i]])
 		sort.Sort(sortCap)
-		filteredAds[sizeNumSlice[i]] = []*mr.MinAdData(sortCap)
+		filteredAds[sizeNumSlice[i]] = []*mr.AdData(sortCap)
 	}
 	return filteredAds
 }

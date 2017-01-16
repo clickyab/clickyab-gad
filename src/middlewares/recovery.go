@@ -7,8 +7,10 @@ import (
 	"runtime/debug"
 	"utils"
 
+	"net/http/httputil"
+
 	"github.com/Sirupsen/logrus"
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 // Recovery is the middleware to prevent the panic to crash the app
@@ -16,7 +18,7 @@ func Recovery(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		defer func() {
 			if err := recover(); err != nil {
-				_ = ctx.JSON(
+				ctx.JSON(
 					http.StatusInternalServerError,
 					struct {
 						Error string `json:"error"`
@@ -25,7 +27,7 @@ func Recovery(next echo.HandlerFunc) echo.HandlerFunc {
 					},
 				)
 				stack := debug.Stack()
-				dump := "TODO: create dump" //httputil.DumpRequest(ctx.Request(), true)
+				dump, _ := httputil.DumpRequest(ctx.Request(), true)
 				data := fmt.Sprintf("Request : \n %s \n\nStack : \n %s", dump, stack)
 				logrus.WithField("error", err).Warn(err, data)
 				if config.Config.Redmine.Active {

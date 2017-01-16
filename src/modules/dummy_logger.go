@@ -3,8 +3,9 @@ package modules
 import (
 	"io"
 
+	echo "gopkg.in/labstack/echo.v3"
+
 	"github.com/Sirupsen/logrus"
-	ll "github.com/labstack/echo/log"
 	"github.com/labstack/gommon/log"
 )
 
@@ -12,9 +13,6 @@ type myLogger struct {
 	logger *logrus.Logger
 }
 
-func (m *myLogger) SetOutput(o io.Writer) {
-	m.logger.Out = o
-}
 func (m *myLogger) SetLevel(l log.Lvl) {
 	switch l {
 	case log.DEBUG:
@@ -25,8 +23,6 @@ func (m *myLogger) SetLevel(l log.Lvl) {
 		m.logger.Level = logrus.WarnLevel
 	case log.ERROR:
 		m.logger.Level = logrus.ErrorLevel
-	case log.FATAL:
-		m.logger.Level = logrus.FatalLevel
 	case log.OFF:
 		m.logger.Level = logrus.PanicLevel
 	}
@@ -113,11 +109,56 @@ func (m *myLogger) Fatalj(j log.JSON) {
 
 	m.logger.WithFields(l).Fatal("-")
 }
+func (m *myLogger) Panicf(s string, args ...interface{}) {
+	m.logger.Panicf(s, args...)
+}
+
+func (m *myLogger) Panic(args ...interface{}) {
+	m.logger.Panic(args...)
+}
+func (m *myLogger) Panicj(j log.JSON) {
+	l := logrus.Fields{}
+	for i := range j {
+		l[i] = j[i]
+	}
+
+	m.logger.WithFields(l).Panic("-")
+}
 func (m *myLogger) Fatalf(s string, args ...interface{}) {
 	m.logger.Fatalf(s, args...)
 }
+func (m *myLogger) Level() log.Lvl {
+	switch m.logger.Level {
+	case logrus.DebugLevel:
+		return log.DEBUG
+	case logrus.InfoLevel:
+		return log.INFO
+	case logrus.WarnLevel:
+		return log.WARN
+	case logrus.ErrorLevel:
+		return log.ERROR
+	case logrus.FatalLevel:
+		return log.OFF
+	case logrus.PanicLevel:
+		return log.OFF
+	}
 
-// NewLogger function that  logs events on show ads
-func NewLogger() ll.Logger {
+	return log.DEBUG
+}
+func (m *myLogger) Output() io.Writer {
+	return m.logger.Out
+}
+func (m *myLogger) SetOutput(i io.Writer) {
+	m.logger.Out = i
+}
+func (m *myLogger) Prefix() string {
+	return ""
+}
+func (m *myLogger) SetPrefix(string) {
+
+}
+
+// NewLogger return a dummy logger for echo
+func NewLogger() echo.Logger {
 	return &myLogger{logger: logrus.New()}
 }

@@ -1,4 +1,4 @@
-package selectroute
+package routes
 
 import (
 	"html/template"
@@ -87,7 +87,6 @@ const videoAD = `<!DOCTYPE html>
 	</body></html>`
 
 var (
-
-	singleAdTemplate = template.Must(template.New("single_ad").Parse(strings.Replace(singleAd,"<style>",additional,1)))
-	videoAdTemplate  = template.Must(template.New("video_ad").Parse(strings.Replace(videoAD,"<style>",additional,1)))
+	singleAdTemplate = template.Must(template.New("single_ad").Parse(strings.Replace(singleAd, "<style>", additional, 1)))
+	videoAdTemplate  = template.Must(template.New("video_ad").Parse(strings.Replace(videoAD, "<style>", additional, 1)))
 )

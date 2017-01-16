@@ -12,7 +12,7 @@ import (
 	"utils"
 )
 
-// LoadAds function @todo
+// LoadAds load all ads at once and return them
 func (m *Manager) LoadAds() ([]AdData, error) {
 	var res []AdData
 	//t:= strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
@@ -40,8 +40,7 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 		LEFT JOIN users AS U ON C.u_id=U.u_id
 		WHERE A.ad_status=1 AND C.cp_status=1 AND (C.cp_start <= ? OR C.cp_start=0)
 				AND (C.cp_end >= ? OR C.cp_end=0)
-				AND cp_hour_start <= ? AND cp_hour_end >= ?
-				AND U.u_balance >= ?`
+				AND cp_hour_start <= ? AND cp_hour_end >= ? AND C.cp_daily_budget > C.cp_today_spend AND C.cp_total_budget > C.cp_total_spend AND U.u_balance > U.u_today_spend`
 
 	_, err := m.GetRDbMap().Select(
 		&res,
@@ -50,7 +49,6 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 		u,
 		h,
 		h,
-		config.Config.Select.Balance,
 	)
 	if err != nil {
 		return nil, err
@@ -58,7 +56,12 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 
 	for i := range res {
 		//get redis key for ad
-		result, err := aredis.SumHMGetField(utils.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)), config.Config.Redis.Days, "i", "c")
+		result, err := aredis.SumHMGetField(
+			transport.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)),
+			config.Config.Redis.Days,
+			"i",
+			"c",
+		)
 		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
 			res[i].AdCTR = config.Config.Clickyab.DefaultCTR
 		} else {
@@ -69,7 +72,7 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	return res, nil
 }
 
-// FetchRegion function @todo
+// FetchRegion get the list of all region in database
 func (m *Manager) FetchRegion() (*RegionData, error) {
 	var res = RegionData{}
 

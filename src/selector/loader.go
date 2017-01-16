@@ -20,10 +20,7 @@ type myModel struct {
 }
 
 func interval() {
-	var err error
 	manager := mr.NewManager()
-	loaded, err = manager.LoadAds()
-	assert.Nil(err)
 	ticker := time.NewTicker(time.Minute)
 	fail := 0
 	for range ticker.C {
@@ -45,7 +42,7 @@ func interval() {
 	ticker.Stop()
 }
 
-// GetAdData function @todo
+// GetAdData return the current stored ad data
 func GetAdData() []mr.AdData {
 	lock.RLock()
 	defer lock.RUnlock()
@@ -53,9 +50,13 @@ func GetAdData() []mr.AdData {
 	return loaded
 }
 
-// Initialize funct @todo
+// Initialize initialize the models
 func (m *myModel) Initialize() {
 	once.Do(func() {
+		var err error
+		manager := mr.NewManager()
+		loaded, err = manager.LoadAds()
+		assert.Nil(err)
 		go interval()
 	})
 }

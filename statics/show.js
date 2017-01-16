@@ -52,7 +52,6 @@
             this.hasher = options;
         }
     };
-
     Fingerprint.prototype = {
         get: function(){
             var keys = [];
@@ -255,18 +254,25 @@
 
 });
 function renderFarm(objectParameter, config) {
-    var webMobile = false;
-
     for (var key in objectParameter) {
-        if(key === "web-mobile") {
-            webMobile = true;
-            console.log(key);
-        }
         var element = document.getElementById("clickyab_iframe_" +key);
         if (typeof(element) != 'undefined' && element != null) {
             element.setAttribute("src", objectParameter[key]);
         }
+
+        if(key === "web-mobile") {
+            webMobile(objectParameter[key]);
+        }
     }
+}
+
+function webMobile(url) {
+    document.write('<div id="adhere">' +
+        '<iframe name="clickyab_ads_frame_in" width="320" height="50"' +
+        'frameborder="0" ' +
+        'src="'+ url +'" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no">' +
+        '</iframe>' +
+        '</div>');
 }
 
 (function () {
@@ -388,4 +394,3 @@ function renderFarm(objectParameter, config) {
         }
     };
 })();
-

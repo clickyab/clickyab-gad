@@ -17,7 +17,7 @@ type IP2Location struct {
 	CityName    sql.NullString `json:"city_name" db:"city_name"`
 }
 
-//GetLocation @todo
+//GetLocation return the location of an ip from location database
 func (m *Manager) GetLocation(ip net.IP) (*IP2Location, error) {
 	var res IP2Location
 	long, err := utils.IP2long(ip)

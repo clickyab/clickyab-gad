@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"utils"
 	"time"
+	"utils"
 )
 
 // SingleAdType constant
@@ -101,7 +101,9 @@ func (m *Manager) GetAd(id int64) (*Ad, error) {
 	if err == nil {
 		return &ad, nil
 	}
-	query := `SELECT ads.*,campaigns_ads.ca_id,campaigns_ads.cp_id, campaigns.cp_name FROM ads LEFT JOIN campaigns_ads ON ads.ad_id = campaigns_ads.ad_id  LEFT JOIN campaigns ON campaigns_ads.cp_id = campaigns.cp_id WHERE ads.ad_id = ? LIMIT 1`
+	query := `SELECT ads.*,campaigns_ads.ca_id,campaigns_ads.cp_id, campaigns.cp_name FROM ads
+	LEFT JOIN campaigns_ads ON ads.ad_id = campaigns_ads.ad_id
+	LEFT JOIN campaigns ON campaigns_ads.cp_id = campaigns.cp_id WHERE ads.ad_id = ? LIMIT 1`
 	err = m.GetRDbMap().SelectOne(
 		&ad,
 		query,

@@ -3,7 +3,7 @@ package mr
 import (
 	"sync"
 
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 // Capping is the structure for capping
@@ -13,7 +13,7 @@ type capping struct {
 	Selected  bool
 }
 
-// CappingInterface interface caaping
+// CappingInterface interface capping
 type CappingInterface interface {
 	GetView() int
 	GetFrequency() int
@@ -26,7 +26,7 @@ type CappingInterface interface {
 type CappingLocker struct {
 	cap  int
 	lock sync.RWMutex
-	data []*MinAdData
+	data []*AdData
 }
 
 const (
@@ -90,8 +90,8 @@ func (c *CappingLocker) Get() int {
 	return c.cap
 }
 
-// Get the slice
-func (c *CappingLocker) GetData() []*MinAdData {
+// GetData return the slice
+func (c *CappingLocker) GetData() []*AdData {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
@@ -107,7 +107,7 @@ func (c *CappingLocker) Len() int {
 }
 
 // Append to slice
-func (c *CappingLocker) Append(m *MinAdData) {
+func (c *CappingLocker) Append(m *AdData) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 

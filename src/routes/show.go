@@ -1,4 +1,4 @@
-package selectroute
+package routes
 
 import (
 	"assert"
@@ -22,8 +22,10 @@ import (
 
 	"net/url"
 
+	"cache"
+
 	"github.com/Sirupsen/logrus"
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 // SingleAd is the single ad id
@@ -66,12 +68,18 @@ func (tc *selectController) show(c echo.Context) error {
 	var suspicious bool
 	mega := c.Param("mega")
 	typ := c.Param("type")
-	long := c.Request().URL().QueryParam("l")
-	pos := c.Request().URL().QueryParam("pos")
+	long := c.Request().URL.Query().Get("l")
+	pos := c.Request().URL.Query().Get("pos")
 	if typ != "web" && typ != "vast" {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	ad := c.Param("ad")
+
+	ad, err := cache.Get(c.Param("ad"))
+	if err != nil {
+		logrus.Warn(err)
+		return c.String(http.StatusNotFound, "not found")
+	}
+
 	adID, err := strconv.ParseInt(ad, 10, 64)
 	assert.Nil(err)
 	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
@@ -86,11 +94,13 @@ func (tc *selectController) show(c echo.Context) error {
 
 	megaImp, err := aredis.HGetAllString(transport.MEGA+transport.DELIMITER+mega, false, 0)
 	assert.Nil(err)
+
+	fmt.Println(megaImp)
 	var winnerBid string
 	var winnerFinalBid int64
 	var ok bool
 	if winnerBid, ok = megaImp[fmt.Sprintf("%s%s%s", transport.ADVERTISE, transport.DELIMITER, ad)]; !ok {
-		return c.String(http.StatusNotFound, "ad not found")
+		return c.String(http.StatusNotFound, "ad not found " + ad)
 	}
 	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
 
@@ -98,17 +108,18 @@ func (tc *selectController) show(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	rand := <-utils.ID
-	url := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s&ref=%s", rd.Proto, rd.URL, websiteID, mega, adID, rand, rd.Parent)
-	res, err := tc.makeAdData(c, typ, ads, url, long, pos)
+
+	rnd := <-utils.ID
+	clickUrl := fmt.Sprintf("%s://%s/click/%d/%s/%d/%s?tid=%s&ref=%s&parent=%s", rd.Proto, rd.URL, websiteID, mega, adID, rnd, rd.TID, rd.Referrer, rd.Parent)
+	res, err := tc.makeAdData(c, typ, ads, clickUrl, long, pos)
 	if err != nil {
 		return err
 	}
 	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, adID)], 10, 64)
 	assert.Nil(err)
-	imp := tc.fillImp(c, suspicious, ads, winnerFinalBid, websiteID, slotID)
+	imp := tc.fillImp(rd, suspicious, ads, winnerFinalBid, websiteID, slotID)
 
-	go tc.callWorker(websiteID, slotID, adID, mega, rand, imp, rd)
+	go tc.callWorker(websiteID, slotID, adID, mega, rnd, imp, rd)
 	if typ == "vast" {
 		return c.XMLBlob(http.StatusOK, []byte(res))
 	}
@@ -148,8 +159,16 @@ func (selectController) callWorker(WID int64, slotID int64, adID int64, mega str
 		"CPADID": strconv.FormatInt(imp.CampaignAdID, 10),
 		"SLAID":  strconv.FormatInt(imp.SlaID, 10),
 	}
-	// TODO : Config time
-	err = aredis.HMSet(fmt.Sprintf("%s%s%s%s%d", transport.IMP, transport.DELIMITER, mega, transport.DELIMITER, adID), 2*time.Hour, tmp)
+	err = aredis.HMSet(
+		fmt.Sprintf(
+			"%s%s%s%s%d",
+			transport.IMP,
+			transport.DELIMITER,
+			mega,
+			transport.DELIMITER,
+			adID),
+		config.Config.Clickyab.MegaImpExpire,
+		tmp)
 	if err != nil {
 		logrus.WithField("cy.imp", imp).Error("error in hmset", err)
 	}
@@ -159,9 +178,7 @@ func (selectController) callWorker(WID int64, slotID int64, adID int64, mega str
 	}
 }
 
-func (selectController) fillImp(ctx echo.Context, sus bool, ads *mr.Ad, winnerBid int64, websiteID int64, slotID int64) transport.Impression {
-	rd := middlewares.MustGetRequestData(ctx)
-
+func (selectController) fillImp(rd *middlewares.RequestData, sus bool, ads *mr.Ad, winnerBid int64, websiteID int64, slotID int64) transport.Impression {
 	return transport.Impression{
 		Suspicious:   sus,
 		IP:           rd.IP,
@@ -169,14 +186,14 @@ func (selectController) fillImp(ctx echo.Context, sus bool, ads *mr.Ad, winnerBi
 		CopID:        rd.CopID,
 		CampaignAdID: ads.CampaignAdID.Int64,
 
-		URL:        rd.URL,
+		URL:        ads.AdURL.String,
 		CampaignID: ads.CampaignID.Int64,
 		UserAgent:  rd.UserAgent,
 		Time:       time.Now(),
 		WinnerBID:  winnerBid,
 		Status:     0,
 		Web: &transport.WebSiteImp{
-			Referrer:  ctx.Request().Referer(),
+			Referrer:  rd.Referrer,
 			ParentURL: rd.Parent,
 			SlotID:    slotID,
 			WebsiteID: websiteID,

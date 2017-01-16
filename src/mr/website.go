@@ -7,8 +7,8 @@ import (
 	"utils"
 )
 
-// WebsiteData type @todo
-type WebsiteData struct {
+// WebsiteData type for website
+type Website struct {
 	WID                int64          `json:"w_id" db:"w_id"`
 	UserID             int64          `json:"u_id" db:"u_id"`
 	WPubID             int64          `json:"w_pub_id" db:"w_pub_id"`
@@ -39,8 +39,8 @@ type WebsiteData struct {
 }
 
 // FetchWebsiteByPublicID function @todo
-func (m *Manager) FetchWebsiteByPublicID(publicID int) (*WebsiteData, error) {
-	var res = WebsiteData{}
+func (m *Manager) FetchWebsiteByPublicID(publicID int) (*Website, error) {
+	var res = Website{}
 	key := utils.Sha1(fmt.Sprintf("Website_%d", publicID))
 	err := fetch(key, &res)
 	if err == nil {
@@ -57,14 +57,13 @@ func (m *Manager) FetchWebsiteByPublicID(publicID int) (*WebsiteData, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	_ = store(key, &res, time.Hour)
 	return &res, nil
 }
 
 // FetchWebsite function @todo
-func (m *Manager) FetchWebsite(ID int64) (*WebsiteData, error) {
-	var res = WebsiteData{}
+func (m *Manager) FetchWebsite(ID int64) (*Website, error) {
+	var res = Website{}
 	key := utils.Sha1(fmt.Sprintf("WebsiteID_%d", ID))
 	err := fetch(key, &res)
 	if err == nil {
@@ -80,7 +79,6 @@ func (m *Manager) FetchWebsite(ID int64) (*WebsiteData, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	_ = store(key, &res, time.Hour)
 	return &res, nil
 }

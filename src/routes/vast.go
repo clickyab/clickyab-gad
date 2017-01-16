@@ -1,29 +1,24 @@
-package selectroute
+package routes
 
 import (
 	"assert"
-	"mr"
-	"selector"
-	"transport"
-
-	"fmt"
-	"strconv"
-
-	"middlewares"
-
-	"config"
-
 	"bytes"
-
+	"config"
+	"fmt"
 	"html/template"
-
+	"middlewares"
+	"mr"
 	"net/http"
-
 	"redis"
+	"selector"
+	"strconv"
+	"transport"
 	"utils"
 
+	"errors"
+
 	"github.com/Sirupsen/logrus"
-	"github.com/labstack/echo"
+	"gopkg.in/labstack/echo.v3"
 )
 
 type vastAdTemplate struct {
@@ -40,7 +35,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 
 	rd, website, country, lenType, length, err := tc.getVastDataFromCtx(c)
 	if err != nil {
-		return err
+		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	webPublicID := website.WPubID
 	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(webPublicID, length, *website)
@@ -69,7 +64,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	return c.XMLBlob(http.StatusOK, result.Bytes())
 }
 
-func (tc *selectController) slotSizeVast(websitePublicID int64, length map[string][]string, website mr.WebsiteData) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
+func (tc *selectController) slotSizeVast(websitePublicID int64, length map[string][]string, website mr.Website) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
 	var vastSlot = make(map[string]vastSlotData)
@@ -95,18 +90,17 @@ func (tc *selectController) slotSizeVast(websitePublicID int64, length map[strin
 
 }
 
-func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.WebsiteData, *mr.CountryInfo, string, map[string][]string, error) {
+func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.CountryInfo, string, map[string][]string, error) {
 	rd := middlewares.MustGetRequestData(c)
 
-	publicParams := c.QueryParam("a")
-	publicID, err := strconv.Atoi(publicParams)
+	publicID, err := strconv.ParseInt(c.QueryParam("a"), 10, 0)
 	if err != nil {
-		return nil, nil, nil, "", nil, c.HTML(400, "invalid request")
+		return nil, nil, nil, "", nil, errors.New("invalid request")
 	}
 	//fetch website and set in Context
 	website, err := tc.fetchWebsite(publicID)
 	if err != nil {
-		return nil, nil, nil, "", nil, c.HTML(400, "invalid request")
+		return nil, nil, nil, "", nil, errors.New("invalid request")
 	}
 	country, err := tc.fetchCountry(rd.IP)
 	if err != nil {
@@ -155,7 +149,7 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 	}
 
 	for i := range answer {
-		result, err := aredis.SumHMGetField(utils.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), config.Config.Redis.Days, "i", "c")
+		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), config.Config.Redis.Days, "i", "c")
 		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
 			answer[i].Ctr = config.Config.Clickyab.DefaultCTR
 		} else {

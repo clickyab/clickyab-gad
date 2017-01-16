@@ -1,6 +1,6 @@
 package mr
 
-// SlotData type @todo
+// SlotData type is record of one slot
 type SlotData struct {
 	AdID         int64   `json:"ad_id" db:"ad_id"`
 	SlotSize     int     `json:"slot_size" db:"slot_size"`
