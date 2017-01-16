@@ -35,13 +35,14 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	 cp_revenue, cp_roi, cp_start, cp_end, cp_status, cp_lastupdate, cp_hour_start, cp_hour_end,
 	 is_crm, cp_lock
 	 	FROM campaigns AS C
-	 	LEFT JOIN campaigns_ads AS CA ON C.cp_id=CA.cp_id
-		LEFT JOIN ads AS A ON A.ad_id=CA.ad_id
-		LEFT JOIN users AS U ON C.u_id=U.u_id
-		WHERE A.ad_status=1 AND C.cp_status=1 AND (C.cp_start <= ? OR C.cp_start=0)
+	 	INNER JOIN users AS U ON C.u_id=U.u_id
+		INNER JOIN campaigns_ads AS CA ON C.cp_id=CA.cp_id
+		INNER JOIN ads AS A ON A.ad_id=CA.ad_id
+		WHERE A.ad_status=1 AND C.cp_status=1 AND CA.ca_status = 1 AND (C.cp_start <= ? OR C.cp_start=0)
 				AND (C.cp_end >= ? OR C.cp_end=0)
 				AND cp_hour_start <= ? AND cp_hour_end >= ? AND C.cp_daily_budget > C.cp_today_spend
-				AND C.cp_total_budget > C.cp_total_spend AND U.u_balance > U.u_today_spend`
+				AND C.cp_total_budget > C.cp_total_spend AND U.u_balance > U.u_today_spend AND
+				U.u_balance > 5000`
 
 	_, err := m.GetRDbMap().Select(
 		&res,

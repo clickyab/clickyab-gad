@@ -1,11 +1,18 @@
 #!/usr/bin/dumb-init /bin/bash
 set -euo pipefail
 
-MYSQL_USER=${MY_USER:-clickyab_master}
-MYSQL_PASSWORD=${MY_PASS:-oRgLsGydHQnZzvdNfHM6}
 MYSQL_DB=${MY_DB:-clickyab}
-MYSQL_HOST=${MY_HOST:-192.168.100.11}
-MYSQL_PORT=${MY_PORT:-3306}
+
+MYSQLW_USER=${MYW_USER:-clickyab_master}
+MYSQLW_PASSWORD=${MYW_PASS:-oRgLsGydHQnZzvdNfHM6}
+MYSQLW_HOST=${MYW_HOST:-192.168.100.11}
+MYSQLW_PORT=${MYW_PORT:-3306}
+
+MYSQLR_USER=${MYR_USER:-clickyab_readonly}
+MYSQLR_PASSWORD=${MYR_PASS:-gX^Zmp90jOJp91\$GwPujOTl2POQdlI}
+MYSQLR_HOST=${MYR_HOST:-192.168.100.40}
+MYSQLR_PORT=${MYR_PORT:-3306}
+
 REDIS_HOST=${REDIS_HOST:-192.168.100.30}
 REDIS_PORT=${REDIS_PORT:-2222}
 RABBIT_PASS=${AMQP_PASS:-eeTheej2}
@@ -24,8 +31,8 @@ export GAD_REDIS_DATABASE=${REDIS_DATABASE:-7}
 export GAD_REDIS_SIZE=${REDIS_SIZE:-250}
 export GAD_MYSQL_MAX_CONNECTION=${MYSQL_MAX_CONNECTION:-250}
 export GAD_MYSQL_MAX_CONNECTION=${MYSQL_MAX_IDLE_CONNECTION:-30}
-export GAD_MYSQL_RDSN="${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DB}?parseTime=true&charset=utf8"
-export GAD_MYSQL_WDSN="${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DB}?parseTime=true&charset=utf8"
+export GAD_MYSQL_RDSN="${MYSQLR_USER}:${MYSQLR_PASSWORD}@tcp(${MYSQLR_HOST}:${MYSQLR_PORT})/${MYSQL_DB}?parseTime=true&charset=utf8"
+export GAD_MYSQL_WDSN="${MYSQLW_USER}:${MYSQLW_PASSWORD}@tcp(${MYSQLW_HOST}:${MYSQLW_PORT})/${MYSQL_DB}?parseTime=true&charset=utf8"
 export GAD_MYSQL_DATABASE="${MYSQL_DB}"
 export GAD_PROFILE=disable
 export GAD_AMQP_DSN="amqp://${RABBIT_USER}:${RABBIT_PASS}@${RABBIT_HOST}:${RABBIT_PORT}/"
@@ -35,25 +42,6 @@ export GAD_PHP_CODE_FPM=127.0.0.1:9000
 
 if [ "$1" = '/app/bin/server' ];
 then
-
-cat >/app/clickyab-server/library/db.php <<-EOCONF
-<?php
-
-function client_addr_2(){
-    if(\$_SERVER['HTTP_CF_CONNECTING_IP']) return \$_SERVER['HTTP_CF_CONNECTING_IP'];
-    return str_in_db(\$_SERVER['REMOTE_ADDR']);
-}
-
-\$mysql_connect = mysqli_connect ( "${MYSQL_HOST}", "${MYSQL_USER}", "${MYSQL_PASSWORD}", "${MYSQL_DB}" );
-mysqli_set_charset(\$mysql_connect,'utf8');
-
-define("REDIS_HOST", "${REDIS_HOST}");
-define("REDIS_PORT", 2222); // this is different from gad for now
-define("REDIS_PASS", "${GAD_REDIS_PASSWORD}");
-
-EOCONF
-	chown www-data:www-data /app/clickyab-server/library/db.php
-	service php7.0-fpm start
 	exec "$@"
 else
 	exec "$@"
