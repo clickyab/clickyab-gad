@@ -51,7 +51,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	webPublicID := website.WPubID
-	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(webPublicID, length, *website)
+	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(rd.Mobile, webPublicID, length, *website)
 	// TODO : Move this to slotSizeVast func
 	for i := range slotSize {
 		slotSize[i].ExtraParam = map[string]string{
@@ -85,7 +85,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	return c.XMLBlob(http.StatusOK, result.Bytes())
 }
 
-func (tc *selectController) slotSizeVast(websitePublicID int64, length map[string][]string, website mr.Website) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
+func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, length map[string][]string, website mr.Website) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
 	var vastSlot = make(map[string]vastSlotData)
@@ -94,6 +94,9 @@ func (tc *selectController) slotSizeVast(websitePublicID int64, length map[strin
 	for m := range length {
 		i++
 		lenType := length[m][0]
+		if lenType != "linear" && mobile {
+			continue
+		}
 		pub := fmt.Sprintf("%d%s", websitePublicID, length[m][1])
 		sizeNumSlice[pub] = config.VastNonLinearSize
 		if lenType == "linear" {
