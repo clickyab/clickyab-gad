@@ -1,3 +1,4 @@
+var deviceType = navigator.userAgent.match(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i) ? 'mobile' : 'desktop';
 ;(function (name, context, definition) {
     if (typeof module !== 'undefined' && module.exports) { module.exports = definition(); }
     else if (typeof define === 'function' && define.amd) { define(definition); }
@@ -340,6 +341,12 @@ function webMobile(url) {
 
         var divElement = document.createElement("Div");
         divElement.id = data.slot;
+          if(deviceType == 'mobile') {
+             if(data.width > 468  && data.height > 60 && data.responsive != false) {
+                 data.width = 468;
+                 data.height = 60;
+            }
+        }
         var iframeElement = document.createElement("iframe");
         iframeElement.id = "clickyab_iframe_" +data.slot;
         iframeElement.height = data.height;
