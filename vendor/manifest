@@ -96,6 +96,19 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/jteeuwen/go-bindata",
+			"repository": "https://github.com/jteeuwen/go-bindata",
+			"revision": "a0ff2567cfb70903282db057e799fd826784d41d",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/jteeuwen/go-bindata/go-bindata",
+			"repository": "https://github.com/jteeuwen/go-bindata",
+			"revision": "a0ff2567cfb70903282db057e799fd826784d41d",
+			"branch": "master",
+			"path": "/go-bindata"
+		},
+		{
 			"importpath": "github.com/kardianos/osext",
 			"repository": "https://github.com/kardianos/osext",
 			"revision": "c2c54e542fb797ad986b31721e1baedf214ca413",
