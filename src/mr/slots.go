@@ -19,7 +19,7 @@ type Slot struct {
 	ID               int64          `json:"slot_id" db:"slot_id"`
 	PublicID         int64          `json:"slot_pubilc_id" db:"slot_pubilc_id"`
 	Name             sql.NullString `json:"slot_name" db:"slot_name"`
-	Size             sql.NullString `json:"slot_size" db:"slot_size"`
+	Size             int            `json:"slot_size" db:"slot_size"`
 	WID              int64          `json:"w_id" db:"w_id"`
 	AppID            int64          `json:"app_id" db:"app_id"`
 	AvgDailyImps     int64          `json:"slot_avg_daily_imps" db:"slot_avg_daily_imps"`
@@ -91,28 +91,21 @@ func (m *Manager) insertSlotsTODO(wID int64, appID int64, slotsPublic ...int64) 
 }
 
 // InsertSlots create as many slots you want
-func (m *Manager) InsertSlots(wID int64, appID int64, slotsPublic ...int64) ([]Slot, error) {
+func (m *Manager) InsertSlots(wID int64, appID int64, slotsPublic int64, size int) (*Slot, error) {
 	assert.True((appID == 0 && wID > 0) || (appID > 0 && wID == 0), "[BUG] invalid input")
-	var slot []interface{}
-	for s := range slotsPublic {
-		s := &Slot{PublicID: slotsPublic[s]}
-		if wID > 0 {
-			s.WID = wID
-		} else {
-			s.AppID = appID
-		}
-		slot = append(slot, s)
+	s := &Slot{PublicID: slotsPublic, Size: size}
+	if wID > 0 {
+		s.WID = wID
+	} else {
+		s.AppID = appID
 	}
-	err := m.GetWDbMap().Insert(slot...)
+
+	err := m.GetWDbMap().Insert(s)
 	if err != nil {
 		return nil, err
 	}
 
-	var result = make([]Slot, len(slot))
-	for i := range slot {
-		result[i] = *slot[i].(*Slot)
-	}
-	return result, nil
+	return s, nil
 
 }
 
