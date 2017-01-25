@@ -435,7 +435,7 @@ func (tc *selectController) makeShow(
 			if !multipleVideo {
 				noVideo = noVideo || sorted[0].AdType == config.AdTypeVideo
 			}
-			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotID)
+			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotSize[slotID].ID)
 			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
 			assert.Nil(storeCapping(rd.CopID, sorted[0].AdID))
 			selected[slotSize[slotID].SlotSize]++

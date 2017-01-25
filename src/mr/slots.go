@@ -64,10 +64,10 @@ func (m *Manager) insertSlotsTODO(wID int64, appID int64, slotsPublic ...int64) 
 		q  string
 	)
 	if wID > 0 {
-		q = "INSERT INTO slots (`slot_pubilc_id`, `w_id`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `slot_pubilc_id`=`slot_pubilc_id` "
+		q = "INSERT INTO slots (`slot_pubilc_id`, `w_id`) VALUES (?, ?) ON DUPLICATE KEY UPDATE slot_id=LAST_INSERT_ID(slot_id)"
 		id = wID
 	} else {
-		q = "INSERT INTO slots (`slot_pubilc_id`, `app_id`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `slot_pubilc_id`=`slot_pubilc_id` "
+		q = "INSERT INTO slots (`slot_pubilc_id`, `app_id`) VALUES (?, ?) ON DUPLICATE KEY UPDATE slot_id=LAST_INSERT_ID(slot_id)"
 		id = appID
 	}
 	res := []Slot{}
