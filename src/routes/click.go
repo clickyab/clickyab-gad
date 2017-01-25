@@ -202,7 +202,7 @@ func (selectController) fillClick(
 		IP:           rd.IP,
 		AdID:         ads.AdID,
 		SlotID:       slotID,
-		CampaignID:   ads.CampaignAdID.Int64,
+		CampaignID:   ads.CampaignID.Int64,
 		UserAgent:    rd.UserAgent,
 		WinnerBid:    winnerBid,
 		InTime:       inTime,
