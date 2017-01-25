@@ -150,7 +150,10 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 	assert.Nil(err)
 
 	answer := make(map[string]*slotData)
-	var newSlots []int64
+	var (
+		newSlots []int64
+		newSize  []int
+	)
 	for i := range slotPublic {
 		if _, ok := answer[slotPublic[i]]; ok {
 			continue
@@ -169,6 +172,7 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 			s, err := strconv.ParseInt(slotPublic[i], 10, 0)
 			if err == nil {
 				newSlots = append(newSlots, s)
+				newSize = append(newSize, sizeNumSlice[slotPublic[i]])
 			}
 		}
 	}
@@ -177,7 +181,7 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 		key := utils.Sha1(fmt.Sprintf("slot_%s_%d", slotPublicString, webID))
 		aredis.RemoveKey(key)
 	}
-	insertedSlots := tc.insertNewSlots(webID, newSlots...)
+	insertedSlots := tc.insertNewSlots(webID, newSlots, newSize)
 	for i := range insertedSlots {
 		answer[i] = &slotData{
 			ID:       insertedSlots[i],

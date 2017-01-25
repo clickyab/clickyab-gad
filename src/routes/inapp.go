@@ -135,12 +135,11 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 	s, err := mr.NewManager().FetchAppSlot(app.ID, slot)
 	if err != nil {
 		// no slot found
-		slots, err := mr.NewManager().InsertSlots(0, app.ID, slot)
+		s, err = mr.NewManager().InsertSlots(0, app.ID, slot, bs)
 		assert.Nil(err)
-		s = &slots[0]
 	}
 	data := map[string]*slotData{
-		slotString: &slotData{
+		slotString: {
 			SlotSize: bs,
 			ID:       s.ID,
 			PublicID: slotString,

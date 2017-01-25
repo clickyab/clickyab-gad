@@ -272,14 +272,15 @@ func (tc selectController) slotSizeWeb(params map[string][]string, website mr.We
 	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 }
 
-func (selectController) insertNewSlots(wID int64, newSlots ...int64) map[string]int64 {
+func (selectController) insertNewSlots(wID int64, newSlots []int64, newSize []int) map[string]int64 {
+	assert.True(len(newSlots) == len(newSize), "[BUG] slot public and count is not matched")
 	result := make(map[string]int64)
 	if len(newSlots) > 0 {
-		insertedSlots, err := mr.NewManager().InsertSlots(wID, 0, newSlots...)
-		if err == nil {
-			for i := range insertedSlots {
-				p := fmt.Sprintf("%d", insertedSlots[i].PublicID)
-				result[p] = insertedSlots[i].ID
+		for i := range newSlots {
+			insertedSlots, err := mr.NewManager().InsertSlots(wID, 0, newSlots[i], newSize[i])
+			if err != nil {
+				p := fmt.Sprintf("%d", insertedSlots.PublicID)
+				result[p] = insertedSlots.ID
 			}
 		}
 	}
