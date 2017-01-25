@@ -131,7 +131,7 @@ func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website P
 	)
 }
 
-func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int64, winnerBid int64, slotID string) {
+func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int64, winnerBid int64, slotID int64) {
 	assert.Nil(aredis.StoreHashKey(
 		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
 		fmt.Sprintf(
@@ -149,7 +149,7 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 			transport.SLOT,
 			transport.DELIMITER,
 			adID),
-		slotID,
+		strconv.FormatInt(slotID, 10),
 		config.Config.Clickyab.MegaImpExpire,
 	))
 }
