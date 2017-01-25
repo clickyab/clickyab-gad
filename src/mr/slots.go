@@ -19,7 +19,7 @@ type Slot struct {
 	ID               int64          `json:"slot_id" db:"slot_id"`
 	PublicID         int64          `json:"slot_pubilc_id" db:"slot_pubilc_id"`
 	Name             sql.NullString `json:"slot_name" db:"slot_name"`
-	Size             int            `json:"slot_size" db:"slot_size"`
+	Size             sql.NullString `json:"slot_size" db:"slot_size"`
 	WID              int64          `json:"w_id" db:"w_id"`
 	AppID            int64          `json:"app_id" db:"app_id"`
 	AvgDailyImps     int64          `json:"slot_avg_daily_imps" db:"slot_avg_daily_imps"`
@@ -93,7 +93,7 @@ func (m *Manager) insertSlotsTODO(wID int64, appID int64, slotsPublic ...int64) 
 // InsertSlots create as many slots you want
 func (m *Manager) InsertSlots(wID int64, appID int64, slotsPublic int64, size int) (*Slot, error) {
 	assert.True((appID == 0 && wID > 0) || (appID > 0 && wID == 0), "[BUG] invalid input")
-	s := &Slot{PublicID: slotsPublic, Size: size}
+	s := &Slot{PublicID: slotsPublic, Size: sql.NullString{String: fmt.Sprint(size), Valid: size!=0 }}
 	if wID > 0 {
 		s.WID = wID
 	} else {
