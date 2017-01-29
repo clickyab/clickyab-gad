@@ -34,7 +34,7 @@ func GetVersion() Version {
 	c.Hash = hash
 	c.Short = short
 	c.BuildDate, _ = time.Parse("01-02-06-15-04-05", build)
-
+	c.CurrentTime = time.Now()
 	return c
 }
 
