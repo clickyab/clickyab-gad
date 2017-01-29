@@ -18,11 +18,12 @@ var (
 
 // Version is the application version in detail
 type Version struct {
-	Hash      string    `json:"hash"`
-	Short     string    `json:"short_hash"`
-	Date      time.Time `json:"commit_date"`
-	Count     int64     `json:"build_number"`
-	BuildDate time.Time `json:"build_date"`
+	Hash        string    `json:"hash"`
+	Short       string    `json:"short_hash"`
+	Date        time.Time `json:"commit_date"`
+	Count       int64     `json:"build_number"`
+	BuildDate   time.Time `json:"build_date"`
+	CurrentTime time.Time `json:"current_date"`
 }
 
 // GetVersion return the application version in detail
