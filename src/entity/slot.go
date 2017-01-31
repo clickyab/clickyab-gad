@@ -10,4 +10,8 @@ type Slot interface {
 	Size() int
 	// StateID is an string for this slot, its a random at first but the value is not changed at all other calls
 	StateID() string
+	// SlotCTR the ctr from database
+	SlotCTR() float64
+	
+	SetWinnerAdvertise(Advertise)
 }

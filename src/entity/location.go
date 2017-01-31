@@ -40,5 +40,6 @@ type Location interface {
 	Country() Country
 	Province() Province
 	City() City
+	Hood() Hood
 	LatLon() LatLon
 }

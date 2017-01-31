@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/gob"
 	"entity"
+	"time"
 )
 
 // CacheProvider is the cache backend
 type CacheProvider interface {
 	// Cache is called to store the cache
-	Cache(entity.Cacheable) error
+	Cache(entity.Cacheable, time.Duration) error
 	// Hit called when we need to load the cache
 	Hit(string, entity.Cacheable) error
 }
@@ -38,11 +39,11 @@ func ByteToInterface(b []byte, out interface{}) error {
 var cache CacheProvider
 
 // Cache the entity
-func Cache(e entity.Cacheable, err error) error {
+func Cache(e entity.Cacheable, t time.Duration, err error) error {
 	if err != nil {
 		return err
 	}
-	return cache.Cache(e)
+	return cache.Cache(e, t)
 }
 
 // Hit the cache

@@ -1,6 +1,9 @@
 package eav
 
-import "time"
+import (
+	"time"
+	"assert"
+)
 
 // Kiwi is the key value storage system in a parent key
 type Kiwi interface {
@@ -14,4 +17,20 @@ type Kiwi interface {
 	GetAllKeys() map[string]string
 	// Save the entire keys (mostly first time)
 	Save(time.Duration) error
+}
+
+type StoreFactory func(string) Kiwi
+
+var (
+	factory StoreFactory
+)
+
+func Register(s StoreFactory) {
+	factory = s
+}
+
+// NewEavStore return a new eav store
+func NewEavStore(key string) Kiwi {
+	assert.NotNil(factory, "[BUG] factory is not registered")
+	return factory(key)
 }

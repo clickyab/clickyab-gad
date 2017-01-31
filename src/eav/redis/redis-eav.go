@@ -84,10 +84,14 @@ func (kr *kiwiRedis) Save(t time.Duration) error {
 }
 
 // NewRedisEAVStore return a redis store for eav
-func NewRedisEAVStore(key string) eav.Kiwi {
+func newRedisEAVStore(key string) eav.Kiwi {
 	return &kiwiRedis{
 		key:  key,
 		v:    make(map[string]string),
 		lock: sync.Mutex{},
 	}
+}
+
+func init() {
+	eav.Register(newRedisEAVStore)
 }
