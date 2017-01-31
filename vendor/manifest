@@ -1,0 +1,53 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/BurntSushi/toml",
+			"repository": "https://github.com/BurntSushi/toml",
+			"revision": "99064174e013895bbd9b025c31100bd1d9b590ca",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/Sirupsen/logrus",
+			"repository": "https://github.com/Sirupsen/logrus",
+			"revision": "61e43dc76f7ee59a82bdf3d71033dc12bea4c77d",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/fzerorubigd/expand",
+			"repository": "https://github.com/fzerorubigd/expand",
+			"revision": "fd359294116f3987dc04c5987782f845e99e9f42",
+			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/airbrake/gobrake.v2",
+			"repository": "https://gopkg.in/airbrake/gobrake.v2",
+			"revision": "668876711219e8b0206e2994bf0a59d889c775aa",
+			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/fzerorubigd/onion.v2",
+			"repository": "https://gopkg.in/fzerorubigd/onion.v2",
+			"revision": "078930955df67fe99807c7099902a5282796521f",
+			"branch": "v2"
+		},
+		{
+			"importpath": "gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+			"repository": "https://gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+			"revision": "bfee1239d796830ca346767650cce5ba90d58c57",
+			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/redis.v5",
+			"repository": "https://gopkg.in/redis.v5",
+			"revision": "9cd49656897843b8f2bf3d9639230cb7aec90d6c",
+			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/yaml.v2",
+			"repository": "https://gopkg.in/yaml.v2",
+			"revision": "4c78c975fe7c825c6d1466c42be594d1d6f3aba6",
+			"branch": "v2"
+		}
+	]
+}

@@ -1,0 +1,13 @@
+*.el
+*\#*
+pkg/
+.env
+.vagrant/
+.git_index
+/tmp
+.idea
+*.iml
+config-dist.yml
+node_modules/
+*.retry
+.vscode
