@@ -14,4 +14,8 @@ type Slot interface {
 	SlotCTR() float64
 	// Set winner ad for this slot
 	SetWinnerAdvertise(Advertise)
+	// WinnerAdvertise return the winner
+	WinnerAdvertise() Advertise
+
+	SetShowURL(string)
 }

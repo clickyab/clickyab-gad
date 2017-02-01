@@ -58,7 +58,7 @@ func (c *channelStore) Pop(key string, t time.Duration) (string, bool) {
 }
 
 func init() {
-	store.RegisterSync(func() store.Store {
+	store.Register(func() store.Store {
 		return &channelStore{
 			c: make(map[string]chan string),
 		}

@@ -11,3 +11,4 @@ config-dist.yml
 node_modules/
 *.retry
 .vscode
+clickyab-server/

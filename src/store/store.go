@@ -16,26 +16,15 @@ type Store interface {
 type StoreFactory func() Store
 
 var (
-	clusterFactory StoreFactory
-	syncFactory    StoreFactory
+	factory StoreFactory
 )
 
-func RegisterCluster(s StoreFactory) {
-	clusterFactory = s
-}
-
-func RegisterSync(s StoreFactory) {
-	syncFactory = s
-}
-
-// GetSyncStore return an inner process sync
-func GetSyncStore() Store {
-	assert.NotNil(syncFactory, "[BUG] sync factory is not set")
-	return syncFactory()
+func Register(s StoreFactory) {
+	factory = s
 }
 
 // GetClusterStore return an in cluster sync
-func GetClusterStore() Store {
-	assert.NotNil(clusterFactory, "[BUG] cluster factory is not set")
-	return clusterFactory()
+func GetSyncStore() Store {
+	assert.NotNil(factory, "[BUG] cluster factory is not set")
+	return factory()
 }
