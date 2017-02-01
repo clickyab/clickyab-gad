@@ -20,6 +20,18 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/julienschmidt/httprouter",
+			"repository": "https://github.com/julienschmidt/httprouter",
+			"revision": "8a45e95fc75cb77048068a62daed98cc22fdac7c",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/mssola/user_agent",
+			"repository": "https://github.com/mssola/user_agent",
+			"revision": "07efe2b857fb8c02d2dd85c12d0145f58554ec7c",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/streadway/amqp",
 			"repository": "https://github.com/streadway/amqp",
 			"revision": "63795daa9a446c920826655f26ba31c81c860fd6",

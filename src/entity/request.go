@@ -23,6 +23,8 @@ type Impression interface {
 	Source() Publisher
 	// Location of the request
 	Location() Location
+
+	OS() OS
 	// Attributes is the generic attribute system
 	Attributes(ImpressionAttributes) interface{}
 }
