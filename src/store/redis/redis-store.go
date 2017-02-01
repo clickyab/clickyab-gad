@@ -41,5 +41,5 @@ func newRedisStore() store.Store {
 }
 
 func init() {
-	store.Register(newRedisStore)
+	store.RegisterCluster(newRedisStore)
 }

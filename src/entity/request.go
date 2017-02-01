@@ -1,16 +1,20 @@
 package entity
 
-import "net"
+import (
+	"net"
+	"net/http"
+)
 
 // ImpressionAttributes is the imp attr key
 type ImpressionAttributes string
 
 // Impression is the single impression object
 type Impression interface {
+	Request() *http.Request
 	// MegaIMP return the random id of this imp object
 	MegaIMP() string
 	// ClientID is the key to identify client
-	ClientID() string
+	ClientID() int64
 	// IP return the client ip
 	IP() net.IP
 	// UserAgent return the client user agent

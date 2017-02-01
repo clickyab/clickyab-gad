@@ -32,13 +32,17 @@ func createMegaStore(imp entity.Impression) eav.Kiwi {
 }
 
 // Select is the key function to select an ad for an imp base on real time biding
-func Select(
+func SelectCTR(
+	store store.Store,
 	pub entity.Publisher,
 	imp entity.Impression,
 	ads map[int][]entity.Advertise,
 	slots []entity.Slot,
 	multiVideo bool,
 	minCPC int64) {
+
+	// Get the capping
+	ads = getCapping(imp.ClientID(), ads, slots)
 	kiwi := createMegaStore(imp)
 	for i := range slots {
 		var (
@@ -88,6 +92,7 @@ func Select(
 			sorted[0].SetWinnerBID(sorted[0].Campaign().MaxBID())
 		}
 
+		// Force price on min CPC
 		if sorted[0].WinnerBID() < minCPC {
 			sorted[0].SetWinnerBID(minCPC)
 		}

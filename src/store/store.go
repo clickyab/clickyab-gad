@@ -16,21 +16,26 @@ type Store interface {
 type StoreFactory func() Store
 
 var (
-	factory StoreFactory
+	clusterFactory StoreFactory
+	syncFactory    StoreFactory
 )
 
-func Register(s StoreFactory) {
-	factory = s
+func RegisterCluster(s StoreFactory) {
+	clusterFactory = s
 }
 
-// Push data in the store
-func Push(key, val string, t time.Duration) {
-	assert.NotNil(factory, "[BUG] factory is not registered")
-	factory().Push(key, val, t)
+func RegisterSync(s StoreFactory) {
+	syncFactory = s
 }
 
-// Pop and remove data from store, its blocking pop
-func Pop(key string, t time.Duration) (string, bool) {
-	assert.NotNil(factory, "[BUG] factory is not registered")
-	return factory().Pop(key, t)
+// GetSyncStore return an inner process sync
+func GetSyncStore() Store {
+	assert.NotNil(syncFactory, "[BUG] sync factory is not set")
+	return syncFactory()
+}
+
+// GetClusterStore return an in cluster sync
+func GetClusterStore() Store {
+	assert.NotNil(clusterFactory, "[BUG] cluster factory is not set")
+	return clusterFactory()
 }
