@@ -56,6 +56,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "gopkg.in/gorp.v2",
+			"repository": "https://gopkg.in/gorp.v2",
+			"revision": "4deece61034873cb5b5416e81abe4cea7bd0da72",
+			"branch": "master"
+		},
+		{
 			"importpath": "gopkg.in/redis.v5",
 			"repository": "https://gopkg.in/redis.v5",
 			"revision": "9cd49656897843b8f2bf3d9639230cb7aec90d6c",

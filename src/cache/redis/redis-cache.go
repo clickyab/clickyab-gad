@@ -48,7 +48,6 @@ func (redisCache) Hit(key string, e entity.Cacheable) error {
 	return e.Encode(buf)
 }
 
-// NewRedisCacheProvider return a new cache storage in redis
-func NewRedisCacheProvider() cache.CacheProvider {
-	return &redisCache{}
+func init() {
+	cache.Register(&redisCache{})
 }
