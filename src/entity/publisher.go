@@ -18,7 +18,6 @@ const (
 
 // Publisher is the publisher interface
 type Publisher interface {
-	Serializable
 	// GetID return the publisher id
 	ID() int64
 	// FloorCPM is the floor cpm for publisher

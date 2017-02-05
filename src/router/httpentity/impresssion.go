@@ -9,6 +9,8 @@ import (
 	"net"
 	"net/http"
 	"services/random"
+
+	"github.com/mssola/user_agent"
 )
 
 const (
@@ -24,6 +26,7 @@ type httpImpression struct {
 	clientID int64
 	attrs    map[string]string
 	ip       net.IP
+	os       *entity.OS
 }
 
 func (hi *httpImpression) Request() *http.Request {
@@ -84,10 +87,12 @@ func (hi *httpImpression) Location() entity.Location {
 }
 
 func (hi *httpImpression) OS() entity.OS {
-	// TODO : detect the os here
-	return entity.OS{
-		Valid: false,
+	if hi.os == nil {
+		os := findHTTPOS(user_agent.New(hi.UserAgent()))
+		hi.os = &os
 	}
+
+	return *hi.os
 }
 
 // Attributes is the generic attribute system
