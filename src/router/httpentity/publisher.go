@@ -10,6 +10,8 @@ import (
 type website struct {
 	ws            *models.Website
 	publisherType entity.PublisherType
+	bidType       entity.BIDType
+	minCPC        int64
 }
 
 // GetID return the publisher id
@@ -42,6 +44,14 @@ func (ws *website) Type() entity.PublisherType {
 	return ws.publisherType
 }
 
+func (ws *website) BIDType() entity.BIDType {
+	return ws.bidType
+}
+
+func (ws *website) MinCPC() int64 {
+	return ws.minCPC
+}
+
 // Attributes is the generic attribute system
 func (ws *website) Attributes(entity.PublisherAttributes) interface{} {
 	// TODO : implement if needed
@@ -49,7 +59,7 @@ func (ws *website) Attributes(entity.PublisherAttributes) interface{} {
 }
 
 // NewHTTPublisherByPublicID return a website by its public id
-func NewHTTPublisherByPublicID(publicID string, ptype entity.PublisherType) (entity.Publisher, error) {
+func NewHTTPublisherByPublicID(publicID string, ptype entity.PublisherType, bidtype entity.BIDType, minCPC int64) (entity.Publisher, error) {
 	w, err := models.NewManager().FetchWebsiteByPublicID(publicID)
 	if err != nil {
 		return nil, err
@@ -58,5 +68,7 @@ func NewHTTPublisherByPublicID(publicID string, ptype entity.PublisherType) (ent
 	return &website{
 		ws:            w,
 		publisherType: ptype,
+		bidType:       bidtype,
+		minCPC:        minCPC,
 	}, nil
 }

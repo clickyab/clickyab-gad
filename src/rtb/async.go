@@ -7,17 +7,14 @@ import (
 
 // AsyncList is the async procedure to return the list of ads url
 func AsyncListCTR(
-	pub entity.Publisher,
 	imp entity.Impression,
 	ads map[int][]entity.Advertise,
-	slots []entity.Slot,
-	multiVideo bool,
-	minCPC int64) []entity.Slot {
+) []entity.Slot {
 
 	go func() {
 		s := store.GetSyncStore()
-		SelectCTR(s, pub, imp, ads, slots, multiVideo, minCPC)
+		SelectCTR(s, imp, ads)
 	}()
 
-	return slots
+	return imp.Slots()
 }

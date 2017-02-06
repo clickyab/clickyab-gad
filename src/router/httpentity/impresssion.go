@@ -27,6 +27,7 @@ type httpImpression struct {
 	attrs    map[string]string
 	ip       net.IP
 	os       *entity.OS
+	types    []entity.AdType
 }
 
 func (hi *httpImpression) Request() *http.Request {
@@ -95,6 +96,14 @@ func (hi *httpImpression) OS() entity.OS {
 	return *hi.os
 }
 
+func (hi *httpImpression) Slots() []entity.Slot {
+	return nil
+}
+
+func (hi *httpImpression) AcceptedTypes() []entity.AdType {
+	return hi.types
+}
+
 // Attributes is the generic attribute system
 func (*httpImpression) Attributes(entity.ImpressionAttributes) interface{} {
 	// TODO : implement if needed
@@ -102,11 +111,12 @@ func (*httpImpression) Attributes(entity.ImpressionAttributes) interface{} {
 }
 
 // NewHTTPImpression return an impression object for this session
-func NewHTTPImpression(source entity.Publisher, r *http.Request) entity.Impression {
+func NewHTTPImpression(source entity.Publisher, r *http.Request, types ...entity.AdType) entity.Impression {
 	return &httpImpression{
 		request: r,
 		mega:    <-random.ID,
 		source:  source,
+		types:   types,
 	}
 }
 

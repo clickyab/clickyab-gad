@@ -30,4 +30,8 @@ type Publisher interface {
 	Type() PublisherType
 	// Attributes is the generic attribute system
 	Attributes(PublisherAttributes) interface{}
+	// BIDType return this publisher bid type
+	BIDType() BIDType
+	// MinCPC is the minimum CPC requested for this requets
+	MinCPC() int64
 }

@@ -22,7 +22,7 @@ func (hl *httpLocation) loadLoaction() {
 
 func (hl *httpLocation) Country() entity.Country {
 	hl.loadLoaction()
-	// Currently the only country supported is IRAN, So take it easy :)
+	// TODO : Currently the only country supported is IRAN, So take it easy now, but watch for it later
 	if hl.err == nil {
 		if hl.country == nil {
 			hl.country = &entity.Country{

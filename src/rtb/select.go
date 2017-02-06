@@ -12,13 +12,20 @@ import (
 )
 
 const (
-	Mega          string = "MEGA_"
-	MegaIP        string = "IP"
+	// Mega is the mega store prefix
+	Mega string = "MEGA_"
+	// MegaIP is the ip subkey
+	MegaIP string = "IP"
+	// MegaUserAgent is the user agent subkey
 	MegaUserAgent string = "UA"
-	MegaPubID     string = "PID"
-	MegaTimeUnix  string = "TU"
+	// MegaPubID is the publisher id subkey
+	MegaPubID string = "PID"
+	// MegaTimeUnix is the impression timestamp subkey
+	MegaTimeUnix string = "TU"
+	// MegaAdvertise is the selected ad subkey
 	MegaAdvertise string = "AD"
-	MegaSlot      string = "SLOT"
+	// MegaSlot is the slot subkey
+	MegaSlot string = "SLOT"
 )
 
 func createMegaStore(imp entity.Impression) eav.Kiwi {
@@ -31,17 +38,18 @@ func createMegaStore(imp entity.Impression) eav.Kiwi {
 	return kiwi
 }
 
-// Select is the key function to select an ad for an imp base on real time biding
+// SelectCTR is the key function to select an ad for an imp base on real time biding
 func SelectCTR(
 	store store.Store,
-	pub entity.Publisher,
 	imp entity.Impression,
-	ads map[int][]entity.Advertise,
-	slots []entity.Slot,
-	multiVideo bool,
-	minCPC int64) {
+	ads map[int][]entity.Advertise) {
+
+	// TODO : better implementation
+	multiVideo := imp.Source().Type() == entity.PublisherTypeVast
 
 	// Get the capping
+	slots := imp.Slots()
+	pub := imp.Source()
 	ads = getCapping(imp.ClientID(), ads, slots)
 	kiwi := createMegaStore(imp)
 	for i := range slots {
@@ -93,8 +101,8 @@ func SelectCTR(
 		}
 
 		// Force price on min CPC
-		if sorted[0].WinnerBID() < minCPC {
-			sorted[0].SetWinnerBID(minCPC)
+		if sorted[0].WinnerBID() < imp.Source().MinCPC() {
+			sorted[0].SetWinnerBID(imp.Source().MinCPC())
 		}
 
 		sorted[0].Capping().IncView(sorted[0].ID(), 1, true)
