@@ -82,6 +82,7 @@
           - /home/cy/gad:/app
         env:
           GAD_AMQP_DEBUG: "{{ amqp_debug }}"
+          MYR_HOST: "192.168.100.13"
 
 - name: Run imp worker
   hosts: imp
@@ -99,6 +100,7 @@
           - /home/cy/gad:/app
         env:
           GAD_AMQP_DEBUG: "{{ amqp_debug }}"
+          MYR_HOST: "192.168.100.13"
 
 - name: Run conv worker
   hosts: conv
@@ -116,6 +118,7 @@
           - /home/cy/gad:/app
         env:
           GAD_AMQP_DEBUG: "{{ amqp_debug }}"
+          MYR_HOST: "192.168.100.13"
 
 - name: Run web server
   hosts: web
@@ -140,3 +143,4 @@
           - /home/cy/gad:/app
         env:
           GAD_AMQP_DEBUG: "{{ amqp_debug }}"
+          MYR_HOST: "192.168.100.13"

@@ -278,7 +278,7 @@ func (selectController) insertNewSlots(wID int64, newSlots []int64, newSize []in
 	if len(newSlots) > 0 {
 		for i := range newSlots {
 			insertedSlots, err := mr.NewManager().InsertSlots(wID, 0, newSlots[i], newSize[i])
-			if err != nil {
+			if err == nil {
 				p := fmt.Sprintf("%d", insertedSlots.PublicID)
 				result[p] = insertedSlots.ID
 			}
