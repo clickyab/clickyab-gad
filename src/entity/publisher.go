@@ -16,6 +16,16 @@ const (
 	PublisherTypeVast PublisherType = "vast"
 )
 
+// BIDType is the bid type for this imp cpc or cpm
+type BIDType string
+
+const (
+	// BIDTypeCPC is the cost per click type
+	BIDTypeCPC BIDType = "CPC"
+	//BIDTypeCPM is the cost per view type
+	BIDTypeCPM BIDType = "CPM"
+)
+
 // Publisher is the publisher interface
 type Publisher interface {
 	// GetID return the publisher id
@@ -34,4 +44,8 @@ type Publisher interface {
 	BIDType() BIDType
 	// MinCPC is the minimum CPC requested for this requets
 	MinCPC() int64
+	// AcceptedTypes is the type accepted by this impression
+	AcceptedTypes() []AdType
+	// Is this publisher accept under floor ads or not ?
+	UnderFloor() bool
 }

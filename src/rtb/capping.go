@@ -1,14 +1,12 @@
 package rtb
 
 import (
+	"eav"
 	"entity"
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
-
-	"sort"
-
-	"eav"
 
 	"github.com/Sirupsen/logrus"
 )

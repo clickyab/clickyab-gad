@@ -1,6 +1,6 @@
 package entity
 
-// CappingInterface interface capping
+// Capping interface capping object for all the campaign ads
 type Capping interface {
 	// View return the view of this campaign for this user
 	View() int
@@ -20,14 +20,20 @@ type Capping interface {
 	//IsTargeted() bool
 }
 
+// SortByCap is the sort entry based on selected/ad capping/campaign capping/cpm (order is matter)
 type SortByCap []Advertise
 
+// Len return the len of array
 func (a SortByCap) Len() int {
 	return len(a)
 }
+
+// Swap two item in array
 func (a SortByCap) Swap(i, j int) {
 	a[i], a[j] = a[j], a[i]
 }
+
+// Less return if the index i is less then index j?
 func (a SortByCap) Less(i, j int) bool {
 
 	// This is a multisort function.

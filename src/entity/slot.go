@@ -16,6 +16,6 @@ type Slot interface {
 	SetWinnerAdvertise(Advertise)
 	// WinnerAdvertise return the winner
 	WinnerAdvertise() Advertise
-
+	// SetShowURL set the show url usable for async calls
 	SetShowURL(string)
 }

@@ -37,9 +37,14 @@ type LatLon struct {
 
 // Location is the location provider
 type Location interface {
+	// Country get the country if available
 	Country() Country
+	// Province get the province of request if available
 	Province() Province
+	// City return the city if available
 	City() City
+	// Hood return the hood if any
 	Hood() Hood
+	// LatLon return the latitude longitude if any
 	LatLon() LatLon
 }
