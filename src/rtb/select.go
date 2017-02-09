@@ -30,10 +30,10 @@ const (
 
 func createMegaStore(imp entity.Impression) eav.Kiwi {
 	kiwi := eav.NewEavStore(Mega + imp.MegaIMP())
-	assert.Nil(kiwi.SubKey(MegaIP, imp.IP().String()).
-		SubKey(MegaUserAgent, imp.UserAgent()).
-		SubKey(MegaPubID, fmt.Sprint(imp.Source().ID())).
-		SubKey(MegaTimeUnix, fmt.Sprint(time.Now().Unix())).
+	assert.Nil(kiwi.SetSubKey(MegaIP, imp.IP().String()).
+		SetSubKey(MegaUserAgent, imp.UserAgent()).
+		SetSubKey(MegaPubID, fmt.Sprint(imp.Source().ID())).
+		SetSubKey(MegaTimeUnix, fmt.Sprint(time.Now().Unix())).
 		Save(config.Config.Clickyab.MegaImpExpire))
 	return kiwi
 }
@@ -112,8 +112,8 @@ func SelectCTR(
 			noVideo = noVideo || sorted[0].Type() == entity.AdTypeVideo
 		}
 
-		kiwi.SubKey(fmt.Sprintf("%s_%d", MegaAdvertise, sorted[0].ID()), fmt.Sprint(sorted[0].WinnerBID()))
-		kiwi.SubKey(fmt.Sprintf("%s_%d", MegaSlot, sorted[0].ID()), fmt.Sprint(slots[i].ID()))
+		kiwi.SetSubKey(fmt.Sprintf("%s_%d", MegaAdvertise, sorted[0].ID()), fmt.Sprint(sorted[0].WinnerBID()))
+		kiwi.SetSubKey(fmt.Sprintf("%s_%d", MegaSlot, sorted[0].ID()), fmt.Sprint(slots[i].ID()))
 		assert.Nil(kiwi.Save(config.Config.Clickyab.MegaImpExpire))
 
 		store.Push(slots[i].StateID(), fmt.Sprint(sorted[0].ID()), time.Hour)

@@ -21,19 +21,19 @@ func (m *MockKiwi) Key() string {
 	return m.MasterKey
 }
 
-// SubKey for adding a sub key
-func (m *MockKiwi) SubKey(key, value string) eav.Kiwi {
+// SetSubKey for adding a sub key
+func (m *MockKiwi) SetSubKey(key, value string) eav.Kiwi {
 	m.Data[key] = value
 	return m
 }
 
-// GetKey return a key
-func (m *MockKiwi) GetKey(key string) string {
+// SubKey return a key
+func (m *MockKiwi) SubKey(key string) string {
 	return m.Data[key]
 }
 
-// GetAllKeys from the store
-func (m *MockKiwi) GetAllKeys() map[string]string {
+// AllKeys from the store
+func (m *MockKiwi) AllKeys() map[string]string {
 	return m.Data
 }
 

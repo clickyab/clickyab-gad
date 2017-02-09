@@ -94,7 +94,7 @@ func getCappingKey(copID int64) string {
 
 func getCapping(clientID int64, ads map[int][]entity.Advertise, slots []entity.Slot) map[int][]entity.Advertise {
 	kiwi := eav.NewEavStore(getCappingKey(clientID))
-	caps := kiwi.GetAllKeys()
+	caps := kiwi.AllKeys()
 	c := make(cappingContext)
 	for s := range slots {
 		size := slots[s].Size()
@@ -118,7 +118,7 @@ func getCapping(clientID int64, ads map[int][]entity.Advertise, slots []entity.S
 		if !found {
 			logrus.Debugf("Removing key for size %d", slots[s].Size())
 			for i := range keys {
-				kiwi.SubKey(keys[i], "0")
+				kiwi.SetSubKey(keys[i], "0")
 				caps[keys[i]] = "0"
 			}
 		}

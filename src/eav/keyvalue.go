@@ -1,30 +1,32 @@
 package eav
 
 import (
-	"time"
 	"assert"
+	"time"
 )
 
 // Kiwi is the key value storage system in a parent key
 type Kiwi interface {
 	// Key return the parent key
 	Key() string
-	// SubKey for adding a sub key
-	SubKey(key, value string) Kiwi
-	// GetKey return a key
-	GetKey(key string) string
-	// GetAllKeys from the store
-	GetAllKeys() map[string]string
+	// SetSubKey for adding a sub key
+	SetSubKey(key, value string) Kiwi
+	// SubKey return a key
+	SubKey(key string) string
+	// AllKeys from the store
+	AllKeys() map[string]string
 	// Save the entire keys (mostly first time)
 	Save(time.Duration) error
 }
 
+// StoreFactory is a function to create store
 type StoreFactory func(string) Kiwi
 
 var (
 	factory StoreFactory
 )
 
+// Register is a function to register store factory
 func Register(s StoreFactory) {
 	factory = s
 }

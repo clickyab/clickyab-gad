@@ -18,8 +18,8 @@ func (kr *kiwiRedis) Key() string {
 	return kr.key
 }
 
-// SubKey for adding a sub key
-func (kr *kiwiRedis) SubKey(key, value string) eav.Kiwi {
+// SetSubKey for adding a sub key
+func (kr *kiwiRedis) SetSubKey(key, value string) eav.Kiwi {
 	kr.lock.Lock()
 	defer kr.lock.Unlock()
 
@@ -28,8 +28,8 @@ func (kr *kiwiRedis) SubKey(key, value string) eav.Kiwi {
 	return kr
 }
 
-// GetKey return a key
-func (kr *kiwiRedis) GetKey(key string) string {
+// SubKey return a key
+func (kr *kiwiRedis) SubKey(key string) string {
 	kr.lock.Lock()
 	defer kr.lock.Unlock()
 
@@ -49,8 +49,8 @@ func (kr *kiwiRedis) GetKey(key string) string {
 	return r
 }
 
-// GetAllKeys from the store
-func (kr *kiwiRedis) GetAllKeys() map[string]string {
+// AllKeys from the store
+func (kr *kiwiRedis) AllKeys() map[string]string {
 	kr.lock.Lock()
 	defer kr.lock.Unlock()
 
