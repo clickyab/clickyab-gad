@@ -15,7 +15,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"rabbit"
-	"redis"
+	aredis "redis"
 	"regexp"
 	"selector"
 	"sort"
@@ -26,7 +26,7 @@ import (
 	"utils"
 
 	"github.com/Sirupsen/logrus"
-	"gopkg.in/labstack/echo.v3"
+	echo "gopkg.in/labstack/echo.v3"
 )
 
 var (
@@ -421,6 +421,11 @@ func (tc *selectController) makeShow(
 				secondCPM := tc.getSecondCPM(publisher.FloorCPM(), sorted)
 				sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
 			} else {
+				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
+			}
+
+			if sorted[0].WinnerBid > sorted[0].CampaignMaxBid {
+				// TODO : must not happen, but it happen some how. check it later
 				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
 			}
 
