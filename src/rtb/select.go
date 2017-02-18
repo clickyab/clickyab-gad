@@ -38,8 +38,8 @@ func createMegaStore(imp entity.Impression) eav.Kiwi {
 	return kiwi
 }
 
-// SelectCTR is the key function to select an ad for an imp base on real time biding
-func SelectCTR(
+// selectCTR is the key function to select an ad for an imp base on real time biding
+func selectCTR(
 	store store.Store,
 	imp entity.Impression,
 	ads map[int][]entity.Advertise) {
@@ -79,7 +79,7 @@ func SelectCTR(
 		if len(exceedFloor) > 0 {
 			ef = entity.SortByCap(exceedFloor)
 			secBid = true
-		} else if config.Config.Clickyab.UnderFloor && len(underFloor) > 0 {
+		} else if pub.UnderFloor() && len(underFloor) > 0 {
 			ef = entity.SortByCap(underFloor)
 			secBid = false
 		}

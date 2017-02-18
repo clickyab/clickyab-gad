@@ -23,9 +23,9 @@ var o = onion.New()
 
 // AppConfig is the application config
 type AppConfig struct {
-	DevelMode       bool   `onion:"devel_mode"`
-	CORS            bool   `onion:"cors"`
-	MaxCPUAvailable int    `onion:"max_cpu_available"`
+	DevelMode       bool `onion:"devel_mode"`
+	CORS            bool `onion:"cors"`
+	MaxCPUAvailable int  `onion:"max_cpu_available"`
 
 	MachineName string `onion:"machine_name"`
 	Port        int
@@ -188,8 +188,8 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.mega_imp_expire", 2*time.Hour))
 	assert.Nil(d.SetDefault("clickyab.conv_delay", time.Second*10))
 	assert.Nil(d.SetDefault("clickyab.conv_retry", 8))
-	assert.Nil(d.SetDefault("clickyab.min_cpm_floor_web", 210))
-	assert.Nil(d.SetDefault("clickyab.min_cpm_floor_app", 150))
+	assert.Nil(d.SetDefault("clickyab.min_cpm_floor_web", 2100))
+	assert.Nil(d.SetDefault("clickyab.min_cpm_floor_app", 1500))
 	assert.Nil(d.SetDefault("clickyab.max_load_fail", 3))
 	assert.Nil(d.SetDefault("clickyab.cop_len", 10))
 	assert.Nil(d.SetDefault("clickyab.fast_click", 2))
@@ -201,7 +201,6 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.web_min_bid", 2000))
 	assert.Nil(d.SetDefault("clickyab.app_min_bid", 700))
 
-	assert.Nil(d.SetDefault("clickyab.min_cpc_web", 2000))
 	assert.Nil(d.SetDefault("clickyab.min_cpc_app", 700))
 	assert.Nil(d.SetDefault("clickyab.min_cpc_web", 2000))
 

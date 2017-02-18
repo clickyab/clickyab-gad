@@ -13,7 +13,7 @@ func SyncListCTR(
 ) []entity.Slot {
 
 	s := store.GetSyncStore()
-	SelectCTR(s, imp, ads)
+	selectCTR(s, imp, ads)
 	for _, sl := range imp.Slots() {
 		// wait to make sure the ad is ready, since we are sync
 		s.Pop(sl.StateID(), time.Second*10)

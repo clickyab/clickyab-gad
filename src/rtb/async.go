@@ -13,7 +13,7 @@ func AsyncListCTR(
 
 	go func() {
 		s := store.GetSyncStore()
-		SelectCTR(s, imp, ads)
+		selectCTR(s, imp, ads)
 	}()
 
 	return imp.Slots()
