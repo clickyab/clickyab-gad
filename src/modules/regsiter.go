@@ -29,9 +29,6 @@ func Initialize(mountPoint string) *echo.Echo {
 	once.Do(func() {
 		e = echo.New()
 		mid := []echo.MiddlewareFunc{middlewares.Recovery, middlewares.CORS(), middlewares.Logger}
-		if config.Config.CORS {
-			mid = append(mid, middlewares.CORS())
-		}
 		e.Use(mid...)
 		for i := range all {
 			all[i].Routes(e, mountPoint)
