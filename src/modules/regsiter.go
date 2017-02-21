@@ -1,7 +1,6 @@
 package modules
 
 import (
-	"config"
 	"middlewares"
 	"sync"
 
