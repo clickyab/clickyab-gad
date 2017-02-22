@@ -12,7 +12,7 @@ import (
 func TestSpec(t *testing.T) {
 	config.Initialize()
 	aredis.Initialize()
-	Convey("Test keyvalue store", t, func() {
+	Convey("Test keyvalue store for redis", t, func() {
 		store := newRedisEAVStore("test_key")
 		So(store.Key(), ShouldEqual, "test_key")
 		Convey("check set and get", func() {

@@ -133,5 +133,8 @@ ansible:
 convey: $(GB)
 	$(BUILD) github.com/smartystreets/goconvey
 
-test: convey
+test-gui: convey
 	cd $(ROOT)/src && goconvey -host=0.0.0.0
+
+test: convey
+	cd $(ROOT) && gb test -v
