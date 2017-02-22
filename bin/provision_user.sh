@@ -7,4 +7,4 @@ echo -e "\nexport PATH=\${PATH}:/home/develop/gad/bin" >> /home/develop/.zshrc
 
 cd /home/develop/gad
 
-make all
+#make all

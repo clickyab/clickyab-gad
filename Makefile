@@ -68,7 +68,7 @@ mysql-setup: needroot
 	echo 'UPDATE user SET password=PASSWORD("$(DBPASS)") WHERE user="$(DB_USER)";' | mysql mysql | true
 	echo 'FLUSH PRIVILEGES;' | mysql mysql | true
 	echo 'DROP DATABASE IF EXISTS $(DB_NAME); CREATE DATABASE $(DB_NAME);' | mysql -u $(DB_USER) -p$(DBPASS)
-	mysql -u $(DB_USER) -p$(DBPASS) -c $(DB_NAME) <$(ROOT)/db/structure.sql
+	#mysql -u $(DB_USER) -p$(DBPASS) -c $(DB_NAME) <$(ROOT)/db/structure.sql
 
 rabbitmq-setup: needroot
 	[ "1" -eq "$(shell rabbitmq-plugins enable rabbitmq_management | grep 'Plugin configuration unchanged' | wc -l)" ] || (rabbitmqctl stop_app && rabbitmqctl start_app)
@@ -128,3 +128,10 @@ docker-build: conditional-restore all
 
 ansible:
 	ansible-playbook -vvvv -i $(ROOT)/contrib/deploy/hosts.ini $(ROOT)/contrib/deploy/staging.yaml
+
+
+convey: $(GB)
+	$(BUILD) github.com/smartystreets/goconvey
+
+test: convey
+	cd $(ROOT)/src && goconvey -host=0.0.0.0

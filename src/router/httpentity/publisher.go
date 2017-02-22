@@ -52,6 +52,14 @@ func (ws *website) MinCPC() int64 {
 	return ws.minCPC
 }
 
+func (ws *website) AcceptedTypes() []entity.AdType {
+	return nil
+}
+
+func (ws *website) UnderFloor() bool {
+	return true
+}
+
 // Attributes is the generic attribute system
 func (ws *website) Attributes(entity.PublisherAttributes) interface{} {
 	// TODO : implement if needed
