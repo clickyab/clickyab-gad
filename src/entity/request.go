@@ -30,3 +30,8 @@ type Impression interface {
 	// Slots is the slot for this request
 	Slots() []Slot
 }
+
+type ClickyabImp interface {
+	// Category returns category obviously
+	Category() []Category
+}

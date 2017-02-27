@@ -41,3 +41,28 @@ type Advertise interface {
 	// CTR get the calculated CTR
 	CTR() float64
 }
+
+type ClickyabAd interface {
+	//WebCategory returns lsit of web category
+	WebCategory() []Category
+	//WebCategory returns lsit of web category
+	AppCategory() []Category
+	//AllowedBrands shows allowed phone brands
+	AllowedBrands() []BrandType
+	//BlackListPublisher shows publishers in blacklist
+	BlackListPublisher() []int64
+	//BlackListOS return os blacklist of a campaign
+	BlackListOS() []int64
+	//BlackListApp returns publisher types not allowed
+	BlackListPublisherType() []PublisherType
+	//Hood return hood
+	Hood() []int64
+	//Country return country
+	Country() int64
+	//City return City
+	City() int64
+	//LanLon return LanLon
+	LanLon() (float64, float64)
+	//Size return size
+	Size() int
+}
