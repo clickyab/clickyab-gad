@@ -18,4 +18,3 @@ type Cacheable interface {
 	Serializable
 	fmt.Stringer
 }
-
