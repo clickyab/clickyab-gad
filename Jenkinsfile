@@ -4,10 +4,6 @@ node {
         sh "make clean"
 	    sh "make restore"
     }
-    stage('CodeGen') {
-        checkout scm
-        sh "make codegen"
-    }
     stage('Build') {
         checkout scm
         sh "make all"
