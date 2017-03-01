@@ -10,6 +10,7 @@ import (
 	"time"
 	"transport"
 	"utils"
+	"fmt"
 )
 
 // LoadAds load all ads at once and return them
@@ -43,7 +44,7 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 				AND CA.ca_status = 1
 				AND (C.cp_start <= ? OR C.cp_start=0)
 				AND (C.cp_end >= ? OR C.cp_end=0)
-				AND cp_hour_start <= ? AND cp_hour_end >= ?
+				AND (cp_time_duration IS NULL OR cp_time_duration LIKE ?)
 				AND C.cp_daily_budget > C.cp_today_spend
 				AND C.cp_total_budget > C.cp_total_spend
 				AND U.u_balance > U.u_today_spend AND
@@ -54,8 +55,7 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 		query,
 		u,
 		u,
-		h,
-		h,
+		fmt.Sprintf("%%#%d#%%",h),
 	)
 	if err != nil {
 		return nil, err
