@@ -3,6 +3,7 @@ package mr
 import (
 	"config"
 	"database/sql"
+	"fmt"
 	"redis"
 	"sort"
 	"strconv"
@@ -10,7 +11,6 @@ import (
 	"time"
 	"transport"
 	"utils"
-	"fmt"
 )
 
 // LoadAds load all ads at once and return them
@@ -21,7 +21,7 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	u := t.Unix()                          //return date in unixtimestamp
 	h := t.Round(time.Minute).Format("15") //round time in minute scale
 
-	query := `SELECT
+	query := fmt.Sprintf(`SELECT
 		A.ad_id, C.u_id, ad_name, ad_url,ad_code, ad_title, ad_body, ad_img, ad_status,ad_size,
 	 ad_reject_reason, ad_ctr, ad_conv, ad_time, ad_type, ad_mainText, ad_defineText,
 	 ad_textColor, ad_target, ad_attribute, ad_hash_attribute, A.created_at, A.updated_at,
@@ -42,20 +42,17 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 		WHERE A.ad_status=1
 				AND C.cp_status=1
 				AND CA.ca_status = 1
-				AND (C.cp_start <= ? OR C.cp_start=0)
-				AND (C.cp_end >= ? OR C.cp_end=0)
-				AND (cp_time_duration IS NULL OR cp_time_duration LIKE ?)
+				AND (C.cp_start <= %d OR C.cp_start=0)
+				AND (C.cp_end >= %d OR C.cp_end=0)
+				AND (cp_time_duration IS NULL OR cp_time_duration LIKE "%%#%d#%%")
 				AND C.cp_daily_budget > C.cp_today_spend
 				AND C.cp_total_budget > C.cp_total_spend
 				AND U.u_balance > U.u_today_spend AND
-				U.u_balance > 5000`
+				U.u_balance > 5000`, u, u, h)
 
 	_, err := m.GetRDbMap().Select(
 		&res,
 		query,
-		u,
-		u,
-		fmt.Sprintf("%%#%d#%%",h),
 	)
 	if err != nil {
 		return nil, err
