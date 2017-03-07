@@ -1,6 +1,7 @@
 package mr
 
 import (
+	"assert"
 	"config"
 	"database/sql"
 	"fmt"
@@ -12,6 +13,8 @@ import (
 	"transport"
 	"utils"
 )
+
+var last time.Time = time.Now()
 
 // LoadAds load all ads at once and return them
 func (m *Manager) LoadAds() ([]AdData, error) {
@@ -84,6 +87,8 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 		// }
 	}
 
+	assert.False(time.Since(last) > 5*time.Minute, "[BUG] the loader is not called for so long!")
+	last = time.Now()
 	return res, nil
 }
 
