@@ -36,7 +36,7 @@ func interval() {
 		}
 		fail = 0
 		lock.Lock()
-		copy(loaded, l)
+		loaded = l
 		lock.Unlock()
 	}
 
