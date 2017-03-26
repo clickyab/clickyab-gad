@@ -336,7 +336,7 @@ func (tc *selectController) makeShow(
 		wait = make(chan map[string]*mr.AdData)
 	}
 	assert.Nil(tc.createMegaKey(rd, publisher))
-	middlewares.SafeGO(c, false, func() {
+	middlewares.SafeGO(c, false, false, func() {
 		ads := make(map[string]*mr.AdData)
 		defer func() {
 			if typ == "sync" {
@@ -379,7 +379,7 @@ func (tc *selectController) makeShow(
 			}
 
 			if len(ef) == 0 {
-				middlewares.SafeGO(c, false, func() {
+				middlewares.SafeGO(c, false, false, func() {
 					w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
 					warn := transport.Warning{
 						Level: "warning",

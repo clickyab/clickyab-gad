@@ -92,7 +92,7 @@ func (tc *selectController) click(c echo.Context) error {
 	}
 	clickID := <-utils.ID
 
-	middlewares.SafeGO(c, false, func() {
+	middlewares.SafeGO(c, false, false, func() {
 
 		winnerBid, err := strconv.ParseInt(result["WIN"], 10, 0)
 		assertNil(noRedisKey, err)

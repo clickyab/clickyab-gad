@@ -42,7 +42,7 @@ func cleanHashKey(key string, exp time.Duration) map[string]string {
 
 func (tc *selectController) retarget(c echo.Context) error {
 
-	middlewares.SafeGO(c, false, func() {
+	middlewares.SafeGO(c, false, false, func() {
 		cpID := strings.Trim(c.Param("cpid"), " \n\t")
 		_, err := strconv.ParseInt(cpID, 10, 0)
 		if c.Get(invalidRedirect) == nil && err == nil {
