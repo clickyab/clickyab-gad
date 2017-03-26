@@ -21,8 +21,9 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	var res []AdData
 	//t:= strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 	t := time.Now()
-	u := t.Unix()                          //return date in unixtimestamp
-	h := t.Round(time.Minute).Format("15") //round time in minute scale
+	u := t.Unix()                                                        //return date in unixtimestamp
+	h, err := strconv.ParseInt(t.Round(time.Minute).Format("15"), 10, 0) //round time in minute scale
+	assert.Nil(err)
 
 	query := fmt.Sprintf(`SELECT
 		A.ad_id, C.u_id, ad_name, ad_url,ad_code, ad_title, ad_body, ad_img, ad_status,ad_size,
@@ -47,13 +48,13 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 				AND CA.ca_status = 1
 				AND (C.cp_start <= %d OR C.cp_start=0)
 				AND (C.cp_end >= %d OR C.cp_end=0)
-				AND (cp_time_duration IS NULL OR cp_time_duration LIKE "%%#%s#%%")
+				AND (cp_time_duration IS NULL OR cp_time_duration LIKE "%%#%d#%%")
 				AND C.cp_daily_budget > C.cp_today_spend
 				AND C.cp_total_budget > C.cp_total_spend
 				AND U.u_balance > U.u_today_spend AND
 				U.u_balance > 5000`, u, u, h)
 
-	_, err := m.GetRDbMap().Select(
+	_, err = m.GetRDbMap().Select(
 		&res,
 		query,
 	)
