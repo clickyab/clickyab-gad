@@ -113,7 +113,7 @@ func (tc *selectController) show(c echo.Context) error {
 	v.Set("parent", rd.Parent)
 	u.RawQuery = v.Encode()
 
-	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos)
+	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos, rd.Scheme == "https")
 	if err != nil {
 		return err
 	}
@@ -154,20 +154,20 @@ func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.
 }
 
 // makeAdData
-func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string) (string, error) {
+func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool) (string, error) {
 	if typ == "web" {
 		return tc.makeWebTemplate(c, typ, ads, url, long, pos)
 	}
 
 	buf := &bytes.Buffer{}
 	if !config.NonLinearVastSize(ads.AdSize) {
-		res := tc.makeVastAdData(ads, url, long, pos)
+		res := tc.makeVastAdData(ads, url, long, pos, https)
 		if err := linear.Execute(buf, res); err != nil {
 			return "", err
 		}
 		return buf.String(), nil
 	}
-	res := tc.makeVastAdData(ads, url, long, pos)
+	res := tc.makeVastAdData(ads, url, long, pos, https)
 	if err := nonlinear.Execute(buf, res); err != nil {
 		return "", err
 	}
@@ -199,7 +199,7 @@ func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string) SingleAd {
 	}
 	return sa
 }
-func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, pos string) vastTemplate {
+func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, pos string, https bool) vastTemplate {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	_, ma := config.MakeVastLen(long)
 
@@ -216,13 +216,16 @@ func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, 
 	r2 := rand.Int63n(99999)
 	u, _ := url.Parse(ad.AdURL.String)
 	host, _, _ := net.SplitHostPort(u.Host)
-
+	src := ad.AdImg.String
+	if https {
+		src = strings.Replace(src, "http://", "https://", 1)
+	}
 	sa := vastTemplate{
 		Link:        template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", urll)),
 		Tracking:    template.HTML(fmt.Sprintf("<![CDATA[\n%s?tv=1\n]]>", urll)),
 		Height:      h,
 		Width:       w,
-		Src:         template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", strings.Replace(ad.AdImg.String, " ", "%20", -1))),
+		Src:         template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", strings.Replace(src, " ", "%20", -1))),
 		Tiny:        true,
 		RND:         r,
 		RND2:        r2,
