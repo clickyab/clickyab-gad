@@ -113,7 +113,7 @@ func (tc *selectController) show(c echo.Context) error {
 	v.Set("parent", rd.Parent)
 	u.RawQuery = v.Encode()
 
-	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos, rd.Scheme == "https")
+	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos, rd.Scheme != "http")
 	if err != nil {
 		return err
 	}
@@ -218,8 +218,9 @@ func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, 
 	host, _, _ := net.SplitHostPort(u.Host)
 	src := ad.AdImg.String
 	if https {
-		src = strings.Replace(src, "http://", "https://", 1)
+		src = strings.Replace(src, "http://", "https://", -1)
 	}
+
 	sa := vastTemplate{
 		Link:        template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", urll)),
 		Tracking:    template.HTML(fmt.Sprintf("<![CDATA[\n%s?tv=1\n]]>", urll)),
