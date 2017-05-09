@@ -401,14 +401,7 @@ func (tc *selectController) makeShow(
 						When:  time.Now(),
 						Where: publisher.GetName(),
 						Message: fmt.Sprintf(
-							"no ad pass the bid \n"+
-								"size was %sx%s \n"+
-								"the floor was %d \n"+
-								"all add count in this size %d \n"+
-								"pass the floor %d \n"+
-								"under floor is allowd? %v \n"+
-								"under floor count %d \n"+
-								"currently %d item of %d in this request is filled",
+							"no ad pass the bid \n"+"size was %sx%s \n"+"the floor was %d \n"+"all add count in this size %d \n"+"pass the floor %d \n"+"under floor is allowd? %v \n"+"under floor count %d \n"+"currently %d item of %d in this request is filled",
 							w, h,
 							publisher.FloorCPM(),
 							len(filteredAds[slotSize[slotID].SlotSize]),
