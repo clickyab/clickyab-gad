@@ -40,9 +40,17 @@ var (
 		filter.CheckWebCategory,
 		filter.CheckProvince,
 	)
+
 	nativeSelector = selector.Mix(
 		filter.IsNativeNetwork,
 		filter.IsNativeAd,
+		filter.IsWebMobile,
+		filter.CheckWebSize,
+		filter.CheckOS,
+		filter.CheckWhiteList,
+		filter.CheckWebBlackList,
+		filter.CheckWebCategory,
+		filter.CheckProvince,
 	)
 
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
@@ -103,9 +111,11 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 
 // Select function is the route that the real biding happen
 func (tc *selectController) selectNativeAd(c echo.Context) error {
+	logrus.Warn("select native ad")
 	params := c.QueryParams()
 	rd, website, province, err := tc.getWebDataFromCtx(c)
 	if err != nil {
+		logrus.Warn(1)
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	slotSize, sizeNumSlice := tc.slotSizeNative(params, *website)
@@ -134,7 +144,49 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 
 	})
 
-	return c.JSON(200, h)
+	ads := make([]nativeAd, 0)
+	var p protocol = http
+	if rd.Scheme == "https" {
+		p = https
+	}
+
+	for _, v := range h {
+		if v == nil {
+			continue
+		}
+		ads = append(ads, nativeAd{
+			Image:    v.AdImg.String,
+			URL:      v.AdURL.String,
+			Lead:     v.AdAttribute["banner_title_text_type"].(string),
+			More:     params.Get("more"),
+			Title:    v.AdAttribute["banner_description_text_type"].(string),
+			Corners:  params.Get("corners"),
+			Protocol: p,
+			Site:     params.Get("site"),
+		})
+	}
+	var layout layout
+	switch params.Get("position") {
+	case "left":
+		layout = layoutTitleRight
+	case "right":
+		layout = layoutImageRight
+	case "top":
+		layout = layoutImageFirst
+	case "bottom":
+		layout = layoutImageLast
+	case "middle":
+		layout = layoutTitleFirst
+	}
+	n := nativeContainer{
+		Ads:      ads,
+		Layout:   layout,
+		Title:    params.Get("title"),
+		Font:     params.Get("font"),
+		FontSize: params.Get("fontsize"),
+	}
+
+	return c.HTML(200, renderNative(n))
 }
 
 func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData) bool {

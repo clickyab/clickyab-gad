@@ -126,3 +126,52 @@ func (m *Manager) GetAd(id int64, withCPName bool) (*Ad, error) {
 	_ = store(key, &ad, time.Minute)
 	return &ad, nil
 }
+
+//GetAd get data ad from id
+func (m *Manager) GetAds(withCPName bool, ids ...int64) ([]*Ad, error) {
+	ads := []*Ad{}
+	var counter = 0
+
+	for _, i := range ids {
+		key := utils.Sha1(fmt.Sprintf("adData_%d", i))
+		var ad Ad
+		err := fetch(key, &ad)
+		if err == nil {
+			counter++
+		}
+		ads = append(ads, &ad)
+	}
+
+	if counter == len(ids) {
+		return ads, nil
+	}
+
+	var query string
+	if withCPName {
+		query = fmt.Sprintf(`SELECT ads.*,campaigns_ads.ca_id,campaigns_ads.cp_id, campaigns.cp_name FROM ads
+    LEFT JOIN campaigns_ads ON ads.ad_id = campaigns_ads.ad_id
+    LEFT JOIN campaigns ON campaigns_ads.cp_id = campaigns.cp_id WHERE ads.ad_id IN ? LIMIT %d`, len(ids))
+	} else {
+		query = fmt.Sprintf(`SELECT ads.*,campaigns_ads.ca_id,campaigns_ads.cp_id, "CPNAME" as cp_name FROM ads
+    LEFT JOIN campaigns_ads ON ads.ad_id = campaigns_ads.ad_id
+    WHERE ads.ad_id IN ? LIMIT %d`, len(ids))
+
+	}
+
+	ads = make([]*Ad, len(ids))
+	_, err := m.GetRDbMap().Select(
+		&ads,
+		query,
+		ids,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range ads {
+		key := utils.Sha1(fmt.Sprintf("adData_%d", ads[i].AdID))
+		err = store(key, &ads[i], time.Minute)
+	}
+
+	return ads, nil
+}
