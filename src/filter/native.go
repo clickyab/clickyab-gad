@@ -6,5 +6,5 @@ import (
 )
 
 func IsNativeAd(c *selector.Context, in mr.AdData) bool {
-	return in.AdType == 4
+	return in.AdType == mr.NativeAdType
 }
