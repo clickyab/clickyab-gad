@@ -40,6 +40,10 @@ var (
 		filter.CheckWebCategory,
 		filter.CheckProvince,
 	)
+	nativeSelector = selector.Mix(
+		filter.IsNativeNetwork,
+		filter.IsNativeAd,
+	)
 
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
 )
@@ -95,6 +99,42 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	result := "renderFarm(" + string(b) + "); \n//" + time.Since(t).String()
 
 	return c.HTML(200, result)
+}
+
+// Select function is the route that the real biding happen
+func (tc *selectController) selectNativeAd(c echo.Context) error {
+	params := c.QueryParams()
+	rd, website, province, err := tc.getWebDataFromCtx(c)
+	if err != nil {
+		return c.HTML(http.StatusBadRequest, err.Error())
+	}
+	slotSize, sizeNumSlice := tc.slotSizeNative(params, *website)
+	//call context
+	m := selector.Context{
+		RequestData: *rd,
+		Website:     website,
+		Size:        sizeNumSlice,
+		Province:    province,
+	}
+	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
+	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb)
+
+	middlewares.SafeGO(c, false, false, func() {
+		for _, j := range h {
+			if j == nil {
+				continue
+			}
+			ads, err := mr.NewManager().GetAd(j.AdID, false)
+			if err != nil {
+
+			}
+			imp := tc.fillImp(rd, false, ads, j.WinnerBid, website, j.SlotID)
+			tc.callWebWorker(website, j.SlotID, j.AdID, m.RequestData.MegaImp, <-utils.ID, imp, rd)
+		}
+
+	})
+
+	return c.JSON(200, h)
 }
 
 func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData) bool {
@@ -156,7 +196,6 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 
 func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.Province, error) {
 	rd := middlewares.MustGetRequestData(c)
-
 	params := c.QueryParams()
 	publicParams, ok := params["i"]
 	if !ok {
@@ -286,6 +325,29 @@ func (tc selectController) slotSizeWeb(params map[string][]string, website mr.We
 	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 }
 
+func (tc selectController) slotSizeNative(params map[string][]string, website mr.Website) (map[string]*slotData, map[string]int) {
+	var sizeNumSlice = make(map[string]int)
+	var slotPublic []string
+
+	count, ok := params["count"]
+	if !ok {
+		return make(map[string]*slotData), make(map[string]int)
+	}
+	countString := count[0]
+	countInt, err := strconv.Atoi(countString)
+	if err != nil || countInt < 1 {
+		return make(map[string]*slotData), make(map[string]int)
+	}
+
+	for i := 1; i <= countInt; i++ { //range  over slots
+		pub := fmt.Sprintf("%d%s%d", website.WPubID, "470", i)
+		sizeNumSlice[pub] = 20
+		slotPublic = append(slotPublic, pub)
+	}
+
+	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
+}
+
 func (selectController) insertNewSlots(wID int64, newSlots []int64, newSize []int) map[string]int64 {
 	assert.True(len(newSlots) == len(newSize), "[BUG] slot public and count is not matched")
 	result := make(map[string]int64)
@@ -392,7 +454,6 @@ func (tc *selectController) makeShow(
 				ef = mr.ByCapping(underFloor)
 				secBid = false
 			}
-
 			if len(ef) == 0 {
 				middlewares.SafeGO(c, false, false, func() {
 					w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)

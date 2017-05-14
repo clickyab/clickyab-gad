@@ -19,6 +19,9 @@ const VideoAdType = 3
 // DynamicAdType constant
 const DynamicAdType = 2
 
+// NativeAdType constant
+const NativeAdType = 4
+
 // Dynamic ad struct
 type Dynamic struct {
 	Link                            string `json:"-"`
