@@ -26,6 +26,7 @@ type AdData struct {
 	CampaignName      sql.NullString   `json:"cp_name" db:"cp_name"`
 	AdType            int              `json:"ad_type" db:"ad_type"`
 	SlotID            int64            `json:"slot_id" db:"-"`
+	SlotPublicID      string           `json:"-" db:"-"`
 	Campaign
 	AdSize         int            `json:"ad_size" db:"ad_size"`
 	UserID         int64          `json:"u_id" db:"u_id"`

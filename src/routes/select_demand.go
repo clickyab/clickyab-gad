@@ -2,7 +2,6 @@ package routes
 
 import (
 	"config"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"middlewares"
@@ -10,19 +9,22 @@ import (
 	"net/http"
 	"selector"
 
-	"strings"
+	"assert"
+
+	"net/url"
 
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
 
 type Demand struct {
-	ID      int64  `json:"id"`
-	CPM     int64  `json:"cpm"`
-	With    string `json:"with"`
-	Height  string `json:"height"`
-	URL     string `json:"url"`
-	Landing string `json:"landing"`
+	ID          int64  `json:"id"`
+	CPM         int64  `json:"cpm"`
+	With        string `json:"with"`
+	Height      string `json:"height"`
+	URL         string `json:"url"`
+	Landing     string `json:"landing"`
+	SlotTrackID string `json:"slot_track_id"`
 }
 
 // Select function is the route that the real biding happen
@@ -32,7 +34,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
-	slotSize, sizeNumSlice := tc.slotSizeWebExchange(e.Slots, *website)
+	slotSize, sizeNumSlice, trackIDs := tc.slotSizeWebExchange(e.Slots, *website)
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -40,57 +42,47 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 		Size:        sizeNumSlice,
 		Province:    province,
 	}
-	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, ads := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb)
+
+	var sel selector.FilterFunc
+	if e.Platform == "web" {
+		sel = webSelector
+	} else {
+		return c.HTML(http.StatusBadRequest, "not supported platform")
+	}
+
+	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, e.Underfloor)
 
 	//substitute the webMobile slot if exists
-	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
-	val, ok := show[wm]
-	if ok {
-		show["web-mobile"] = val
-		delete(show, wm)
-	}
-
+	dm := []Demand{}
 	for i := range ads {
-		c := []Demand{}
-		d := Demand{
-			ID:      ads[i].AdID,
-			Height:  config.GetSizeByNumStringWith(ads[i].AdSize),
-			With:    config.GetSizeByNumStringWith(ads[i].AdSize),
-			URL:     show[i],
-			CPM:     ads[i].CPM,
-			Landing: stripURLParts(ads[i].AdURL.String),
+		if ads[i] == nil {
+			continue
 		}
-		c = append(c, d)
+		d := Demand{
+			ID:          ads[i].AdID,
+			Height:      config.GetSizeByNumStringWith(ads[i].AdSize),
+			With:        config.GetSizeByNumStringWith(ads[i].AdSize),
+			URL:         show[i],
+			CPM:         ads[i].CPM,
+			Landing:     stripURLParts(ads[i].AdURL.String),
+			SlotTrackID: trackIDs[ads[i].SlotPublicID],
+		}
+		assert.False(d.SlotTrackID == "", "[BUG] invalid track id")
+		dm = append(dm, d)
 	}
 
-	/*b, _ := json.MarshalIndent(c, "\t", "\t")
-	result := "renderFarm(" + string(b) + "); \n//" + time.Since(t).String()*/
-	result, err := json.Marshal(c)
-
-	return c.JSON(200, result)
+	return c.JSON(200, dm)
 }
-func stripURLParts(url string) string {
-	//Lower case the url
-	url = strings.ToLower(url)
-
-	//Strip protocol
-	if index := strings.Index(url, "://"); index > -1 {
-		url = url[index+3:]
+func stripURLParts(in string) string {
+	u, err := url.Parse(in)
+	if err != nil {
+		return ""
 	}
 
-	//Strip path (and query with it)
-	if index := strings.Index(url, "/"); index > -1 {
-		url = url[:index]
-	} else if index := strings.Index(url, "?"); index > -1 { //Strip query if path is not found
-		url = url[:index]
-	}
-
-	//Return domain
-	return url
+	return u.Host
 }
 
-//func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewares.RequestDataExchange, *mr.Website, string, error) {
 func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.Website, *mr.Province, error) {
 	rd := middlewares.MustGetRequestData(c)
 	e := middlewares.MustExchangeGetRequestData(c)
@@ -98,7 +90,7 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewa
 	if err != nil {
 		return nil, nil, nil, nil, errors.New("invalid request")
 	}
-	website, err := tc.fetchWebsiteDomain(fmt.Sprintf("%s/%s", e.Source.Supplier, e.Source.Website), u_id)
+	website, err := tc.fetchWebsiteDomain(fmt.Sprintf("%s/%s", e.Source.Supplier, e.Source.Name), u_id)
 	if err != nil {
 		return nil, nil, nil, nil, errors.New("invalid request")
 	}
@@ -138,16 +130,19 @@ func (tc *selectController) fetchWebsiteDomain(domain string, user int64) (*mr.W
 	return website, err
 }
 
-func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website mr.Website) (map[string]*slotData, map[string]int) {
+func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website mr.Website) (map[string]*slotData, map[string]int, map[string]string) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublics []string
+	var trackIDs = make(map[string]string)
 	for slot := range slots {
 		size, err := config.GetSize(fmt.Sprintf("%dx%d", slots[slot].Width, slots[slot].Height))
 		slotPublic := fmt.Sprintf("%d%d%d", website.WPubID, size, slot)
 		if err != nil {
 			sizeNumSlice[slotPublic] = size
 			slotPublics = append(slotPublics, slotPublic)
+			trackIDs[slotPublic] = slots[slot].TrackID
 		}
 	}
-	return tc.slotSizeNormal(slotPublics, website.WID, sizeNumSlice)
+	all, size := tc.slotSizeNormal(slotPublics, website.WID, sizeNumSlice)
+	return all, size, trackIDs
 }

@@ -6,7 +6,6 @@ import (
 	"utils"
 
 	"encoding/json"
-	"io/ioutil"
 
 	"mr"
 	"net"
@@ -24,7 +23,7 @@ type RequestDataFromExchange struct {
 	UserAgent string `json:"user_agent"`
 
 	Source struct {
-		Website      string                 `json:"website"`
+		Name         string                 `json:"name"`
 		Supplier     string                 `json:"supplier"`
 		FloorCPM     int                    `json:"floor_cpm"`
 		SoftFloorCPM int                    `json:"soft_floor_cpm"`
@@ -44,7 +43,7 @@ type RequestDataFromExchange struct {
 		LatLon struct {
 			Valid bool    `json:"valid"`
 			Lat   float64 `json:"lat"`
-			long  float64 `json:"long"`
+			Long  float64 `json:"long"`
 		} `json:"latlon"`
 	} `json:"location"`
 
@@ -81,7 +80,7 @@ type Province struct {
 type LatLon struct {
 	Valid bool    `json:"valid"`
 	Lat   float64 `json:"lat"`
-	long  float64 `json:"long"`
+	Long  float64 `json:"long"`
 }
 
 const requestDataTokenExchange = "__exchange__"
@@ -91,11 +90,12 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			e := &RequestDataFromExchange{}
-			b := ctx.Request().Body
-			c, err := ioutil.ReadAll(b)
+
+			dec := json.NewDecoder(ctx.Request().Body)
+			defer ctx.Request().Body.Close()
+			err := dec.Decode(e)
 			assert.Nil(err)
-			err = json.Unmarshal(c, e)
-			assert.Nil(err)
+
 			ctx.Set(requestDataTokenExchange, e)
 			rde := RequestData{}
 			rde.IP = net.ParseIP(e.IP)
@@ -115,7 +115,7 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 				rde.Referrer = vv.(string)
 			}
 			rde.MegaImp = e.TrackID
-			rde.TID = utils.CreateCopID(rde.UserAgent, rde.IP, config.Config.Clickyab.CopLen)
+			rde.TID = utils.CreateHash(config.Config.Clickyab.CopLen, []byte(rde.UserAgent), []byte(rde.IP))
 			rde.CopID = mr.NewManager().CreateCookieProfile(rde.TID, rde.IP).ID
 			ctx.Set(requestDataToken, rde)
 			return next(ctx)
