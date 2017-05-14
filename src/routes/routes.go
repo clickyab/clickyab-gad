@@ -35,6 +35,7 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/select", tc.selectWebAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.POST("/demand", tc.selectDemandWebAd, middlewares.RequestExchangeCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/show/:type/:mega/:wid/:ad", tc.show, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.GET("/show/native/:mega/:wid/:native", tc.nativeShow, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/click/:typ/:wid/:mega/:ad/:rand", tc.click, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/conversion/", tc.conversion, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/ads/vast/", tc.selectVastAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)

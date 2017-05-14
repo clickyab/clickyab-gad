@@ -113,7 +113,9 @@ func (tc *selectController) show(c echo.Context) error {
 	v.Set("parent", rd.Parent)
 	u.RawQuery = v.Encode()
 
-	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos, rd.Scheme != "http")
+	data := map[string]*mr.Ad{u.String(): ads}
+
+	res, err := tc.makeAdData(c, typ, long, pos, data, rd.Scheme != "http")
 	if err != nil {
 		return err
 	}
@@ -154,26 +156,39 @@ func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.
 }
 
 // makeAdData
-func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool) (string, error) {
-	if typ == "web" {
-		return tc.makeWebTemplate(c, typ, ads, url, long, pos)
-	}
-
-	buf := &bytes.Buffer{}
-	if !config.NonLinearVastSize(ads.AdSize) {
-		res := tc.makeVastAdData(ads, url, long, pos, https)
-		if err := linear.Execute(buf, res); err != nil {
+func (tc *selectController) makeAdData(c echo.Context, typ string, long string, pos string, data map[string]*mr.Ad, https bool) (string, error) {
+	if typ == "web" && len(data) == 1 {
+		var key string
+		for i := range data {
+			key = i
+			break
+		}
+		return tc.makeWebTemplate(c, typ, data[key], url, long, pos)
+	} else if typ == "vast" && len(data) == 1 {
+		var key string
+		for i := range data {
+			key = i
+			break
+		}
+		ad := data[key]
+		buf := &bytes.Buffer{}
+		if !config.NonLinearVastSize(ad.AdSize) {
+			res := tc.makeVastAdData(ad, url, long, pos, https)
+			if err := linear.Execute(buf, res); err != nil {
+				return "", err
+			}
+			return buf.String(), nil
+		}
+		res := tc.makeVastAdData(ad, url, long, pos, https)
+		if err := nonlinear.Execute(buf, res); err != nil {
 			return "", err
 		}
+
 		return buf.String(), nil
+	} else {
+		// TODO should be implemented
+		return "", nil
 	}
-	res := tc.makeVastAdData(ads, url, long, pos, https)
-	if err := nonlinear.Execute(buf, res); err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
-
 }
 
 func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string) VideoAd {
