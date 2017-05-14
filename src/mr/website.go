@@ -135,3 +135,16 @@ func (m *Manager) FetchWebsiteByDomain(domain string) (*Website, error) {
 	_ = store(key, &res, time.Hour)
 	return &res, nil
 }
+
+func (m *Manager) InsertWebsite(domain string, userID int64) (int64, error) {
+	q := `INSERT INTO websites
+	(u_id,w_domain,w_date,w_pub_id,w_status,updated_at,created_at)
+	VALUES
+	(	?,?		,	?	,	?	,	?	,	NOW(),NOW())`
+	r, err := m.GetRDbMap().Exec(q, userID, domain, time.Now().Unix(), utils.ID, 1)
+	if err != nil {
+		return 0, err
+	}
+	id, _ := r.LastInsertId()
+	return id, nil
+}
