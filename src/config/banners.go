@@ -65,7 +65,7 @@ func GetSizeByNum(num int) (string, string) {
 	return tmp.width, tmp.height
 }
 
-// GetSizeByNum return the size
+// GetSizeByNumString return the size
 func GetSizeByNumString(num int) string {
 	tmp, ok := revSizes[num]
 	if !ok {
