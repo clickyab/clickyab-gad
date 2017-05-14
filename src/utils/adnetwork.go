@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"math"
-	"net"
 )
 
 //Ctr calculate ctr
@@ -29,14 +28,6 @@ func Cpm(bid int64, ctr float64) int64 {
 // WinnerBid calculate winner bid
 func WinnerBid(cpm int64, ctr float64) int64 {
 	return int64(float64(cpm)/(ctr*10)) + 1
-}
-
-// CreateCopID create COP ID
-func CreateCopID(useragent string, ip net.IP, l int) string {
-	h := sha1.New()
-	_, _ = h.Write([]byte(useragent))
-	_, _ = h.Write([]byte(ip))
-	return fmt.Sprintf("%x", h.Sum(nil))[:l]
 }
 
 // CreateHash is used to handle the cop key

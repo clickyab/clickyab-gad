@@ -81,7 +81,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb)
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor)
 
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
@@ -303,7 +303,8 @@ func (tc *selectController) makeShow(
 	slotSize map[string]*slotData,
 	publisher Publisher,
 	multipleVideo bool,
-	minCPC int64) (map[string]string, map[string]*mr.AdData) {
+	minCPC int64,
+	allowUnderFloor bool) (map[string]string, map[string]*mr.AdData) {
 	var (
 		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
@@ -373,7 +374,7 @@ func (tc *selectController) makeShow(
 			if len(exceedFloor) > 0 {
 				ef = mr.ByCapping(exceedFloor)
 				secBid = true
-			} else if config.Config.Clickyab.UnderFloor && len(underFloor) > 0 {
+			} else if allowUnderFloor && len(underFloor) > 0 {
 				ef = mr.ByCapping(underFloor)
 				secBid = false
 			}
@@ -398,7 +399,7 @@ func (tc *selectController) makeShow(
 							publisher.FloorCPM(),
 							len(filteredAds[slotSize[slotID].SlotSize]),
 							len(exceedFloor),
-							config.Config.Clickyab.UnderFloor,
+							allowUnderFloor,
 							len(underFloor),
 							selected[slotSize[slotID].SlotSize], total[slotSize[slotID].SlotSize],
 						),
@@ -436,6 +437,7 @@ func (tc *selectController) makeShow(
 			sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
+			winnerAd[slotID].SlotPublicID = slotSize[slotID].PublicID
 			ads[slotID] = sorted[0]
 
 			if !multipleVideo {
