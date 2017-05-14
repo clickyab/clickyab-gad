@@ -74,6 +74,24 @@ func GetSizeByNumString(num int) string {
 	return (tmp.width + "X" + tmp.height)
 }
 
+// GetSizeByNumStringWith return the size With
+func GetSizeByNumStringWith(num int) string {
+	tmp, ok := revSizes[num]
+	if !ok {
+		return ""
+	}
+	return tmp.width
+}
+
+// GetSizeByNumStringHeight return the size Height
+func GetSizeByNumStringHeight(num int) string {
+	tmp, ok := revSizes[num]
+	if !ok {
+		return ""
+	}
+	return tmp.height
+}
+
 // GetAllSize return all sizes accepted by us
 func GetAllSize() map[string]int {
 	return sizes
