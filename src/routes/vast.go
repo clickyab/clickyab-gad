@@ -109,6 +109,10 @@ func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, len
 			Type:   lenType,
 		}
 	}
+	// add to prevent panic in the query
+	if len(slotPublic) == 0 {
+		return make(map[string]*slotData), make(map[string]int), make(map[string]vastSlotData)
+	}
 	finalSlotData, finalSizeNumSlice := tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 	return finalSlotData, finalSizeNumSlice, vastSlot
 
@@ -126,7 +130,9 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 	if err != nil {
 		return nil, nil, nil, "", nil, errors.New("invalid request")
 	}
-
+	start := c.QueryParam("start")
+	mid := c.QueryParam("mid")
+	end := c.QueryParam("end")
 	if !website.GetActive() {
 		return nil, nil, nil, "", nil, errors.New("web is not active")
 	}
@@ -139,7 +145,7 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 	if err != nil {
 		logrus.Debug(err)
 	}
-	lenVast, vastCon := config.MakeVastLen(c.QueryParam("l"))
+	lenVast, vastCon := config.MakeVastLen(c.QueryParam("l"), start, mid, end)
 	return rd, website, province, lenVast, vastCon, nil
 }
 
