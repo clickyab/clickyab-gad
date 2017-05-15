@@ -244,6 +244,20 @@ func (tc *selectController) fetchProvince(c net.IP, cfHeader string) (*mr.Provin
 
 }
 
+//fetchProvince find province and set context
+func (tc *selectController) fetchProvinceDemand(r string) (*mr.Province, error) {
+	// if strings.ToUpper(cfHeader) != "IR" {
+	// 	return nil, errors.New("not inside iran")
+	// }
+	var province mr.Province
+	province, err := mr.NewManager().ConvertProvince2Info(r)
+	if err != nil {
+		return nil, errors.New("province not found")
+	}
+	return &province, nil
+
+}
+
 func (tc selectController) slotSizeWeb(params map[string][]string, website mr.Website, mobile bool) (map[string]*slotData, map[string]int) {
 	var size = make(map[string]string)
 	var sizeNumSlice = make(map[string]int)

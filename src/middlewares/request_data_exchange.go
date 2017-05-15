@@ -9,8 +9,15 @@ import (
 	"mr"
 	"net"
 	"regexp"
+	"strings"
 	"utils"
 
+	"net/http"
+
+	"bytes"
+	"io/ioutil"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/mssola/user_agent"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -92,14 +99,18 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 		return func(ctx echo.Context) error {
 			e := &RequestDataFromExchange{}
 
-			dec := json.NewDecoder(ctx.Request().Body)
+			tmp, err := ioutil.ReadAll(ctx.Request().Body)
+			assert.Nil(err)
+			buf := bytes.NewBuffer(tmp)
+			logrus.Debug(string(tmp))
+			dec := json.NewDecoder(buf)
 			defer ctx.Request().Body.Close()
-			err := dec.Decode(e)
+			err = dec.Decode(e)
 			assert.Nil(err)
 
 			if e.Platform == "web" {
 				if !domain.MatchString(e.Source.Name) {
-					return fmt.Errorf("invalid publisher site %s", e.Source.Name)
+					return ctx.JSON(http.StatusBadRequest, fmt.Errorf("invalid publisher site %s", e.Source.Name))
 				}
 			}
 			ctx.Set(requestDataTokenExchange, e)
@@ -123,6 +134,12 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			rde.MegaImp = e.TrackID
 			rde.TID = utils.CreateHash(config.Config.Clickyab.CopLen, []byte(rde.UserAgent), []byte(rde.IP))
 			rde.CopID = mr.NewManager().CreateCookieProfile(rde.TID, rde.IP).ID
+			rde.Host = ctx.Request().Host
+			rde.Scheme = ctx.Scheme()
+			if xh := strings.ToLower(ctx.Request().Header.Get("X-Forwarded-Proto")); xh == "https" {
+				rde.Scheme = "https"
+			}
+
 			ctx.Set(requestDataToken, rde)
 			return next(ctx)
 		}
