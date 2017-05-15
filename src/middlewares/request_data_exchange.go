@@ -2,16 +2,22 @@ package middlewares
 
 import (
 	"assert"
-	"errors"
-	"utils"
-
+	"config"
 	"encoding/json"
-
+	"errors"
+	"fmt"
 	"mr"
 	"net"
+	"regexp"
+	"strings"
+	"utils"
 
-	"config"
+	"net/http"
 
+	"bytes"
+	"io/ioutil"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/mssola/user_agent"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -85,17 +91,28 @@ type LatLon struct {
 
 const requestDataTokenExchange = "__exchange__"
 
+var domain = regexp.MustCompile(`^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,3})$`)
+
 // RequestCollectorGenerator try to collect data from request
 func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, int) string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			e := &RequestDataFromExchange{}
 
-			dec := json.NewDecoder(ctx.Request().Body)
+			tmp, err := ioutil.ReadAll(ctx.Request().Body)
+			assert.Nil(err)
+			buf := bytes.NewBuffer(tmp)
+			logrus.Debug(string(tmp))
+			dec := json.NewDecoder(buf)
 			defer ctx.Request().Body.Close()
-			err := dec.Decode(e)
+			err = dec.Decode(e)
 			assert.Nil(err)
 
+			if e.Platform == "web" {
+				if !domain.MatchString(e.Source.Name) {
+					return ctx.JSON(http.StatusBadRequest, fmt.Errorf("invalid publisher site %s", e.Source.Name))
+				}
+			}
 			ctx.Set(requestDataTokenExchange, e)
 			rde := &RequestData{}
 			rde.IP = net.ParseIP(e.IP)
@@ -117,6 +134,12 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			rde.MegaImp = e.TrackID
 			rde.TID = utils.CreateHash(config.Config.Clickyab.CopLen, []byte(rde.UserAgent), []byte(rde.IP))
 			rde.CopID = mr.NewManager().CreateCookieProfile(rde.TID, rde.IP).ID
+			rde.Host = ctx.Request().Host
+			rde.Scheme = ctx.Scheme()
+			if xh := strings.ToLower(ctx.Request().Header.Get("X-Forwarded-Proto")); xh == "https" {
+				rde.Scheme = "https"
+			}
+
 			ctx.Set(requestDataToken, rde)
 			return next(ctx)
 		}

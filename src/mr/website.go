@@ -4,6 +4,7 @@ import (
 	"config"
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"time"
 	"utils"
 )
@@ -123,7 +124,7 @@ func (m *Manager) FetchWebsiteByDomain(domain string) (*Website, error) {
 	}
 	query := `SELECT * FROM websites WHERE w_domain = ? AND w_status NOT IN (2,3)  LIMIT 1`
 
-	err = m.GetRDbMap().SelectOne(
+	err = m.GetProperDBMap().SelectOne(
 		&res,
 		query,
 		domain,
@@ -131,7 +132,6 @@ func (m *Manager) FetchWebsiteByDomain(domain string) (*Website, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	_ = store(key, &res, time.Hour)
 	return &res, nil
 }
@@ -141,7 +141,8 @@ func (m *Manager) InsertWebsite(domain string, userID int64) (int64, error) {
 	(u_id,w_domain,w_date,w_pub_id,w_status,updated_at,created_at)
 	VALUES
 	(	?,?		,	?	,	?	,	?	,	NOW(),NOW())`
-	r, err := m.GetRDbMap().Exec(q, userID, domain, time.Now().Unix(), utils.ID, 1)
+
+	r, err := m.GetWDbMap().Exec(q, userID, domain, time.Now().Unix(), fmt.Sprintf("%d%d", rand.Intn(899)+100, time.Now().Unix()), 1)
 	if err != nil {
 		return 0, err
 	}

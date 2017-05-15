@@ -8,6 +8,10 @@ import (
 	"runtime"
 	"time"
 
+	"strings"
+
+	"strconv"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/fzerorubigd/onion.v2"
 	"gopkg.in/fzerorubigd/onion.v2/extraenv"
@@ -67,6 +71,17 @@ func Initialize() {
 		Config.Clickyab.AdCTREffect+Config.Clickyab.SlotCTREffect == 100,
 		"ad ctr effect and slot ctr effect dose not match",
 	)
+
+	allSuppliers := o.GetStringSlice("clickyab.accepted_demands")
+	for i := range allSuppliers {
+		sp := strings.Split(allSuppliers[i], ":")
+		if len(sp) == 3 {
+			supplierMap[sp[0]] = sp[1]
+			supplier[sp[1]], _ = strconv.ParseInt(sp[2], 10, 0)
+		} else if len(sp) == 2 {
+			supplier[sp[0]], _ = strconv.ParseInt(sp[1], 10, 0)
+		}
+	}
 	for i := range all {
 		all[i].Loaded()
 	}
