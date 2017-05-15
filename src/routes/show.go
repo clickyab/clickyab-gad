@@ -64,6 +64,9 @@ func (tc *selectController) show(c echo.Context) error {
 	typ := c.Param("type")
 	long := c.Request().URL.Query().Get("l")
 	pos := c.Request().URL.Query().Get("pos")
+	if typ == "sync" {
+		typ = "web"
+	}
 	if typ != "web" && typ != "vast" {
 		return c.String(http.StatusNotFound, "not found")
 	}

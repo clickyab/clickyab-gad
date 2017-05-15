@@ -19,7 +19,7 @@ import (
 
 type Demand struct {
 	ID          string `json:"id"`
-	CPM         int64  `json:"cpm"`
+	CPM         int64  `json:"max_cpm"`
 	Width       int    `json:"width"`
 	Height      int    `json:"height"`
 	URL         string `json:"url"`
