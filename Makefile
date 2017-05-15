@@ -25,7 +25,7 @@ export DB_NAME?=clickyab
 export RUSER?=$(APPNAME)
 export RPASS?=$(DEFAULT_PASS)
 export WORK_DIR=$(ROOT)/tmp
-export LINTERCMD=$(LINTER) --cyclo-over=15 --line-length=120 --deadline=100s --disable-all --enable=structcheck --enable=deadconde --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell
+export LINTERCMD=$(LINTER) --cyclo-over=15 --line-length=120 --deadline=100s --disable-all --enable=structcheck --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell
 export UGLIFYJS=$(ROOT)/node_modules/.bin/uglifyjs
 
 .PHONY: all gb clean

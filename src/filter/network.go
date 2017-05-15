@@ -14,3 +14,8 @@ func IsWebNetwork(c *selector.Context, in mr.AdData) bool {
 func IsAppNetwork(c *selector.Context, in mr.AdData) bool {
 	return in.CampaignNetwork == 1
 }
+
+// IsNativeNetwork filter network for native
+func IsNativeNetwork(c *selector.Context, in mr.AdData) bool {
+	return in.CampaignNetwork == 3
+}
