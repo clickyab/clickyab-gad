@@ -97,7 +97,7 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			assert.Nil(err)
 
 			ctx.Set(requestDataTokenExchange, e)
-			rde := RequestData{}
+			rde := &RequestData{}
 			rde.IP = net.ParseIP(e.IP)
 			rde.UserAgent = e.UserAgent
 			ua := user_agent.New(rde.UserAgent)
