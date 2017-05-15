@@ -2,15 +2,14 @@ package middlewares
 
 import (
 	"assert"
-	"errors"
-	"utils"
-
+	"config"
 	"encoding/json"
-
+	"errors"
+	"fmt"
 	"mr"
 	"net"
-
-	"config"
+	"regexp"
+	"utils"
 
 	"github.com/mssola/user_agent"
 	"gopkg.in/labstack/echo.v3"
@@ -85,6 +84,8 @@ type LatLon struct {
 
 const requestDataTokenExchange = "__exchange__"
 
+var domain = regexp.MustCompile(`^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,3})$`)
+
 // RequestCollectorGenerator try to collect data from request
 func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, int) string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -96,6 +97,11 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			err := dec.Decode(e)
 			assert.Nil(err)
 
+			if e.Platform == "web" {
+				if !domain.MatchString(e.Source.Name) {
+					return fmt.Errorf("invalid publisher site %s", e.Source.Name)
+				}
+			}
 			ctx.Set(requestDataTokenExchange, e)
 			rde := &RequestData{}
 			rde.IP = net.ParseIP(e.IP)

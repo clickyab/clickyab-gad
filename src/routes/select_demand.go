@@ -86,11 +86,12 @@ func stripURLParts(in string) string {
 func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.Website, *mr.Province, error) {
 	rd := middlewares.MustGetRequestData(c)
 	e := middlewares.MustExchangeGetRequestData(c)
-	u_id, err := config.GetSupplier(e.Source.Supplier)
+	name, userID, err := config.GetSupplier(e.Source.Supplier)
 	if err != nil {
-		return nil, nil, nil, nil, errors.New("invalid request")
+		return nil, nil, nil, nil, fmt.Errorf("can not accept from %s demand", e.Source.Supplier)
 	}
-	website, err := tc.fetchWebsiteDomain(fmt.Sprintf("%s/%s", e.Source.Supplier, e.Source.Name), u_id)
+	e.Source.Supplier = name
+	website, err := tc.fetchWebsiteDomain(fmt.Sprintf("%s/%s", e.Source.Supplier, e.Source.Name), userID)
 	if err != nil {
 		return nil, nil, nil, nil, errors.New("invalid request")
 	}
