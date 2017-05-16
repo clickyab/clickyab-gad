@@ -6,6 +6,9 @@ import (
 	"runtime"
 	"time"
 
+	"os"
+	"strconv"
+
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"
 	_ "gopkg.in/fzerorubigd/onion.v2/yamlloader" // config need this to load yaml file
@@ -133,7 +136,12 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("cors", true))
 	assert.Nil(d.SetDefault("max_cpu_available", runtime.NumCPU()))
 	assert.Nil(d.SetDefault("proto", "http"))
-	assert.Nil(d.SetDefault("port", 80))
+	port, err := strconv.ParseInt(os.Getenv("PORT"), 10, 0)
+	if err != nil {
+		port = 80
+	}
+
+	assert.Nil(d.SetDefault("port", port))
 	assert.Nil(d.SetDefault("ip", "127.0.0.1"))
 	assert.Nil(d.SetDefault("time_zone", "Asia/Tehran"))
 	assert.Nil(d.SetDefault("machine_name", "m1"))

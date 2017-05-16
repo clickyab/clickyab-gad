@@ -2,7 +2,10 @@ package config
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+
+	"assert"
 )
 
 var (
@@ -71,25 +74,29 @@ func GetSizeByNumString(num int) string {
 	if !ok {
 		return ""
 	}
-	return (tmp.width + "X" + tmp.height)
+	return tmp.width + "X" + tmp.height
 }
 
 // GetSizeByNumStringWith return the size With
-func GetSizeByNumStringWith(num int) string {
+func GetSizeByNumStringWith(num int) int {
 	tmp, ok := revSizes[num]
 	if !ok {
-		return ""
+		return 0
 	}
-	return tmp.width
+	w, err := strconv.Atoi(tmp.width)
+	assert.Nil(err)
+	return w
 }
 
 // GetSizeByNumStringHeight return the size Height
-func GetSizeByNumStringHeight(num int) string {
+func GetSizeByNumStringHeight(num int) int {
 	tmp, ok := revSizes[num]
 	if !ok {
-		return ""
+		return 0
 	}
-	return tmp.height
+	h, err := strconv.Atoi(tmp.height)
+	assert.Nil(err)
+	return h
 }
 
 // GetAllSize return all sizes accepted by us

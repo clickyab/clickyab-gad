@@ -64,6 +64,9 @@ func (tc *selectController) show(c echo.Context) error {
 	typ := c.Param("type")
 	long := c.Request().URL.Query().Get("l")
 	pos := c.Request().URL.Query().Get("pos")
+	if typ == "sync" {
+		typ = "web"
+	}
 	if typ != "web" && typ != "vast" {
 		return c.String(http.StatusNotFound, "not found")
 	}
@@ -201,7 +204,7 @@ func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string) SingleAd {
 }
 func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, pos string, https bool) vastTemplate {
 	w, h := config.GetSizeByNum(ad.AdSize)
-	_, ma := config.MakeVastLen(long)
+	_, ma := config.MakeVastLen(long, "", "", "")
 
 	skipOffset := config.Config.Clickyab.Vast.DefaultSkipOff
 	duration := config.Config.Clickyab.Vast.DefaultDuration
