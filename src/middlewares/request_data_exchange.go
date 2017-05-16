@@ -58,8 +58,10 @@ type RequestDataFromExchange struct {
 
 	Category []string `json:"category"`
 
-	Platform   string `json:"platform"`
-	Underfloor bool   `json:"underfloor"`
+	Platform    string `json:"platform"`
+	Underfloor  bool   `json:"underfloor"`
+	SessionKey  string `json:"session_key"`
+	UserTrackID string `json:"user_track_id"`
 }
 
 type Slot struct {
@@ -132,7 +134,10 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 				rde.Referrer = vv.(string)
 			}
 			rde.MegaImp = e.TrackID
-			rde.TID = utils.CreateHash(config.Config.Clickyab.CopLen, []byte(rde.UserAgent), []byte(rde.IP))
+			rde.TID = e.UserTrackID
+			if rde.TID == "" {
+				rde.TID = utils.CreateHash(config.Config.Clickyab.CopLen, []byte(rde.UserAgent), []byte(rde.IP))
+			}
 			rde.CopID = mr.NewManager().CreateCookieProfile(rde.TID, rde.IP).ID
 			rde.Host = ctx.Request().Host
 			rde.Scheme = "http"
