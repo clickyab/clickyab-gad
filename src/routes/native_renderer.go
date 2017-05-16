@@ -25,8 +25,8 @@ func renderAds(l layout, ads []nativeAd) string {
 type protocol string
 
 const (
-	http  protocol = "http"
-	https          = "https"
+	httpScheme  protocol = "http"
+	httpsScheme          = "https"
 )
 
 type layout int

@@ -127,7 +127,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
-	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb)
+	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor)
 
 	middlewares.SafeGO(c, false, false, func() {
 		for _, j := range h {
@@ -145,9 +145,9 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	})
 
 	ads := make([]nativeAd, 0)
-	var p protocol = http
-	if rd.Scheme == "https" {
-		p = https
+	var p protocol = httpScheme
+	if rd.Scheme == httpsScheme {
+		p = httpsScheme
 	}
 
 	for _, v := range h {
