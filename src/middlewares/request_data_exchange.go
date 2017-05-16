@@ -9,7 +9,6 @@ import (
 	"mr"
 	"net"
 	"regexp"
-	"strings"
 	"utils"
 
 	"net/http"
@@ -26,6 +25,7 @@ import (
 type RequestDataFromExchange struct {
 	TrackID   string `json:"track_id"`
 	IP        string `json:"ip"`
+	Scheme    string `json:"scheme"`
 	UserAgent string `json:"user_agent"`
 
 	Source struct {
@@ -135,9 +135,9 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			rde.TID = utils.CreateHash(config.Config.Clickyab.CopLen, []byte(rde.UserAgent), []byte(rde.IP))
 			rde.CopID = mr.NewManager().CreateCookieProfile(rde.TID, rde.IP).ID
 			rde.Host = ctx.Request().Host
-			rde.Scheme = ctx.Scheme()
-			if xh := strings.ToLower(ctx.Request().Header.Get("X-Forwarded-Proto")); xh == "https" {
-				rde.Scheme = "https"
+			rde.Scheme = "http"
+			if e.Scheme == "https" {
+				rde.Scheme = e.Scheme
 			}
 
 			ctx.Set(requestDataToken, rde)
