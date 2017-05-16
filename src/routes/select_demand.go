@@ -1,17 +1,17 @@
 package routes
 
 import (
+	"assert"
 	"config"
 	"errors"
 	"fmt"
 	"middlewares"
 	"mr"
 	"net/http"
-	"selector"
-
-	"assert"
-
 	"net/url"
+	"redis"
+	"selector"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
@@ -51,6 +51,24 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	} else {
 		return c.HTML(http.StatusBadRequest, "not supported platform")
 	}
+
+	var sessionAds []int64
+	// This is when the supplier is not support grouping
+	if e.SessionKey != "" {
+		e.SessionKey = "EXC_SESS_" + e.SessionKey
+		sessionAds = aredis.SMembersInt(e.SessionKey)
+		if len(sessionAds) > 0 {
+			sel = selector.Mix(sel, func(_ *selector.Context, a mr.AdData) bool {
+				for _, i := range sessionAds {
+					if i == a.AdID {
+						return false
+					}
+				}
+				return true
+			})
+		}
+	}
+
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
 	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, e.Underfloor)
 
@@ -72,9 +90,17 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 		}
 		assert.False(d.SlotTrackID == "", "[BUG] invalid track id")
 		dm = append(dm, d)
+		sessionAds = append(sessionAds, ads[i].AdID)
 	}
 	if len(dm) < 1 {
 		return c.NoContent(http.StatusNoContent)
+	}
+
+	if e.SessionKey != "" {
+		err := aredis.SAddInt(e.SessionKey, true, time.Minute, sessionAds...)
+		if err != nil {
+			logrus.Warn(err)
+		}
 	}
 
 	return c.JSON(http.StatusOK, dm)
