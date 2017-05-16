@@ -131,21 +131,24 @@ func (tc *selectController) show(c echo.Context) error {
 	return c.HTML(http.StatusOK, res)
 }
 
-func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string) (string, error) {
+func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool) (string, error) {
 	buf := &bytes.Buffer{}
-
 	switch ads.AdType {
 	case mr.SingleAdType:
-		res := tc.makeSingleAdData(ads, url)
+		res := tc.makeSingleAdData(ads, url, https)
 		if err := singleAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
 	case mr.VideoAdType:
-		res := tc.makeVideoAdData(ads, url)
+		res := tc.makeVideoAdData(ads, url, https)
 		if err := videoAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
 	case mr.DynamicAdType:
+		if https {
+			ads.AdAttribute.Product = strings.Replace(ads.AdAttribute.Product, "http://", "https://", -1)
+			ads.AdAttribute.Logo = strings.Replace(ads.AdAttribute.Logo, "http://", "https://", -1)
+		}
 		res := getTemplate("", ads.AdSize)
 		ads.AdAttribute.Link = url
 		if err := res.Execute(buf, ads.AdAttribute); err != nil {
@@ -159,7 +162,7 @@ func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.
 // makeAdData
 func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool) (string, error) {
 	if typ == "web" {
-		return tc.makeWebTemplate(c, typ, ads, url, long, pos)
+		return tc.makeWebTemplate(c, typ, ads, url, long, pos, https)
 	}
 
 	buf := &bytes.Buffer{}
@@ -179,25 +182,33 @@ func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, u
 
 }
 
-func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string) VideoAd {
+func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string, https bool) VideoAd {
 	w, h := config.GetSizeByNum(ad.AdSize)
+	src := ad.AdImg.String
+	if https {
+		src = strings.Replace(src, "http://", "https://", -1)
+	}
 	sa := VideoAd{
 		Link:   url,
 		Height: h,
 		Width:  w,
-		Src:    ad.AdImg.String,
+		Src:    src,
 		Tiny:   true,
 	}
 	return sa
 }
 
-func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string) SingleAd {
+func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string, https bool) SingleAd {
 	w, h := config.GetSizeByNum(ad.AdSize)
+	src := ad.AdImg.String
+	if https {
+		src = strings.Replace(src, "http://", "https://", -1)
+	}
 	sa := SingleAd{
 		Link:   url,
 		Height: h,
 		Width:  w,
-		Src:    ad.AdImg.String,
+		Src:    src,
 		Tiny:   true,
 	}
 	return sa
