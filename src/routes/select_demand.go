@@ -45,7 +45,6 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 		Size:        sizeNumSlice,
 		Province:    province,
 	}
-
 	var sel selector.FilterFunc
 	if e.Platform == "web" {
 		sel = webSelector
