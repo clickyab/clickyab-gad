@@ -215,7 +215,7 @@ func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string, https bool) 
 }
 func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, pos string, https bool) vastTemplate {
 	w, h := config.GetSizeByNum(ad.AdSize)
-	_, ma := config.MakeVastLen(long)
+	_, ma := config.MakeVastLen(long, "", "", "")
 
 	skipOffset := config.Config.Clickyab.Vast.DefaultSkipOff
 	duration := config.Config.Clickyab.Vast.DefaultDuration
