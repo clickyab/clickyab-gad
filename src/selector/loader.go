@@ -54,7 +54,7 @@ func GetAdData() []mr.AdData {
 	defer lock.RUnlock()
 
 	fail := time.Since(lastTime) > 5*time.Minute
-	assert.False(fail, "[BUG] the loader is not called for so long!")
+	//assert.False(fail, "[BUG] the loader is not called for so long!")
 
 	if fail {
 		logrus.Fatal("failed! restart me please")

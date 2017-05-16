@@ -60,7 +60,7 @@ type RequestDataFromExchange struct {
 
 	Platform    string `json:"platform"`
 	Underfloor  bool   `json:"underfloor"`
-	SessionKey  string `json:"session_key"`
+	SessionKey  string `json:"page_track_id"`
 	UserTrackID string `json:"user_track_id"`
 }
 

@@ -39,7 +39,7 @@ func True(test bool, message string, params ...interface{}) {
 		for i := range params {
 			f[fmt.Sprintf("param%d", i)] = params[i]
 		}
-		logrus.WithFields(f).Panic("must be true, but its not")
+		logrus.WithFields(f).Panic(message)
 	}
 }
 
