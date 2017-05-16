@@ -1,6 +1,10 @@
 package config
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/Sirupsen/logrus"
+)
 
 const (
 	short = "short"
@@ -28,19 +32,38 @@ var vastConfig = map[string]map[string][]string{
 }
 
 // MakeVastLen return vast len
-func MakeVastLen(len string) (string, map[string][]string) {
-	if m, found := vastConfig[len]; found {
-		return def, m
-	}
-
-	if m, err := strconv.ParseInt(len, 10, 64); err == nil {
-		if m < 30 {
-			return short, vastConfig[short]
-		} else if m < 90 {
-			return def, vastConfig[def]
-		} else {
-			return long, vastConfig[long]
+func MakeVastLen(len string, first string, mid string, end string) (string, map[string][]string) {
+	//apply vast customization
+	preRes := vastConfig
+	for i := range preRes {
+		if first != "" {
+			delete(preRes[i], "start")
+		}
+		if end != "" {
+			delete(preRes[i], "end")
+		}
+		if mid != "" {
+			for j := range preRes[i] {
+				if j != "start" && j != "end" {
+					logrus.Info(j)
+					delete(preRes[i], j)
+				}
+			}
 		}
 	}
-	return def, vastConfig[def]
+	if m, found := preRes[len]; found {
+		return def, m
+	}
+	if m, err := strconv.ParseInt(len, 10, 64); err == nil {
+		if m < 30 {
+			logrus.Warn("<30")
+			logrus.Warn(preRes[short])
+			return short, preRes[short]
+		} else if m < 90 {
+			return def, preRes[def]
+		} else {
+			return long, preRes[long]
+		}
+	}
+	return def, preRes[def]
 }
