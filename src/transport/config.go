@@ -9,6 +9,8 @@ const (
 	CAMPAIGN = "CP"
 	// ADVERTISE for advertise keys
 	ADVERTISE = "AD"
+	// NATIVE for native keys
+	NATIVE = "NAT"
 	// SLOT for slot keys
 	SLOT = "S"
 	// WEBSITE is for website keys

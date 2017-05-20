@@ -1,27 +1,29 @@
 package routes
 
 import (
+	"assert"
 	"config"
 	"errors"
 	"fmt"
 	"middlewares"
 	"mr"
 	"net/http"
-	"selector"
-
-	"assert"
-
 	"net/url"
+	"redis"
+	"selector"
+	"time"
+
+	"redlock"
 
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
 
 type Demand struct {
-	ID          int64  `json:"id"`
-	CPM         int64  `json:"cpm"`
-	With        string `json:"with"`
-	Height      string `json:"height"`
+	ID          string `json:"id"`
+	CPM         int64  `json:"max_cpm"`
+	Width       int    `json:"width"`
+	Height      int    `json:"height"`
 	URL         string `json:"url"`
 	Landing     string `json:"landing"`
 	SlotTrackID string `json:"slot_track_id"`
@@ -34,7 +36,11 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
-	slotSize, sizeNumSlice, trackIDs := tc.slotSizeWebExchange(e.Slots, *website)
+	slotSize, sizeNumSlice, trackIDs, err := tc.slotSizeWebExchange(e.Slots, *website)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -42,12 +48,30 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 		Size:        sizeNumSlice,
 		Province:    province,
 	}
-
 	var sel selector.FilterFunc
 	if e.Platform == "web" {
 		sel = webSelector
 	} else {
 		return c.HTML(http.StatusBadRequest, "not supported platform")
+	}
+	lockSession := "DRD_SESS_" + e.SessionKey
+	redlock.Lock(lockSession, lockSession, 100*time.Millisecond)
+	defer redlock.Unlock([]string{lockSession}, lockSession)
+	var sessionAds []int64
+	// This is when the supplier is not support grouping
+	if e.SessionKey != "" {
+		e.SessionKey = "EXC_SESS_" + e.SessionKey
+		sessionAds = aredis.SMembersInt(e.SessionKey)
+		if len(sessionAds) > 0 {
+			sel = selector.Mix(sel, func(_ *selector.Context, a mr.AdData) bool {
+				for _, i := range sessionAds {
+					if i == a.AdID {
+						return false
+					}
+				}
+				return true
+			})
+		}
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
@@ -59,10 +83,11 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 		if ads[i] == nil {
 			continue
 		}
+
 		d := Demand{
-			ID:          ads[i].AdID,
-			Height:      config.GetSizeByNumStringWith(ads[i].AdSize),
-			With:        config.GetSizeByNumStringWith(ads[i].AdSize),
+			ID:          fmt.Sprint(ads[i].AdID),
+			Height:      config.GetSizeByNumStringHeight(ads[i].AdSize),
+			Width:       config.GetSizeByNumStringWith(ads[i].AdSize),
 			URL:         show[i],
 			CPM:         ads[i].CPM,
 			Landing:     stripURLParts(ads[i].AdURL.String),
@@ -70,9 +95,20 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 		}
 		assert.False(d.SlotTrackID == "", "[BUG] invalid track id")
 		dm = append(dm, d)
+		sessionAds = append(sessionAds, ads[i].AdID)
+	}
+	if len(dm) < 1 {
+		return c.NoContent(http.StatusNoContent)
 	}
 
-	return c.JSON(200, dm)
+	if e.SessionKey != "" {
+		err := aredis.SAddInt(e.SessionKey, true, time.Minute, sessionAds...)
+		if err != nil {
+			logrus.Warn(err)
+		}
+	}
+
+	return c.JSON(http.StatusOK, dm)
 }
 func stripURLParts(in string) string {
 	u, err := url.Parse(in)
@@ -86,15 +122,18 @@ func stripURLParts(in string) string {
 func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.Website, *mr.Province, error) {
 	rd := middlewares.MustGetRequestData(c)
 	e := middlewares.MustExchangeGetRequestData(c)
-	u_id, err := config.GetSupplier(e.Source.Supplier)
+	name, userID, err := config.GetSupplier(e.Source.Supplier)
 	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("can not accept from %s demand", e.Source.Supplier)
+	}
+	e.Source.Supplier = name
+	website, err := tc.fetchWebsiteDomain(fmt.Sprintf("%s/%s", e.Source.Supplier, e.Source.Name), userID)
+	if err != nil {
+		logrus.Warn(err)
 		return nil, nil, nil, nil, errors.New("invalid request")
 	}
-	website, err := tc.fetchWebsiteDomain(fmt.Sprintf("%s/%s", e.Source.Supplier, e.Source.Name), u_id)
-	if err != nil {
-		return nil, nil, nil, nil, errors.New("invalid request")
-	}
-
+	// Set the floor here. its related to the demand request not our data
+	website.WFloorCpm.Int64, website.WFloorCpm.Valid = int64(e.Source.FloorCPM), true
 	if !website.GetActive() {
 		return nil, nil, nil, nil, errors.New("web is not active")
 	}
@@ -103,10 +142,12 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewa
 		return nil, nil, nil, nil, errors.New("user is banned")
 	}
 
-	//province := rd.Province.Name
-	province, err := tc.fetchProvince(rd.IP, c.Request().Header.Get("Cf-Ipcountry"))
-	if err != nil {
-		logrus.Debug(err)
+	var province *mr.Province
+	if e.Location.Province.Valid {
+		province, err = tc.fetchProvinceDemand(e.Location.Province.Name)
+		if err != nil {
+			logrus.Debug(err)
+		}
 	}
 	return rd, e, website, province, nil
 }
@@ -130,19 +171,22 @@ func (tc *selectController) fetchWebsiteDomain(domain string, user int64) (*mr.W
 	return website, err
 }
 
-func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website mr.Website) (map[string]*slotData, map[string]int, map[string]string) {
+func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website mr.Website) (map[string]*slotData, map[string]int, map[string]string, error) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublics []string
 	var trackIDs = make(map[string]string)
 	for slot := range slots {
 		size, err := config.GetSize(fmt.Sprintf("%dx%d", slots[slot].Width, slots[slot].Height))
 		slotPublic := fmt.Sprintf("%d%d%d", website.WPubID, size, slot)
-		if err != nil {
+		if err == nil {
 			sizeNumSlice[slotPublic] = size
 			slotPublics = append(slotPublics, slotPublic)
 			trackIDs[slotPublic] = slots[slot].TrackID
 		}
 	}
+	if len(slotPublics) == 0 {
+		return nil, nil, nil, errors.New("no supported slot size")
+	}
 	all, size := tc.slotSizeNormal(slotPublics, website.WID, sizeNumSlice)
-	return all, size, trackIDs
+	return all, size, trackIDs, nil
 }

@@ -182,3 +182,43 @@ func BRPopSingle(key string, t time.Duration) (string, bool) {
 
 	return "", false
 }
+
+// SMembers return data in a set
+func SMembers(key string) []string {
+	return Client.SMembers(key).Val()
+}
+
+// SAdd is a function to add data to set
+func SAdd(key string, touch bool, expire time.Duration, members ...interface{}) error {
+	add := Client.SAdd(key, members...)
+	if err := add.Err(); err != nil {
+		return err
+	}
+
+	if touch {
+		Client.Expire(key, expire)
+	}
+
+	return nil
+}
+
+// SMembersInt is the []int64 version of SMembers
+func SMembersInt(key string) []int64 {
+	sm := SMembers(key)
+	re := make([]int64, len(sm))
+	for i := range sm {
+		re[i], _ = strconv.ParseInt(sm[i], 10, 0)
+	}
+
+	return re
+}
+
+// SAddInt is the int64 version of SAdd
+func SAddInt(key string, touch bool, expire time.Duration, members ...int64) error {
+	r := make([]interface{}, len(members))
+	for i := range members {
+		r[i] = fmt.Sprint(members[i])
+	}
+
+	return SAdd(key, touch, expire, r...)
+}

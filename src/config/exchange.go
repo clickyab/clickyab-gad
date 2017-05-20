@@ -3,19 +3,19 @@ package config
 import "fmt"
 
 var (
-	supplier = map[string]int64{
-		"adro": 100000,
-		"adad": 100001,
-		"saba": 100002,
-	}
+	supplierMap = map[string]string{}
+	supplier    = map[string]int64{}
 )
 
 // GetSupplier return the id supplier
-func GetSupplier(name string) (int64, error) {
-	s, ok := supplier[name]
-	if ok {
-		return s, nil
+func GetSupplier(name string) (string, int64, error) {
+	if newName, ok := supplierMap[name]; ok {
+		name = newName
 	}
 
-	return 0, fmt.Errorf("supplier %s is not valid", name)
+	if s := supplier[name]; s > 0 {
+		return name, s, nil
+	}
+
+	return "", 0, fmt.Errorf("supplier %s is not valid", name)
 }

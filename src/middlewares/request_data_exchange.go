@@ -2,16 +2,21 @@ package middlewares
 
 import (
 	"assert"
-	"errors"
-	"utils"
-
+	"config"
 	"encoding/json"
-
+	"errors"
+	"fmt"
 	"mr"
 	"net"
+	"regexp"
+	"utils"
 
-	"config"
+	"net/http"
 
+	"bytes"
+	"io/ioutil"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/mssola/user_agent"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -20,6 +25,7 @@ import (
 type RequestDataFromExchange struct {
 	TrackID   string `json:"track_id"`
 	IP        string `json:"ip"`
+	Scheme    string `json:"scheme"`
 	UserAgent string `json:"user_agent"`
 
 	Source struct {
@@ -52,8 +58,10 @@ type RequestDataFromExchange struct {
 
 	Category []string `json:"category"`
 
-	Platform   string `json:"platform"`
-	Underfloor bool   `json:"underfloor"`
+	Platform    string `json:"platform"`
+	Underfloor  bool   `json:"underfloor"`
+	SessionKey  string `json:"session_key"`
+	UserTrackID string `json:"user_track_id"`
 }
 
 type Slot struct {
@@ -85,19 +93,30 @@ type LatLon struct {
 
 const requestDataTokenExchange = "__exchange__"
 
+var domain = regexp.MustCompile(`^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,3})$`)
+
 // RequestCollectorGenerator try to collect data from request
 func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, int) string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
 			e := &RequestDataFromExchange{}
 
-			dec := json.NewDecoder(ctx.Request().Body)
+			tmp, err := ioutil.ReadAll(ctx.Request().Body)
+			assert.Nil(err)
+			buf := bytes.NewBuffer(tmp)
+			logrus.Debug(string(tmp))
+			dec := json.NewDecoder(buf)
 			defer ctx.Request().Body.Close()
-			err := dec.Decode(e)
+			err = dec.Decode(e)
 			assert.Nil(err)
 
+			if e.Platform == "web" {
+				if !domain.MatchString(e.Source.Name) {
+					return ctx.JSON(http.StatusBadRequest, fmt.Errorf("invalid publisher site %s", e.Source.Name))
+				}
+			}
 			ctx.Set(requestDataTokenExchange, e)
-			rde := RequestData{}
+			rde := &RequestData{}
 			rde.IP = net.ParseIP(e.IP)
 			rde.UserAgent = e.UserAgent
 			ua := user_agent.New(rde.UserAgent)
@@ -115,8 +134,17 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 				rde.Referrer = vv.(string)
 			}
 			rde.MegaImp = e.TrackID
-			rde.TID = utils.CreateHash(config.Config.Clickyab.CopLen, []byte(rde.UserAgent), []byte(rde.IP))
+			rde.TID = e.UserTrackID
+			if rde.TID == "" {
+				rde.TID = utils.CreateHash(config.Config.Clickyab.CopLen, []byte(rde.UserAgent), []byte(rde.IP))
+			}
 			rde.CopID = mr.NewManager().CreateCookieProfile(rde.TID, rde.IP).ID
+			rde.Host = ctx.Request().Host
+			rde.Scheme = "http"
+			if e.Scheme == "https" {
+				rde.Scheme = e.Scheme
+			}
+
 			ctx.Set(requestDataToken, rde)
 			return next(ctx)
 		}

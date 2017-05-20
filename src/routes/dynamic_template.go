@@ -23,9 +23,9 @@ var dynamic1 = map[int]string{
     }
         @font-face {
 font-family: 'behdad';
-src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
 font-weight: normal;
 font-style: normal;
 }
@@ -190,9 +190,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     	margin:0;
     }
  font-family: 'behdad';
-	src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+	src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
 	font-style: normal;
 	}
 	.minimal_template .banner_thumb {
@@ -360,9 +360,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     }
   @font-face {
         font-family: 'behdad';
-        src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+        src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
         font-weight: normal;
         font-style: normal;
     }
@@ -534,9 +534,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     }
   @font-face {
 	font-family: 'behdad';
-	src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+	src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
 	font-weight: normal;
 	font-style: normal;
 	}
@@ -713,9 +713,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     }
   @font-face {
         font-family: 'behdad';
-        src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+        src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
         font-weight: normal;
         font-style: normal;
     }
@@ -901,9 +901,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     }
   @font-face {
             font-family: 'behdad';
-            src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+            src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
@@ -1088,9 +1088,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     }
  @font-face {
             font-family: 'behdad';
-            src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+            src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
@@ -1267,9 +1267,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     }
  @font-face {
             font-family: 'behdad';
-           src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+           src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
@@ -1448,9 +1448,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     }
  @font-face {
             font-family: 'behdad';
-            src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+            src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
@@ -1651,9 +1651,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     }
 @font-face {
 		font-family: 'behdad';
-		src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+		src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
 		font-weight: normal;
 		font-style: normal;
 	}
@@ -1826,9 +1826,9 @@ fill: {{.IconCtaBannerPickerSelector}};
     }
   @font-face {
             font-family: 'behdad';
-           src:    url('http://static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
-	url('http://static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
+           src:    url('//static.clickyab.com/font/Behdad-Regular-1-0.woff') format('woff'),
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.otf') format('opentype') ,
+	url('//static.clickyab.com/font/Behdad-Regular-1-0.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
         }

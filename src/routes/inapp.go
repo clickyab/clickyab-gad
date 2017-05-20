@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"middlewares"
 	"mr"
-	"net/http"
 	"net/url"
 	"selector"
 	"strconv"
@@ -16,6 +15,8 @@ import (
 	"utils"
 
 	"config"
+
+	"net/http"
 
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"

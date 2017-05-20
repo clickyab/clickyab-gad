@@ -41,6 +41,18 @@ var (
 		filter.CheckProvince,
 	)
 
+	nativeSelector = selector.Mix(
+		filter.IsNativeNetwork,
+		filter.IsNativeAd,
+		filter.IsWebMobile,
+		filter.CheckWebSize,
+		filter.CheckOS,
+		filter.CheckWhiteList,
+		filter.CheckWebBlackList,
+		filter.CheckWebCategory,
+		filter.CheckProvince,
+	)
+
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
 )
 
@@ -95,6 +107,86 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	result := "renderFarm(" + string(b) + "); \n//" + time.Since(t).String()
 
 	return c.HTML(200, result)
+}
+
+// Select function is the route that the real biding happen
+func (tc *selectController) selectNativeAd(c echo.Context) error {
+	logrus.Warn("select native ad")
+	params := c.QueryParams()
+	rd, website, province, err := tc.getWebDataFromCtx(c)
+	if err != nil {
+		logrus.Warn(1)
+		return c.HTML(http.StatusBadRequest, err.Error())
+	}
+	slotSize, sizeNumSlice := tc.slotSizeNative(params, *website)
+	//call context
+	m := selector.Context{
+		RequestData: *rd,
+		Website:     website,
+		Size:        sizeNumSlice,
+		Province:    province,
+	}
+	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
+	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor)
+
+	middlewares.SafeGO(c, false, false, func() {
+		for _, j := range h {
+			if j == nil {
+				continue
+			}
+			ads, err := mr.NewManager().GetAd(j.AdID, false)
+			if err != nil {
+
+			}
+			imp := tc.fillImp(rd, false, ads, j.WinnerBid, website, j.SlotID)
+			tc.callWebWorker(website, j.SlotID, j.AdID, m.RequestData.MegaImp, <-utils.ID, imp, rd)
+		}
+
+	})
+
+	ads := make([]nativeAd, 0)
+	var p protocol = httpScheme
+	if rd.Scheme == httpsScheme {
+		p = httpsScheme
+	}
+
+	for _, v := range h {
+		if v == nil {
+			continue
+		}
+		ads = append(ads, nativeAd{
+			Image:    v.AdImg.String,
+			URL:      v.AdURL.String,
+			Lead:     v.AdAttribute["banner_title_text_type"].(string),
+			More:     params.Get("more"),
+			Title:    v.AdAttribute["banner_description_text_type"].(string),
+			Corners:  params.Get("corners"),
+			Protocol: p,
+			Site:     params.Get("site"),
+		})
+	}
+	var layout layout
+	switch params.Get("position") {
+	case "left":
+		layout = layoutTitleRight
+	case "right":
+		layout = layoutImageRight
+	case "top":
+		layout = layoutImageFirst
+	case "bottom":
+		layout = layoutImageLast
+	case "middle":
+		layout = layoutTitleFirst
+	}
+	n := nativeContainer{
+		Ads:      ads,
+		Layout:   layout,
+		Title:    params.Get("title"),
+		Font:     params.Get("font"),
+		FontSize: params.Get("fontsize"),
+	}
+
+	return c.HTML(200, renderNative(n))
 }
 
 func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData) bool {
@@ -156,7 +248,6 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 
 func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.Province, error) {
 	rd := middlewares.MustGetRequestData(c)
-
 	params := c.QueryParams()
 	publicParams, ok := params["i"]
 	if !ok {
@@ -244,6 +335,20 @@ func (tc *selectController) fetchProvince(c net.IP, cfHeader string) (*mr.Provin
 
 }
 
+//fetchProvince find province and set context
+func (tc *selectController) fetchProvinceDemand(r string) (*mr.Province, error) {
+	// if strings.ToUpper(cfHeader) != "IR" {
+	// 	return nil, errors.New("not inside iran")
+	// }
+	var province mr.Province
+	province, err := mr.NewManager().ConvertProvince2Info(r)
+	if err != nil {
+		return nil, errors.New("province not found")
+	}
+	return &province, nil
+
+}
+
 func (tc selectController) slotSizeWeb(params map[string][]string, website mr.Website, mobile bool) (map[string]*slotData, map[string]int) {
 	var size = make(map[string]string)
 	var sizeNumSlice = make(map[string]int)
@@ -269,6 +374,29 @@ func (tc selectController) slotSizeWeb(params map[string][]string, website mr.We
 		slotPublic = append(slotPublic, slotPub)
 		sizeNumSlice[slotPub] = 8
 	}
+	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
+}
+
+func (tc selectController) slotSizeNative(params map[string][]string, website mr.Website) (map[string]*slotData, map[string]int) {
+	var sizeNumSlice = make(map[string]int)
+	var slotPublic []string
+
+	count, ok := params["count"]
+	if !ok {
+		return make(map[string]*slotData), make(map[string]int)
+	}
+	countString := count[0]
+	countInt, err := strconv.Atoi(countString)
+	if err != nil || countInt < 1 {
+		return make(map[string]*slotData), make(map[string]int)
+	}
+
+	for i := 1; i <= countInt; i++ { //range  over slots
+		pub := fmt.Sprintf("%d%s%d", website.WPubID, "470", i)
+		sizeNumSlice[pub] = 20
+		slotPublic = append(slotPublic, pub)
+	}
+
 	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 }
 
@@ -378,7 +506,6 @@ func (tc *selectController) makeShow(
 				ef = mr.ByCapping(underFloor)
 				secBid = false
 			}
-
 			if len(ef) == 0 {
 				middlewares.SafeGO(c, false, false, func() {
 					w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
@@ -387,14 +514,7 @@ func (tc *selectController) makeShow(
 						When:  time.Now(),
 						Where: publisher.GetName(),
 						Message: fmt.Sprintf(
-							"no ad pass the bid \n"+
-								"size was %sx%s \n"+
-								"the floor was %d \n"+
-								"all add count in this size %d \n"+
-								"pass the floor %d \n"+
-								"under floor is allowd? %v \n"+
-								"under floor count %d \n"+
-								"currently %d item of %d in this request is filled",
+							"no ad pass the bid \n"+"size was %sx%s \n"+"the floor was %d \n"+"all add count in this size %d \n"+"pass the floor %d \n"+"under floor is allowd? %v \n"+"under floor count %d \n"+"currently %d item of %d in this request is filled",
 							w, h,
 							publisher.FloorCPM(),
 							len(filteredAds[slotSize[slotID].SlotSize]),
