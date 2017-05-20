@@ -13,6 +13,8 @@ import (
 	"selector"
 	"time"
 
+	"redlock"
+
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -27,7 +29,7 @@ type Demand struct {
 	SlotTrackID string `json:"slot_track_id"`
 }
 
-// Select function is the route that the real biding happen
+// Select function is the route that the real biding happend
 func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	//t := time.Now()
 	rd, e, website, province, err := tc.getWebDataExchangeFromCtx(c)
@@ -38,6 +40,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
+
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -51,7 +54,9 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	} else {
 		return c.HTML(http.StatusBadRequest, "not supported platform")
 	}
-
+	lockSession := "DRD_SESS_" + e.SessionKey
+	redlock.Lock(lockSession, lockSession, 100*time.Millisecond)
+	defer redlock.Unlock([]string{lockSession}, lockSession)
 	var sessionAds []int64
 	// This is when the supplier is not support grouping
 	if e.SessionKey != "" {
