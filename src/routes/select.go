@@ -95,7 +95,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor)
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true)
 
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
@@ -129,7 +129,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
-	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor)
+	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, false)
 
 	middlewares.SafeGO(c, false, false, func() {
 		for _, j := range h {
@@ -447,7 +447,8 @@ func (tc *selectController) makeShow(
 	publisher Publisher,
 	multipleVideo bool,
 	minCPC int64,
-	allowUnderFloor bool) (map[string]string, map[string]*mr.AdData) {
+	allowUnderFloor bool,
+	capping bool) (map[string]string, map[string]*mr.AdData) {
 	var (
 		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
@@ -487,7 +488,9 @@ func (tc *selectController) makeShow(
 				wait <- ads
 			}
 		}()
-		filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
+		if capping {
+			filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
+		}
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		selected := make(map[int]int)
 		total := make(map[int]int)
@@ -569,7 +572,9 @@ func (tc *selectController) makeShow(
 				sorted[0].WinnerBid = minCPC
 			}
 
-			sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
+			if capping {
+				sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
+			}
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
 			winnerAd[slotID].SlotPublicID = slotSize[slotID].PublicID
