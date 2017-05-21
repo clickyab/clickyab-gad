@@ -25,6 +25,8 @@ import (
 	"transport"
 	"utils"
 
+	"strings"
+
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -149,21 +151,32 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	if rd.Scheme == httpsScheme {
 		p = httpsScheme
 	}
-
+	// check more param
+	if params.Get("more") == "" {
+		return c.HTML(http.StatusBadRequest, "more not found")
+	}
 	for _, v := range h {
 		if v == nil {
 			continue
 		}
+		if p == httpsScheme {
+			v.AdImg.String = strings.Replace(v.AdImg.String, "http://", "https://", -1)
+		}
+		logrus.Info(v.AdAttribute["banner_title_text_type"].(string))
+		logrus.Info(v.AdAttribute["banner_description_text_type"].(string))
 		ads = append(ads, nativeAd{
-			Image:    v.AdImg.String,
-			URL:      v.AdURL.String,
-			Lead:     v.AdAttribute["banner_title_text_type"].(string),
-			More:     params.Get("more"),
-			Title:    v.AdAttribute["banner_description_text_type"].(string),
-			Corners:  params.Get("corners"),
-			Protocol: p,
-			Site:     params.Get("site"),
+			Image:   v.AdImg.String,
+			URL:     v.AdURL.String,
+			Lead:    v.AdAttribute["banner_title_text_type"].(string),
+			More:    params.Get("more"),
+			Title:   v.AdAttribute["banner_description_text_type"].(string),
+			Corners: params.Get("corners"),
+			Site:    params.Get("site"),
 		})
+	}
+	logrus.Infof("%+v", ads)
+	if len(ads) == 0 {
+		return c.HTML(http.StatusBadRequest, "no ads")
 	}
 	var layout layout
 	switch params.Get("position") {
@@ -177,6 +190,8 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		layout = layoutImageLast
 	case "middle":
 		layout = layoutTitleFirst
+	default:
+		return c.HTML(http.StatusBadRequest, "position not valid")
 	}
 	n := nativeContainer{
 		Ads:      ads,
