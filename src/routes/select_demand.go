@@ -75,7 +75,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
-	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, e.Underfloor)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, e.Underfloor, true)
 
 	//substitute the webMobile slot if exists
 	dm := []Demand{}

@@ -56,7 +56,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 		CellLocation: cell,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), appSelector)
-	_, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor)
+	_, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true)
 	assert.True(len(ads) == 1, "[BUG] why select no ad?")
 
 	var (
