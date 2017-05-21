@@ -488,9 +488,8 @@ func (tc *selectController) makeShow(
 				wait <- ads
 			}
 		}()
-		if capping {
-			filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
-		}
+
+		filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, capping)
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		selected := make(map[int]int)
 		total := make(map[int]int)
@@ -572,9 +571,7 @@ func (tc *selectController) makeShow(
 				sorted[0].WinnerBid = minCPC
 			}
 
-			if capping {
-				sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
-			}
+			sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
 			winnerAd[slotID].SlotPublicID = slotSize[slotID].PublicID
