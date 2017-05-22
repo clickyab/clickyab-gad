@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 
+	"regexp"
+
 	"github.com/fzerorubigd/expand"
 	"gopkg.in/fzerorubigd/onion.v2"
 	_ "gopkg.in/fzerorubigd/onion.v2/yamlloader" // config need this to load yaml file
@@ -18,6 +20,8 @@ const (
 	organization = "clickyab"
 	appName      = "gad"
 )
+
+var redisPattern = regexp.MustCompile("^redis://([^:]+):([^@]+)@([^:]+):([0-9]+)$")
 
 //Config is the global application config instance
 var Config AppConfig
@@ -149,11 +153,23 @@ func defaultLayer() onion.Layer {
 	p, err := expand.Path("$HOME/gad/statics")
 	assert.Nil(err)
 	assert.Nil(d.SetDefault("static_root", p))
-	fmt.Println(p)
+	var (
+		rport = "6379"
+		rhost = "127.0.0.1"
+		rpass string
+	)
+
+	redisURL := os.Getenv("REDIS_URL")
+	if all := redisPattern.FindStringSubmatch(redisURL); len(all) == 5 {
+		rport = all[4]
+		rhost = all[3]
+		rpass = all[2]
+	}
 
 	assert.Nil(d.SetDefault("redis.size", 200))
 	assert.Nil(d.SetDefault("redis.network", "tcp"))
-	assert.Nil(d.SetDefault("redis.address", ":6379"))
+	assert.Nil(d.SetDefault("redis.address", fmt.Sprintf("%s:%s", rhost, rport)))
+	assert.Nil(d.SetDefault("redis.password", rpass))
 
 	// TODO : move it to clickyab section
 	assert.Nil(d.SetDefault("redis.days", 2))
