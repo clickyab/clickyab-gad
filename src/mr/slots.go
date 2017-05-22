@@ -93,7 +93,9 @@ func (m *Manager) insertSlotsTODO(wID int64, appID int64, slotsPublic ...int64) 
 // InsertSlots create as many slots you want
 func (m *Manager) InsertSlots(wID int64, appID int64, slotsPublic int64, size int) (*Slot, error) {
 	assert.True((appID == 0 && wID > 0) || (appID > 0 && wID == 0), "[BUG] invalid input")
-	s := &Slot{PublicID: slotsPublic, Size: sql.NullString{String: fmt.Sprint(size), Valid: size!=0 }}
+	key := utils.Sha1(fmt.Sprintf("slot_%d_%d", slotsPublic, wID))
+	_ = store(key, "", 0)
+	s := &Slot{PublicID: slotsPublic, Size: sql.NullString{String: fmt.Sprint(size), Valid: size != 0}}
 	if wID > 0 {
 		s.WID = wID
 	} else {
