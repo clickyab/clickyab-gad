@@ -79,11 +79,11 @@ var layoutString = [...]string{
 		<div class="native-border {{.Corners}} ">
 			<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"  class="{{.Corners}} "></a>
 		</div>`,
-	`<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><p class="headline sit-left {{isCircleCorner .Corners}}">{{.Title}}</p></a>
+	`<a class="{{isCircleCorner .Corners}} href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><p class="headline sit-left">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-right ">
-			<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"  class="{{.Corners}} "></a>
+			<a class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"  class="{{.Corners}} "></a>
 		</div>`,
-	`<a href="{{.Site}}" onclick="handleClick(event)" ata-href="{{.URL}}"  data-href="{{.URL}}"><p class="headline sit-right {{isCircleCorner .Corners}}">{{.Title}}</p></a>
+	`<a href="{{.Site}}" onclick="handleClick(event)" ata-href="{{.URL}}"  data-href="{{.URL}}"><p class="headline sit-right">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-left ">
 			<a href="{{.Site}}"  onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"  class="{{.Corners}} "></a>
 		</div>`,
@@ -168,35 +168,45 @@ const (
 )
 
 const style = `{{define "style"}}
- .native-ad-wrapper {
+   .native-ad-wrapper {
             height: 340px;
         }
+
+        .native-element a:hover {
+            text-decoration: none;
+        }
+
         .header-line {
             margin-bottom: 12px;
             position: relative;
         }
+
         .simple-header {
             position: relative;
         }
-        .simple-header > p {
+
+        .simple-header p {
             position: absolute;
             top: -39px;
             right: 0;
             font-size: 13px;
             font-weight: bold;
         }
+
         .simple-line {
             height: 2px;
             width: 100%;
             background-color: rgba(0, 0, 0, 0.2)
         }
-        .header-line > .line {
+
+        .header-line .line {
             height: 13px;
             background-color: rgba(0, 0, 0, 0.3);
         }
-        .header-line > p {
+
+        .header-line p {
             position: absolute;
-            top: -4px;
+            top: -13px;
             font-size: 13px;
             font-weight: bold;
             background-color: white;
@@ -205,6 +215,7 @@ const style = `{{define "style"}}
             text-align: right;
             padding-left: 9px;
         }
+
         .native-grids {
             width: 25%;
             max-width: 367px;
@@ -213,48 +224,69 @@ const style = `{{define "style"}}
             padding: 5px;
             box-sizing: border-box;
         }
+
         .native-element {
             height: auto;
             width: 100%;
         }
+
         .native-border {
             border: 1px solid rgba(0, 0, 0, 0.3);
             width: 100%;
             height: 175px;
-            padding: 8px;
+            padding: 8px 8px 4px 8px;
             box-sizing: border-box;
         }
+
+        .native-border a {
+            width: 100%;
+            height: 100%;
+        }
+
+        a:hover, a:visited, a:link, a:active {
+            text-decoration: none;
+            border: none !important;
+        }
+
         .native-ad-wrapper.horizontal {
             height: 110px;
         }
-        .horizontal > div.native-grids > div.native-element {
+
+        .horizontal div.native-grids div.native-element {
             height: 94px;
         }
-        .horizontal > div.native-grids > div.native-element > div.native-border {
+
+        .horizontal div.native-grids div.native-element div.native-border {
             height: 94px;
             padding: 3px;
             width: 44%;
         }
-        .horizontal > div.native-grids > div.native-element > p {
-            padding: 5px;
+
+        .horizontal div.native-grids div.native-element > a {
+            padding: 10px;
             width: 54%;
             font-size: 11px;
             box-sizing: border-box;
         }
+
         .sit-left {
             float: left;
         }
+
         .sit-right {
             float: right;
         }
-        .native-border > img {
+
+        .native-border img {
             width: 100%;
             height: 100%;
         }
+
         .native-content {
             text-align: right;
         }
-        .native-content > span, .headline {
+
+        .native-content span, .headline {
             font-size: 13px;
             color: rgba(0, 0, 0, 0.8);
             direction: rtl;
@@ -263,15 +295,19 @@ const style = `{{define "style"}}
             font-weight: bold;
             line-height: 21px;
         }
-        .native-content > p {
+
+        .native-content p {
             font-size: 12px;
         }
+
         .round {
             border-radius: 5px;
         }
-        .round > img {
+
+        .round img {
             border-radius: 5px;
         }
+
         .circle {
             width: 200px;
             height: 200px;
@@ -279,11 +315,13 @@ const style = `{{define "style"}}
             margin: 0 auto;
             padding: 4px;
         }
-        .circle > img {
-            width: 190px;
-            height: 190px;
+
+        .circle img {
+            width: 185px;
+            height: 185px;
             border-radius: 50%;
         }
+
         .horizontal .circle {
             width: 94px !important;
             height: 94px !important;
@@ -291,14 +329,17 @@ const style = `{{define "style"}}
             margin: 0 auto;
             padding: 4px !important;
         }
-        .horizontal .circle > img {
+
+        .horizontal .circle img {
             width: 84px;
             height: 84px;
             border-radius: 50%;
         }
+
         .circle-title {
             width: 68% !important;
         }
+
         .btn {
             display: inline-block;
             padding: 6px 12px;
@@ -320,6 +361,7 @@ const style = `{{define "style"}}
             border: 1px solid transparent;
             border-radius: 4px;
         }
+
         .btn:focus,
         .btn:active:focus,
         .btn.active:focus,
@@ -329,12 +371,14 @@ const style = `{{define "style"}}
             outline: 5px auto -webkit-focus-ring-color;
             outline-offset: -2px;
         }
+
         .btn:hover,
         .btn:focus,
         .btn.focus {
             color: #333;
             text-decoration: none;
         }
+
         .btn:active,
         .btn.active {
             background-image: none;
@@ -342,6 +386,7 @@ const style = `{{define "style"}}
             -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
             box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
         }
+
         .btn.disabled,
         .btn[disabled],
         fieldset[disabled] .btn {
@@ -351,10 +396,12 @@ const style = `{{define "style"}}
             box-shadow: none;
             opacity: .65;
         }
+
         a.btn.disabled,
         fieldset[disabled] a.btn {
             pointer-events: none;
         }
+
         .btn-default {
             color: #333;
             background-color: #fff;
@@ -362,17 +409,20 @@ const style = `{{define "style"}}
             border-radius: 13px;
             font-size: 10px;
         }
+
         .btn-default:focus,
         .btn-default.focus {
             color: #333;
             background-color: #e6e6e6;
             border-color: #8c8c8c;
         }
+
         .btn-default:hover {
             color: #333;
             background-color: #e6e6e6;
             border-color: #adadad;
         }
+
         .btn-default:active,
         .btn-default.active,
         .open > .dropdown-toggle.btn-default {
@@ -380,6 +430,7 @@ const style = `{{define "style"}}
             background-color: #e6e6e6;
             border-color: #adadad;
         }
+
         .btn-default:active:hover,
         .btn-default.active:hover,
         .open > .dropdown-toggle.btn-default:hover,
@@ -393,11 +444,13 @@ const style = `{{define "style"}}
             background-color: #d4d4d4;
             border-color: #8c8c8c;
         }
+
         .btn-default:active,
         .btn-default.active,
         .open > .dropdown-toggle.btn-default {
             background-image: none;
         }
+
         .btn-default.disabled:hover,
         .btn-default[disabled]:hover,
         fieldset[disabled] .btn-default:hover,
@@ -410,6 +463,7 @@ const style = `{{define "style"}}
             background-color: #fff;
             border-color: #ccc;
         }
+
         .btn-default .badge {
             color: #fff;
             background-color: #333;

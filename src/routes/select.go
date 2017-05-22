@@ -407,7 +407,7 @@ func (tc selectController) slotSizeNative(params map[string][]string, website mr
 	}
 
 	for i := 1; i <= countInt; i++ { //range  over slots
-		pub := fmt.Sprintf("%d%s%d", website.WPubID, "470", i)
+		pub := fmt.Sprintf("%d%s%d", website.WID, "470", i)
 		sizeNumSlice[pub] = 20
 		slotPublic = append(slotPublic, pub)
 	}
