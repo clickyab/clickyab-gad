@@ -57,7 +57,7 @@ func isCircleCorner(c string) string {
 
 var layoutString = [...]string{
 	`<div class="native-border {{.Corners}}">
-		<a href="{{.Site}}"  data-href="{{.URL}}"   onclick="handleClick(event)"><img src="{{.Image}}" class="{{.Corners}} "></a>
+		<a href="{{.Site}}"  data-href="{{.URL}}"   onclick="handleClick(event)"><img src="{{.Image}}"></a>
 	</div>
 	<div class="native-content ">
 		<a href="{{.Site}}" data-href="{{.URL}}"  onclick="handleClick(event)"><span>{{.Title}}</span></a>
@@ -66,26 +66,26 @@ var layoutString = [...]string{
 	</div>`,
 	`<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
 	<div class="native-border {{.Corners}} ">
-		<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"  class="{{.Corners}} "></a>
+		<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}" ></a>
 	</div>
 	<div class="native-content ">
 		<p>{{.Lead}}</p>
-		<a href="{{.Site}}"  data-href="{{.URL}}"  onclick="handleClick(event)" class="btn btn-default ">{{.More}}</a>
+		<a href="{{.Site}}"  data-href="{{.URL}}"  onclick="handleClick(event)" class="btn btn-default">{{.More}}</a>
 	</div>`,
 	`<div class="native-content ">
-		<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
+		<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><span class="headline">{{.Title}}</span></a>
 			<p>{{.Lead}}</p>
 		</div>
 		<div class="native-border {{.Corners}} ">
-			<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"  class="{{.Corners}} "></a>
+			<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"></a>
 		</div>`,
-	`<a class="{{isCircleCorner .Corners}} href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><p class="headline sit-left">{{.Title}}</p></a>
+	`<a class="{{isCircleCorner .Corners}} sit-left" href="{{.Site}}" onclick="handleClick(event)"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-right ">
-			<a class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"  class="{{.Corners}} "></a>
+			<a class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"></a>
 		</div>`,
-	`<a href="{{.Site}}" onclick="handleClick(event)" ata-href="{{.URL}}"  data-href="{{.URL}}"><p class="headline sit-right">{{.Title}}</p></a>
+	`<a href="{{.Site}}" onclick="handleClick(event)" class="{{isCircleCorner .Corners}} sit-right"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-left ">
-			<a href="{{.Site}}"  onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"  class="{{.Corners}} "></a>
+			<a href="{{.Site}}"  onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"></a>
 		</div>`,
 }
 
@@ -313,7 +313,7 @@ const style = `{{define "style"}}
             height: 200px;
             border-radius: 50%;
             margin: 0 auto;
-            padding: 4px;
+            padding: 7px;
         }
 
         .circle img {
