@@ -75,7 +75,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
-	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, e.Underfloor, true)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, e.Source.FloorCPM, e.Underfloor, true)
 
 	//substitute the webMobile slot if exists
 	dm := []Demand{}
@@ -89,7 +89,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 			Height:      config.GetSizeByNumStringHeight(ads[i].AdSize),
 			Width:       config.GetSizeByNumStringWith(ads[i].AdSize),
 			URL:         show[i],
-			CPM:         ads[i].CPM,
+			CPM:         int64(float64(ads[i].WinnerBid) * ads[i].CTR * 10),
 			Landing:     stripURLParts(ads[i].AdURL.String),
 			SlotTrackID: trackIDs[ads[i].SlotPublicID],
 		}
