@@ -31,8 +31,8 @@ type RequestDataFromExchange struct {
 	Source struct {
 		Name         string                 `json:"name"`
 		Supplier     string                 `json:"supplier"`
-		FloorCPM     int                    `json:"floor_cpm"`
-		SoftFloorCPM int                    `json:"soft_floor_cpm"`
+		FloorCPM     int64                  `json:"floor_cpm"`
+		SoftFloorCPM int64                  `json:"soft_floor_cpm"`
 		Attributes   map[string]interface{} `json:"attributes"`
 	} `json:"source"`
 
