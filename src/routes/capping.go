@@ -34,7 +34,29 @@ func retargetingKey(copID int64) string {
 	)
 }
 
-func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.AdData, capping bool) map[int][]*mr.AdData {
+func emptyCapping(filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
+	c := make(mr.CappingContext)
+	for i := range filteredAds {
+		for j := range filteredAds[i] {
+			capp := c.NewCapping(
+				filteredAds[i][j].CampaignID,
+				0,
+				filteredAds[i][j].CampaignFrequency,
+				false,
+			)
+			filteredAds[i][j].Capping = capp
+
+		}
+		sortCap := mr.ByCapping(filteredAds[i])
+		sort.Sort(sortCap)
+		filteredAds[i] = []*mr.AdData(sortCap)
+	}
+
+	return filteredAds
+}
+
+func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
+
 	// Retargeting structure is like this :
 	/*
 		map[string]int {
@@ -100,9 +122,6 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency,
 				retarget,
 			)
-			if !capping {
-				view = 0
-			}
 			capp.IncView(filteredAds[sizeNumSlice[i]][ad].AdID, view, false)
 			filteredAds[sizeNumSlice[i]][ad].Capping = capp
 		}

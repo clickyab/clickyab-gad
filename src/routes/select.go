@@ -25,8 +25,6 @@ import (
 	"transport"
 	"utils"
 
-	"strings"
-
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -109,99 +107,6 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	result := "renderFarm(" + string(b) + "); \n//" + time.Since(t).String()
 
 	return c.HTML(200, result)
-}
-
-// Select function is the route that the real biding happen
-func (tc *selectController) selectNativeAd(c echo.Context) error {
-	logrus.Warn("select native ad")
-	params := c.QueryParams()
-	rd, website, province, err := tc.getWebDataFromCtx(c)
-	if err != nil {
-		logrus.Warn(1)
-		return c.HTML(http.StatusBadRequest, err.Error())
-	}
-	slotSize, sizeNumSlice := tc.slotSizeNative(params, *website)
-	//call context
-	m := selector.Context{
-		RequestData: *rd,
-		Website:     website,
-		Size:        sizeNumSlice,
-		Province:    province,
-	}
-	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
-	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, false)
-
-	middlewares.SafeGO(c, false, false, func() {
-		for _, j := range h {
-			if j == nil {
-				continue
-			}
-			ads, err := mr.NewManager().GetAd(j.AdID, false)
-			if err != nil {
-
-			}
-			imp := tc.fillImp(rd, false, ads, j.WinnerBid, website, j.SlotID)
-			tc.callWebWorker(website, j.SlotID, j.AdID, m.RequestData.MegaImp, <-utils.ID, imp, rd)
-		}
-
-	})
-
-	ads := make([]nativeAd, 0)
-	var p protocol = httpScheme
-	if rd.Scheme == httpsScheme {
-		p = httpsScheme
-	}
-	// check more param
-	if params.Get("more") == "" {
-		return c.HTML(http.StatusBadRequest, "more not found")
-	}
-	for _, v := range h {
-		if v == nil {
-			continue
-		}
-		if p == httpsScheme {
-			v.AdImg.String = strings.Replace(v.AdImg.String, "http://", "https://", -1)
-		}
-		logrus.Info(v.AdAttribute["banner_title_text_type"].(string))
-		logrus.Info(v.AdAttribute["banner_description_text_type"].(string))
-		ads = append(ads, nativeAd{
-			Image:   v.AdImg.String,
-			URL:     v.AdURL.String,
-			Lead:    v.AdAttribute["banner_title_text_type"].(string),
-			More:    params.Get("more"),
-			Title:   v.AdAttribute["banner_description_text_type"].(string),
-			Corners: params.Get("corners"),
-			Site:    params.Get("site"),
-		})
-	}
-	logrus.Infof("%+v", ads)
-	if len(ads) == 0 {
-		return c.HTML(http.StatusBadRequest, "no ads")
-	}
-	var layout layout
-	switch params.Get("position") {
-	case "left":
-		layout = layoutTitleRight
-	case "right":
-		layout = layoutImageRight
-	case "top":
-		layout = layoutImageFirst
-	case "bottom":
-		layout = layoutImageLast
-	case "middle":
-		layout = layoutTitleFirst
-	default:
-		return c.HTML(http.StatusBadRequest, "position not valid")
-	}
-	n := nativeContainer{
-		Ads:      ads,
-		Layout:   layout,
-		Title:    params.Get("title"),
-		Font:     params.Get("font"),
-		FontSize: params.Get("fontsize"),
-	}
-
-	return c.HTML(200, renderNative(n))
 }
 
 func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData) bool {
@@ -489,7 +394,11 @@ func (tc *selectController) makeShow(
 			}
 		}()
 
-		filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, capping)
+		if capping {
+			filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
+		} else {
+			filteredAds = emptyCapping(filteredAds)
+		}
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		selected := make(map[int]int)
 		total := make(map[int]int)
@@ -503,8 +412,12 @@ func (tc *selectController) makeShow(
 				}
 				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID]) {
 					exceedFloor = append(exceedFloor, adData)
+					logrus.Debug("append to exceed => ", adData.AdName)
 				} else if adData.WinnerBid == 0 {
 					underFloor = append(underFloor, adData)
+					logrus.Debug("append to under => ", adData.AdName)
+				} else {
+					logrus.Debug("already selected => ", adData.AdName)
 				}
 			}
 
@@ -524,6 +437,7 @@ func (tc *selectController) makeShow(
 				secBid = false
 			}
 			if len(ef) == 0 {
+				logrus.Debug("No ad????")
 				middlewares.SafeGO(c, false, false, func() {
 					w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
 					warn := transport.Warning{
