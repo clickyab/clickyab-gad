@@ -35,15 +35,15 @@ type Slot struct {
 func (m *Manager) FetchWebSlots(publicID string, wID int64) ([]Slot, error) {
 	var res []Slot
 	// TODO : this is dangerous to cache this one
-	key := utils.Sha1(fmt.Sprintf("slot_%s_%d", publicID, wID))
-	err := fetch(key, &res)
-	if err == nil {
-		return res, nil
-	}
+	//key := utils.Sha1(fmt.Sprintf("slot_%s_%d", publicID, wID))
+	//err := fetch(key, &res)
+	//if err == nil {
+	//	return res, nil
+	//}
 
 	query := fmt.Sprintf(`SELECT * FROM slots WHERE slot_pubilc_id IN (%s) AND w_id = ?`, publicID)
 
-	_, err = m.GetProperDBMap().Select(
+	_, err := m.GetProperDBMap().Select(
 		&res,
 		query,
 		wID,
@@ -52,7 +52,7 @@ func (m *Manager) FetchWebSlots(publicID string, wID int64) ([]Slot, error) {
 		return nil, err
 	}
 
-	_ = store(key, &res, time.Hour)
+	//_ = store(key, &res, time.Hour)
 	return res, nil
 }
 
