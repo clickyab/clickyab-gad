@@ -73,7 +73,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 			More:    params.Get("more"),
 			Title:   v.AdAttribute["banner_description_text_type"].(string),
 			Corners: params.Get("corners"),
-			Site:    params.Get("site"),
+			Site:    v.AdURL.String,
 		})
 	}
 	logrus.Debugf("%+v", ads)
