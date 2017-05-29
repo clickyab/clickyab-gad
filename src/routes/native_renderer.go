@@ -61,7 +61,7 @@ var layoutString = [...]string{
 	</div>
 	<div class="native-content ">
 		<a href="{{.Site}}" data-href="{{.URL}}"  onclick="handleClick(event)"><span>{{.Title}}</span></a>
-		<p>{{.Lead}}</p>
+		<!-- <p>{{.Lead}}</p> -->
 		<a href="{{.Site}}" data-href="{{.URL}}"  onclick="handleClick(event)" class="btn btn-default ">{{.More}}</a>
 	</div>`,
 	`<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
@@ -69,12 +69,12 @@ var layoutString = [...]string{
 		<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}" ></a>
 	</div>
 	<div class="native-content ">
-		<p>{{.Lead}}</p>
+		<!-- <p>{{.Lead}}</p> -->
 		<a href="{{.Site}}"  data-href="{{.URL}}"  onclick="handleClick(event)" class="btn btn-default">{{.More}}</a>
 	</div>`,
 	`<div class="native-content ">
 		<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><span class="headline">{{.Title}}</span></a>
-			<p>{{.Lead}}</p>
+			<!-- <p>{{.Lead}}</p> -->
 		</div>
 		<div class="native-border {{.Corners}} ">
 			<a href="{{.Site}}" onclick="handleClick(event)" data-href="{{.URL}}"><img src="{{.Image}}"></a>
