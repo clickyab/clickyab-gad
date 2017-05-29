@@ -53,6 +53,7 @@ type AdData struct {
 	UserBalance     string                  `json:"u_balance" db:"u_balance"`
 	IsCrm           int                     `json:"is_crm" db:"is_crm"`
 	CpLock          int                     `json:"cp_lock" db:"cp_lock"`
+	CampaignAdID    int64                   `json:"ca_id" db:"ca_id"`
 }
 
 // Campaign is a single campaign data
