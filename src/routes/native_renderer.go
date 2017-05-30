@@ -149,18 +149,7 @@ const (
 	{{end}}`
 
 	foot = `{{define "foot"}}</div>
-    <script type="text/javascript">
-    window.cl_na_ha_ko_blah_blah_blah = function(event) {
-        event.preventDefault();
-        var url;
-        if(event.target.parentElement.attributes.getNamedItem('data-href')) {
-             url = event.target.parentElement.attributes.getNamedItem('data-href').value;
-        } else {
-             url = event.target.attributes.getNamedItem('data-href').value;
-        }
-        window.location = url;
-    }
-</script>
+
 
 		</body>
 	</html>
