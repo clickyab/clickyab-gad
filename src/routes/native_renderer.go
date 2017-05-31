@@ -64,7 +64,7 @@ func isCircleImage(c string) string {
 
 var layoutString = [...]string{
 	`<div class="native-border {{.Corners}}">
-		<a href="{{.Site}}"  data-href="{{.URL}}"   onclick="cl_na_ha_ko_blah_blah_blah(event)">
+		<a target="_blank"  href="{{.Site}}"  data-href="{{.URL}}"   onclick="cl_na_ha_ko_blah_blah_blah(event)">
 				<div class="{{isCircleImage .Corners}}" style="background-image: url('{{.Image}}');" ></div>
 		</a>
 	</div>
@@ -75,7 +75,7 @@ var layoutString = [...]string{
 	</div>`,
 	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
 	<div class="native-border {{.Corners}} ">
-		<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+		<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 		<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 		</a>
 	</div>
@@ -88,19 +88,19 @@ var layoutString = [...]string{
 			<!--<p>{{.Lead}}</p>-->
 		</div>
 		<div class="native-border {{.Corners}} ">
-			<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+			<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 					<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 			</a>
 		</div>`,
 	`<a target="_blank" class="{{isCircleCorner .Corners}} sit-left" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-right ">
-			<a class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+			<a target="_blank" class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 					<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 			</a>
 		</div>`,
 	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" class="{{isCircleCorner .Corners}} sit-right"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-left ">
-			<a href="{{.Site}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+			<a target="_blank"  href="{{.Site}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 					<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 			</a>
 		</div>`,
