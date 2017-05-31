@@ -62,11 +62,11 @@ var layoutString = [...]string{
 		</a>
 	</div>
 	<div class="native-content ">
-		<a href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)"><span>{{.Title}}</span></a>
+		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)"><span>{{.Title}}</span></a>
 		<!--<p>{{.Lead}}</p>-->
-		<a href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default ">{{.More}}</a>
+		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default ">{{.More}}</a>
 	</div>`,
-	`<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
+	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
 	<div class="native-border {{.Corners}} ">
 		<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 		<div class="cl_na_image" style="background-image: url("{{.Image}}");" ></div>
@@ -74,10 +74,10 @@ var layoutString = [...]string{
 	</div>
 	<div class="native-content ">
 		<!--<p>{{.Lead}}</p>-->
-		<a href="{{.Site}}"  data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default">{{.More}}</a>
+		<a target="_blank" href="{{.Site}}"  data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default">{{.More}}</a>
 	</div>`,
 	`<div class="native-content ">
-		<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline">{{.Title}}</span></a>
+		<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline">{{.Title}}</span></a>
 			<!--<p>{{.Lead}}</p>-->
 		</div>
 		<div class="native-border {{.Corners}} ">
@@ -85,13 +85,13 @@ var layoutString = [...]string{
 					<div class="cl_na_image" style="background-image: url("{{.Image}}");" ></div>
 			</a>
 		</div>`,
-	`<a class="{{isCircleCorner .Corners}} sit-left" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
+	`<a target="_blank" class="{{isCircleCorner .Corners}} sit-left" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-right ">
 			<a class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 					<div class="cl_na_image" style="background-image: url("{{.Image}}");" ></div>
 			</a>
 		</div>`,
-	`<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" class="{{isCircleCorner .Corners}} sit-right"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
+	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" class="{{isCircleCorner .Corners}} sit-right"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-left ">
 			<a href="{{.Site}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 					<div class="cl_na_image" style="background-image: url("{{.Image}}");" ></div>
@@ -167,11 +167,17 @@ const (
 )
 
 const style = `{{define "style"}}
-	.cl_na_image {
+	.circle div {
+	    background-size: cover !important;
 
+	}
+
+	.cl_na_image {
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: cover;
+    width: inherit;
+    height: inherit;
     }
    .native-ad-wrapper {
             height: 340px;
@@ -223,8 +229,6 @@ const style = `{{define "style"}}
 
         .native-grids {
             width: 25%;
-            max-width: 367px;
-            min-width: 366px;
             float: right;
             padding: 5px;
             box-sizing: border-box;
@@ -236,11 +240,10 @@ const style = `{{define "style"}}
         }
 
         .native-border {
-            border: 1px solid rgba(0, 0, 0, 0.3);
             width: 100%;
-            height: 175px;
-            padding: 8px 8px 4px 8px;
+            padding:25%;
             box-sizing: border-box;
+            overflow: hidden;
         }
 
         .native-border a {
@@ -318,7 +321,6 @@ const style = `{{define "style"}}
             height: 200px;
             border-radius: 50%;
             margin: 0 auto;
-            padding: 7px;
         }
 
         .circle img {
