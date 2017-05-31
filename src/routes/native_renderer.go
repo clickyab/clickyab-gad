@@ -57,7 +57,9 @@ func isCircleCorner(c string) string {
 
 var layoutString = [...]string{
 	`<div class="native-border {{.Corners}}">
-		<a href="{{.Site}}"  data-href="{{.URL}}"   onclick="cl_na_ha_ko_blah_blah_blah(event)"><img src="{{.Image}}"></a>
+		<a href="{{.Site}}"  data-href="{{.URL}}"   onclick="cl_na_ha_ko_blah_blah_blah(event)">
+				<div class="cl_na_image" style="background-image: url("{{.Image}}");" ></div>
+		</a>
 	</div>
 	<div class="native-content ">
 		<a href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)"><span>{{.Title}}</span></a>
@@ -66,7 +68,9 @@ var layoutString = [...]string{
 	</div>`,
 	`<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
 	<div class="native-border {{.Corners}} ">
-		<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><img src="{{.Image}}" ></a>
+		<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+		<div class="cl_na_image" style="background-image: url("{{.Image}}");" ></div>
+		</a>
 	</div>
 	<div class="native-content ">
 		<!--<p>{{.Lead}}</p>-->
@@ -77,15 +81,21 @@ var layoutString = [...]string{
 			<!--<p>{{.Lead}}</p>-->
 		</div>
 		<div class="native-border {{.Corners}} ">
-			<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><img src="{{.Image}}"></a>
+			<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+					<div class="cl_na_image" style="background-image: url("{{.Image}}");" ></div>
+			</a>
 		</div>`,
 	`<a class="{{isCircleCorner .Corners}} sit-left" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-right ">
-			<a class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><img src="{{.Image}}"></a>
+			<a class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+					<div class="cl_na_image" style="background-image: url("{{.Image}}");" ></div>
+			</a>
 		</div>`,
 	`<a href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" class="{{isCircleCorner .Corners}} sit-right"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-left ">
-			<a href="{{.Site}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><img src="{{.Image}}"></a>
+			<a href="{{.Site}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+					<div class="cl_na_image" style="background-image: url("{{.Image}}");" ></div>
+			</a>
 		</div>`,
 }
 
@@ -157,6 +167,12 @@ const (
 )
 
 const style = `{{define "style"}}
+	.cl_na_image {
+
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    }
    .native-ad-wrapper {
             height: 340px;
         }
