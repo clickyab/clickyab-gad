@@ -64,43 +64,43 @@ func isCircleImage(c string) string {
 
 var layoutString = [...]string{
 	`<div class="native-border {{.Corners}}">
-		<a target="_blank"  href="{{.Site}}"  data-href="{{.URL}}"   onclick="cl_na_ha_ko_blah_blah_blah(event)">
+		<a target="_blank"  href="{{.Site}}"  data-href="{{.URL}}"   onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)">
 				<div class="{{isCircleImage .Corners}}" style="background-image: url('{{.Image}}');" ></div>
 		</a>
 	</div>
 	<div class="native-content ">
-		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)"><span>{{.Title}}</span></a>
+		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)"><span>{{.Title}}</span></a>
 		<!--<p>{{.Lead}}</p>-->
-		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default ">{{.More}}</a>
+		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default ">{{.More}}</a>
 	</div>`,
-	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
+	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
 	<div class="native-border {{.Corners}} ">
-		<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+		<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 		<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 		</a>
 	</div>
 	<div class="native-content ">
 		<!--<p>{{.Lead}}</p>-->
-		<a target="_blank" href="{{.Site}}"  data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default">{{.More}}</a>
+		<a target="_blank" href="{{.Site}}"  data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default">{{.More}}</a>
 	</div>`,
 	`<div class="native-content ">
-		<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline">{{.Title}}</span></a>
+		<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline">{{.Title}}</span></a>
 			<!--<p>{{.Lead}}</p>-->
 		</div>
 		<div class="native-border {{.Corners}} ">
-			<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+			<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 					<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 			</a>
 		</div>`,
-	`<a target="_blank" class="{{isCircleCorner .Corners}} sit-left" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
+	`<a target="_blank" class="{{isCircleCorner .Corners}} sit-left" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-right ">
-			<a target="_blank" class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+			<a target="_blank" class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 					<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 			</a>
 		</div>`,
-	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" class="{{isCircleCorner .Corners}} sit-right"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
+	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="{{isCircleCorner .Corners}} sit-right"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
 		<div class="native-border {{.Corners}} sit-left ">
-			<a target="_blank"  href="{{.Site}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+			<a target="_blank"  href="{{.Site}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
 					<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 			</a>
 		</div>`,
