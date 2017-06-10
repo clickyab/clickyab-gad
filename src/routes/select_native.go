@@ -88,7 +88,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 
 	logrus.Debugf("%+v", ads)
 	if len(ads) == 0 {
-		return c.HTML(http.StatusBadRequest, "no ads")
+		return c.HTML(http.StatusBadRequest, "<div class=\"no-ads\"></div>")
 	}
 	var layout layout
 	switch params.Get("position") {
