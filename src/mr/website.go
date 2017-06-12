@@ -15,6 +15,7 @@ type Website struct {
 	UserID             int64          `json:"u_id" db:"u_id"`
 	WPubID             int64          `json:"w_pub_id" db:"w_pub_id"`
 	WDomain            sql.NullString `json:"w_domain" db:"w_domain"`
+	WSupplier          string         `json:"w_supplier" db:"w_supplier"`
 	WName              sql.NullString `json:"w_name" db:"w_name"`
 	WCategories        SharpArray     `json:"w_categories" db:"w_categories"`
 	WMinBid            sql.NullInt64  `json:"w_minbid" db:"w_minbid"`
@@ -115,19 +116,20 @@ func (m *Manager) FetchWebsite(ID int64) (*Website, error) {
 }
 
 // FetchWebsiteByDomain return a function based on its domain
-func (m *Manager) FetchWebsiteByDomain(domain string) (*Website, error) {
+func (m *Manager) FetchWebsiteByDomain(domain, supplier string) (*Website, error) {
 	var res = Website{}
 	key := utils.Sha1(fmt.Sprintf("WebsiteDomain_%s", domain))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
 	}
-	query := `SELECT * FROM websites WHERE w_domain = ? AND w_status NOT IN (2,3)  LIMIT 1`
+	query := `SELECT * FROM websites WHERE w_domain = ? AND w_status NOT IN (2,3) AND w_supplier= ? LIMIT 1`
 
 	err = m.GetProperDBMap().SelectOne(
 		&res,
 		query,
 		domain,
+		supplier,
 	)
 	if err != nil {
 		return nil, err
@@ -136,11 +138,15 @@ func (m *Manager) FetchWebsiteByDomain(domain string) (*Website, error) {
 	return &res, nil
 }
 
-func (m *Manager) InsertWebsite(domain string, userID int64) (int64, error) {
+func (m *Manager) InsertWebsite(domain, supplier string, userID int64) (int64, error) {
+	if supplier == "clickyab" {
+		// we are not allow to register sites from clickyab
+		return 0, fmt.Errorf("the clickyab supplier is not allowed to register website on the fly")
+	}
 	q := `INSERT INTO websites
-	(u_id,w_domain,w_date,w_pub_id,w_status,updated_at,created_at)
+	(u_id,w_domain,w_supplier,w_date,w_pub_id,w_status,updated_at,created_at)
 	VALUES
-	(	?,?		,	?	,	?	,	?	,	NOW(),NOW())`
+	(	?,?		  ,? ,	?	,	?	,	?	,	NOW(),NOW())`
 
 	r, err := m.GetWDbMap().Exec(q, userID, domain, time.Now().Unix(), fmt.Sprintf("%d%d", rand.Intn(899)+100, time.Now().Unix()), 1)
 	if err != nil {
