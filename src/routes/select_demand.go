@@ -38,7 +38,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	}
 	slotSize, sizeNumSlice, trackIDs, err := tc.slotSizeWebExchange(e.Slots, *website)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
+		return c.HTML(http.StatusBadRequest, "slot size was wrong, reason : "+err.Error())
 	}
 
 	//call context
@@ -124,17 +124,17 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewa
 	e := middlewares.MustExchangeGetRequestData(c)
 	name, userID, err := config.GetSupplier(e.Source.Supplier)
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("can not accept from %s demand", e.Source.Supplier)
+		return nil, nil, nil, nil, fmt.Errorf("can not accept from %s supplier", e.Source.Supplier)
 	}
 	e.Source.Supplier = name
 	website, err := tc.fetchWebsiteDomain(e.Source.Name, e.Source.Supplier, userID)
 	if err != nil {
-		return nil, nil, nil, nil, errors.New("invalid request")
+		return nil, nil, nil, nil, err //errors.New("invalid request")
 	}
 	// Set the floor here. its related to the demand request not our data
 	website.WFloorCpm.Int64, website.WFloorCpm.Valid = int64(e.Source.FloorCPM), true
 	if !website.GetActive() {
-		return nil, nil, nil, nil, errors.New("web is not active")
+		return nil, nil, nil, nil, errors.New("website is not active")
 	}
 
 	if !mr.NewManager().IsUserActive(website.UserID) {
@@ -155,6 +155,7 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewa
 func (tc *selectController) fetchWebsiteDomain(domain, supplier string, user int64) (*mr.Website, error) {
 	website, err := mr.NewManager().FetchWebsiteByDomain(domain, supplier)
 	if err != nil {
+		logrus.Error(err)
 		_, err := mr.NewManager().InsertWebsite(domain, supplier, user)
 		if err != nil {
 			return nil, err
