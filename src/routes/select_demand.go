@@ -127,9 +127,8 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewa
 		return nil, nil, nil, nil, fmt.Errorf("can not accept from %s demand", e.Source.Supplier)
 	}
 	e.Source.Supplier = name
-	website, err := tc.fetchWebsiteDomain(fmt.Sprintf("%s/%s", e.Source.Supplier, e.Source.Name), userID)
+	website, err := tc.fetchWebsiteDomain(e.Source.Name, e.Source.Supplier, userID)
 	if err != nil {
-		logrus.Warn(err)
 		return nil, nil, nil, nil, errors.New("invalid request")
 	}
 	// Set the floor here. its related to the demand request not our data
@@ -153,14 +152,14 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewa
 }
 
 //fetchWebsiteDomain website and check if the minimum floor is applied
-func (tc *selectController) fetchWebsiteDomain(domain string, user int64) (*mr.Website, error) {
-	website, err := mr.NewManager().FetchWebsiteByDomain(domain)
+func (tc *selectController) fetchWebsiteDomain(domain, supplier string, user int64) (*mr.Website, error) {
+	website, err := mr.NewManager().FetchWebsiteByDomain(domain, supplier)
 	if err != nil {
-		_, err := mr.NewManager().InsertWebsite(domain, user)
+		_, err := mr.NewManager().InsertWebsite(domain, supplier, user)
 		if err != nil {
 			return nil, err
 		}
-		website, err = mr.NewManager().FetchWebsiteByDomain(domain)
+		website, err = mr.NewManager().FetchWebsiteByDomain(domain, supplier)
 		if err != nil {
 			return nil, err
 		}
