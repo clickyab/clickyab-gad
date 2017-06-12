@@ -125,7 +125,7 @@ func (m *Manager) FetchWebsiteByDomain(domain, supplier string) (*Website, error
 	}
 	query := `SELECT * FROM websites WHERE w_domain = ? AND w_status NOT IN (2,3) AND w_supplier= ? LIMIT 1`
 
-	err = m.GetProperDBMap().SelectOne(
+	err = m.GetRDbMap().SelectOne(
 		&res,
 		query,
 		domain,

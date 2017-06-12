@@ -112,7 +112,7 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 
 			if e.Platform == "web" {
 				if !domain.MatchString(e.Source.Name) {
-					return ctx.JSON(http.StatusBadRequest, fmt.Errorf("invalid publisher site %s", e.Source.Name))
+					return ctx.HTML(http.StatusBadRequest, fmt.Sprintf("invalid publisher site %s", e.Source.Name))
 				}
 			}
 			ctx.Set(requestDataTokenExchange, e)

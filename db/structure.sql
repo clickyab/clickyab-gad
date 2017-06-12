@@ -1458,6 +1458,7 @@ CREATE TABLE websites
     u_id INT(11) DEFAULT '0',
     w_pub_id BIGINT(16) DEFAULT '0',
     w_domain VARCHAR(100),
+    w_supplier VARCHAR(100),
     w_name VARCHAR(100),
     w_categories VARCHAR(255),
     w_profile_type TINYINT(4) DEFAULT '0',
