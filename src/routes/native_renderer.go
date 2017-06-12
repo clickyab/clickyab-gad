@@ -15,11 +15,26 @@ func renderAds(l layout, ads []nativeAd) string {
 		Parse(l.String())
 	assert.Nil(e)
 	buf := &bytes.Buffer{}
-	for _, ad := range ads {
+	closer := 0
+	for i, ad := range ads {
+		if i != 0 && i == closer {
+			buf.WriteString(`</div>`)
+
+		}
+		if i%4 == 0 {
+			closer += 4
+			buf.WriteString(`<div class="row">`)
+		}
+
 		buf.WriteString(`<div class="native-grids">
 		<div class="native-element  ">`)
+
 		adTemplate.Execute(buf, ad)
 		buf.WriteString(`</div></div>`)
+		if len(ads)-1 == i {
+			buf.WriteString(`</div>`)
+
+		}
 	}
 	return string(buf.Bytes())
 }
@@ -179,9 +194,9 @@ const style = `{{define "style"}}
 
 
 	    background-repeat: no-repeat;
-		background-size: contain;
+		background-size: cover;
 	    	background-position: center;
-            	padding:25%;
+            	padding:31%;
 
 	}
 
@@ -195,6 +210,10 @@ const style = `{{define "style"}}
 
 
 
+    }
+    .row {
+    	    width: 100%;
+    		margin: 0 -15px;
     }
    .native-ad-wrapper {
             height: 340px;
