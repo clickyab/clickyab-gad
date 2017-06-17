@@ -77,9 +77,9 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		ads = append(ads, nativeAd{
 			Image:   j.AdImg.String,
 			URL:     u.String(),
-			Lead:    j.AdAttribute["banner_title_text_type"].(string),
+			Lead:    j.AdAttribute["banner_description_text_type"].(string),
 			More:    params.Get("more"),
-			Title:   j.AdAttribute["banner_description_text_type"].(string),
+			Title:   j.AdAttribute["banner_title_text_type"].(string),
 			Corners: params.Get("corners"),
 			Site:    j.AdURL.String,
 		})
