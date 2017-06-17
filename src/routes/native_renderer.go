@@ -86,7 +86,7 @@ var layoutString = [...]string{
 	<div class="native-content ">
 		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)"><span>{{.Title}}</span></a>
 		<!--<p>{{.Lead}}</p>-->
-		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default ">{{.More}}</a>
+		{{if .More}}<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default ">{{.More}}</a>{{end}}
 	</div>`,
 	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
 	<div class="native-border {{.Corners}} ">
@@ -96,7 +96,7 @@ var layoutString = [...]string{
 	</div>
 	<div class="native-content ">
 		<!--<p>{{.Lead}}</p>-->
-		<a target="_blank" href="{{.Site}}"  data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default">{{.More}}</a>
+		{{if .More}}<a target="_blank" href="{{.Site}}"  data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default">{{.More}}</a>{{end}}
 	</div>`,
 	`<div class="native-content ">
 		<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline">{{.Title}}</span></a>
@@ -167,24 +167,16 @@ func renderNative(ads nativeContainer) string {
 
 const (
 	head = `{{define "head"}}<!doctype html>
-<html lang="fa">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
 	<style>
 	{{template "style"}}
 	</style>
-</head>
-<body class="{{.Font}}" style="font-size:{{.FontSize}};font-family:{{.Font}};">
 	<div class="native-ad-wrapper {{isHorizontal  .Layout}} ">
 	{{end}}`
 
 	foot = `{{define "foot"}}</div>
 
 
-		</body>
-	</html>
 	{{end}}`
 )
 

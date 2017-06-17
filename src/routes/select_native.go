@@ -42,10 +42,6 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	if rd.Scheme == httpsScheme {
 		p = httpsScheme
 	}
-	// check more param
-	if params.Get("more") == "" {
-		return c.HTML(http.StatusBadRequest, "more not found")
-	}
 
 	for _, j := range h {
 		if j == nil {
