@@ -23,7 +23,7 @@ func renderAds(l layout, ads []nativeAd) string {
 		}
 		if i%4 == 0 {
 			closer += 4
-			buf.WriteString(`<div class="row">`)
+			buf.WriteString(`<div class="cyb-row clickyab-custom-row">`)
 		}
 
 		buf.WriteString(`<div class="native-grids">
@@ -211,7 +211,7 @@ const style = `{{define "style"}}
 
 
     }
-    .row {
+    .cyb-row {
     	    width: 100%;
     		margin: 0 -15px;
     }
