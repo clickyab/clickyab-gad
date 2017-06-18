@@ -26,7 +26,7 @@ func renderAds(l layout, ads []nativeAd) string {
 			buf.WriteString(`<div class="cyb-row clickyab-custom-row">`)
 		}
 
-		buf.WriteString(`<div class="native-grids">
+		buf.WriteString(`<div class="cyb-native-grids">
 		<div class="native-element  ">`)
 
 		adTemplate.Execute(buf, ad)
@@ -65,57 +65,57 @@ func isHorizontal(l layout) string {
 
 func isCircleCorner(c string) string {
 	if c == "circle" {
-		return "circle-title"
+		return "cyb-circle-title"
 	}
 	return ""
 }
 
 func isCircleImage(c string) string {
 	if c == "circle" {
-		return "cl_na_image_circle"
+		return "cyb-cl-na-image-circle"
 	}
-	return "cl_na_image"
+	return "cyb-cl-na-image"
 }
 
 var layoutString = [...]string{
-	`<div class="native-border {{.Corners}}">
-		<a target="_blank"  href="{{.Site}}"  data-href="{{.URL}}"   onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)">
+	`<div class="cyb-native-border {{.Corners}}">
+		<a target="_blank"  href="{{.Site}}"  data-href="{{.URL}}"   onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)">
 				<div class="{{isCircleImage .Corners}}" style="background-image: url('{{.Image}}');" ></div>
 		</a>
 	</div>
-	<div class="native-content ">
-		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)"><span>{{.Title}}</span></a>
+	<div class="cyb-native-content ">
+		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)"><span>{{.Title}}</span></a>
 		<!--<p>{{.Lead}}</p>-->
-		{{if .More}}<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default ">{{.More}}</a>{{end}}
+		<a target="_blank" href="{{.Site}}" data-href="{{.URL}}"  onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)" class="cyb-btn cyb-btn-default ">{{.More}}</a>
 	</div>`,
-	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline ">{{.Title}}</span></a>
-	<div class="native-border {{.Corners}} ">
-		<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+	`<a target="_blank" href="{{.Site}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)" data-href="{{.URL}}"><span class="cyb-headline ">{{.Title}}</span></a>
+	<div class="cyb-native-border {{.Corners}} ">
+		<a target="_blank" href="{{.Site}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)" data-href="{{.URL}}">
 		<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 		</a>
 	</div>
-	<div class="native-content ">
+	<div class="cyb-native-content ">
 		<!--<p>{{.Lead}}</p>-->
-		{{if .More}}<a target="_blank" href="{{.Site}}"  data-href="{{.URL}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="btn btn-default">{{.More}}</a>{{end}}
+		<a target="_blank" href="{{.Site}}"  data-href="{{.URL}}"  onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)" class="btn btn-default">{{.More}}</a>
 	</div>`,
-	`<div class="native-content ">
-		<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}"><span class="headline">{{.Title}}</span></a>
+	`<div class="cyb-native-content ">
+		<a target="_blank" href="{{.Site}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)" data-href="{{.URL}}"><span class="cyb-headline">{{.Title}}</span></a>
 			<!--<p>{{.Lead}}</p>-->
 		</div>
-		<div class="native-border {{.Corners}} ">
-			<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+		<div class="cyb-native-border {{.Corners}} ">
+			<a target="_blank" href="{{.Site}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)" data-href="{{.URL}}">
 					<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 			</a>
 		</div>`,
-	`<a target="_blank" class="{{isCircleCorner .Corners}} sit-left" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
-		<div class="native-border {{.Corners}} sit-right ">
-			<a target="_blank" class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+	`<a target="_blank" class="{{isCircleCorner .Corners}} sit-left" href="{{.Site}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)"  data-href="{{.URL}}"><p class="cyb-headline">{{.Title}}</p></a>
+		<div class="cyb-native-border {{.Corners}} sit-right ">
+			<a target="_blank" class="{{isCircleCorner .Corners}}" href="{{.Site}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)" data-href="{{.URL}}">
 					<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 			</a>
 		</div>`,
-	`<a target="_blank" href="{{.Site}}" onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" class="{{isCircleCorner .Corners}} sit-right"  data-href="{{.URL}}"><p class="headline">{{.Title}}</p></a>
-		<div class="native-border {{.Corners}} sit-left ">
-			<a target="_blank"  href="{{.Site}}"  onclick="cl_na_ha_ko_blah_blah_blah(event)" oncontextmenu="cl_na_ha_ko_blah_blah_blah(event)" ondblclick="cl_na_ha_ko_blah_blah_blah(event)" data-href="{{.URL}}">
+	`<a target="_blank" href="{{.Site}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)" class="{{isCircleCorner .Corners}} sit-right"  data-href="{{.URL}}"><p class="cyb-headline">{{.Title}}</p></a>
+		<div class="cyb-native-border {{.Corners}} sit-left ">
+			<a target="_blank"  href="{{.Site}}"  onclick="cybOpen(event)" oncontextmenu="cybOpen(event)" ondblclick="cybOpen(event)" data-href="{{.URL}}">
 					<div class="{{isCircleImage .Corners}}"  style="background-image: url('{{.Image}}');" ></div>
 			</a>
 		</div>`,
@@ -128,8 +128,8 @@ func (t layout) String() string {
 var adTemplate = `
 {{define "ads"}}
 {{template "head" .}}
-<div class="header-line " >
-	<div class="line "></div>
+<div class="cyb-header-line " >
+	<div class="cyb-line "></div>
 	<p >{{.Title}}</p>
 </div>
 
@@ -166,12 +166,12 @@ func renderNative(ads nativeContainer) string {
 }
 
 const (
-	head = `{{define "head"}}<!doctype html>
+	head = `{{define "head"}}
 
 	<style>
 	{{template "style"}}
 	</style>
-	<div class="native-ad-wrapper {{isHorizontal  .Layout}} ">
+	<div class="cyb-native-ad-wrapper {{isHorizontal  .Layout}} ">
 	{{end}}`
 
 	foot = `{{define "foot"}}</div>
@@ -182,7 +182,7 @@ const (
 
 const style = `{{define "style"}}
 
-	.cl_na_image {
+	.cyb-cl-na-image {
 
 
 	    background-repeat: no-repeat;
@@ -192,7 +192,7 @@ const style = `{{define "style"}}
 
 	}
 
-	.cl_na_image_circle {
+	.cyb-cl-na-image-circle {
 		background-repeat: no-repeat;
 		background-size: cover;
 		background-position: 50%;
@@ -203,28 +203,28 @@ const style = `{{define "style"}}
 
 
     }
-    .cyb-row {
+    .cyb-cyb-row {
     	    width: 100%;
     		margin: 0 -15px;
     }
-   .native-ad-wrapper {
+   .cyb-native-ad-wrapper {
             height: 340px;
         }
 
-        .native-element a:hover {
+        .cyb-native-element a:hover {
             text-decoration: none;
         }
 
-        .header-line {
+        .cyb-header-line {
             margin-bottom: 12px;
             position: relative;
         }
 
-        .simple-header {
+        .cyb-simple-header {
             position: relative;
         }
 
-        .simple-header p {
+        .cyb-simple-header p {
             position: absolute;
             top: -39px;
             right: 0;
@@ -232,18 +232,18 @@ const style = `{{define "style"}}
             font-weight: bold;
         }
 
-        .simple-line {
+        .cyb-simple-line {
             height: 2px;
             width: 100%;
-            background-color: rgba(0, 0, 0, 0.2)
+            background-color: rgba(0, 0, 0, 0.cyb-2)
         }
 
-        .header-line .line {
+        .cyb-header-line .cyb-line {
             height: 13px;
-            background-color: rgba(0, 0, 0, 0.3);
+            background-color: rgba(0, 0, 0, 0.cyb-3);
         }
 
-        .header-line p {
+        .cyb-header-line p {
             position: absolute;
             top: -13px;
             font-size: 13px;
@@ -255,7 +255,7 @@ const style = `{{define "style"}}
             padding-left: 9px;
         }
 
-        .native-grids {
+        .cyb-native-grids {
             width: 25%;
             height: 100%;
             float: right;
@@ -263,17 +263,17 @@ const style = `{{define "style"}}
             box-sizing: border-box;
         }
 
-        .native-element {
+        .cyb-native-element {
             height: 100%;
             width: 100%;
         }
 
-        .native-border {
+        .cyb-native-border {
             box-sizing: border-box;
             overflow: hidden;
         }
 
-        .native-border a {
+        .cyb-native-border a {
             width: 100%;
             height: 100%;
         }
@@ -283,45 +283,45 @@ const style = `{{define "style"}}
             border: none !important;
         }
 
-        .native-ad-wrapper.horizontal {
+        .cyb-native-ad-wrapper.cyb-horizontal {
             height: 110px;
         }
 
-        .horizontal div.native-grids div.native-element {
+        .cyb-horizontal div.cyb-native-grids div.cyb-native-element {
             height: 94px;
         }
 
-        .horizontal div.native-grids div.native-element div.native-border {
+        .cyb-horizontal div.cyb-native-grids div.cyb-native-element div.cyb-native-border {
             height: 94px;
             padding: 3px;
             width: 44%;
         }
 
-        .horizontal div.native-grids div.native-element > a {
+        .cyb-horizontal div.cyb-native-grids div.cyb-native-element > a {
             padding: 10px;
             width: 54%;
             font-size: 11px;
             box-sizing: border-box;
         }
 
-        .sit-left {
+        .cyb-sit-left {
             float: left;
         }
 
-        .sit-right {
+        .cyb-sit-right {
             float: right;
         }
 
-        .native-border img {
+        .cyb-native-border img {
             width: 100%;
             height: 100%;
         }
 
-        .native-content {
+        .cyb-native-content {
             text-align: right;
         }
 
-        .native-content span, .headline {
+        .cyb-native-content span, .cyb-headline {
             font-size: 13px;
             color: rgba(0, 0, 0, 0.8);
             direction: rtl;
@@ -331,31 +331,31 @@ const style = `{{define "style"}}
             line-height: 21px;
         }
 
-        .native-content p {
+        .cyb-native-content p {
             font-size: 12px;
         }
 
-        .round {
+        .cyb-round {
             border-radius: 5px;
         }
 
-        .round img {
+        .cyb-round img {
             border-radius: 5px;
         }
 
-        .circle {
+        .cyb-circle {
             width: 50%;
             margin: 0 auto;
             padding: 10px;
         }
 
-        .circle img {
+        .cyb-circle img {
             width: 185px;
             height: 185px;
             border-radius: 50%;
         }
 
-        .horizontal .circle {
+        .cyb-horizontal .cyb-circle {
             width: 94px !important;
             height: 94px !important;
             border-radius: 50%;
@@ -363,17 +363,17 @@ const style = `{{define "style"}}
             padding: 4px !important;
         }
 
-        .horizontal .circle img {
+        .cyb-horizontal .cyb-circle img {
             width: 84px;
             height: 84px;
             border-radius: 50%;
         }
 
-        .circle-title {
+        .cyb-circle-title {
             width: 68% !important;
         }
 
-        .btn {
+        .cyb-btn {
             display: inline-block;
             padding: 6px 12px;
             margin-bottom: 0;
@@ -395,34 +395,34 @@ const style = `{{define "style"}}
             border-radius: 4px;
         }
 
-        .btn:focus,
-        .btn:active:focus,
-        .btn.active:focus,
-        .btn.focus,
-        .btn:active.focus,
-        .btn.active.focus {
+        .cyb-btn:focus,
+        .cyb-btn:active:focus,
+        .cyb-btn.cyb-active:focus,
+        .cyb-btn.cyb-focus,
+        .cyb-btn:active.cyb-focus,
+        .cyb-btn.cyb-active.cyb-focus {
             outline: 5px auto -webkit-focus-ring-color;
             outline-offset: -2px;
         }
 
-        .btn:hover,
-        .btn:focus,
-        .btn.focus {
+        .cyb-btn:hover,
+        .cyb-btn:focus,
+        .cyb-btn.cyb-focus {
             color: #333;
             text-decoration: none;
         }
 
-        .btn:active,
-        .btn.active {
+        .cyb-btn:active,
+        .cyb-btn.cyb-active {
             background-image: none;
             outline: 0;
             -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
             box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
         }
 
-        .btn.disabled,
-        .btn[disabled],
-        fieldset[disabled] .btn {
+        .cyb-btn.cyb-disabled,
+        .cyb-btn[disabled],
+        fieldset[disabled] .cyb-btn {
             cursor: not-allowed;
             filter: alpha(opacity=65);
             -webkit-box-shadow: none;
@@ -430,12 +430,12 @@ const style = `{{define "style"}}
             opacity: .65;
         }
 
-        a.btn.disabled,
-        fieldset[disabled] a.btn {
+        a.cyb-btn.cyb-disabled,
+        fieldset[disabled] a.cyb-btn {
             pointer-events: none;
         }
 
-        .btn-default {
+        .cyb-btn-default {
             color: #333;
             background-color: #fff;
             border-color: #ccc;
@@ -443,61 +443,61 @@ const style = `{{define "style"}}
             font-size: 10px;
         }
 
-        .btn-default:focus,
-        .btn-default.focus {
+        .cyb-btn-default:focus,
+        .cyb-btn-default.cyb-focus {
             color: #333;
             background-color: #e6e6e6;
             border-color: #8c8c8c;
         }
 
-        .btn-default:hover {
+        .cyb-btn-default:hover {
             color: #333;
             background-color: #e6e6e6;
             border-color: #adadad;
         }
 
-        .btn-default:active,
-        .btn-default.active,
-        .open > .dropdown-toggle.btn-default {
+        .cyb-btn-default:active,
+        .cyb-btn-default.cyb-active,
+        .cyb-open > .cyb-dropdown-toggle.cyb-btn-default {
             color: #333;
             background-color: #e6e6e6;
             border-color: #adadad;
         }
 
-        .btn-default:active:hover,
-        .btn-default.active:hover,
-        .open > .dropdown-toggle.btn-default:hover,
-        .btn-default:active:focus,
-        .btn-default.active:focus,
-        .open > .dropdown-toggle.btn-default:focus,
-        .btn-default:active.focus,
-        .btn-default.active.focus,
-        .open > .dropdown-toggle.btn-default.focus {
+        .cyb-btn-default:active:hover,
+        .cyb-btn-default.cyb-active:hover,
+        .cyb-open > .cyb-dropdown-toggle.cyb-btn-default:hover,
+        .cyb-btn-default:active:focus,
+        .cyb-btn-default.cyb-active:focus,
+        .cyb-open > .cyb-dropdown-toggle.cyb-btn-default:focus,
+        .cyb-btn-default:active.cyb-focus,
+        .cyb-btn-default.cyb-active.cyb-focus,
+        .cyb-open > .cyb-dropdown-toggle.cyb-btn-default.cyb-focus {
             color: #333;
             background-color: #d4d4d4;
             border-color: #8c8c8c;
         }
 
-        .btn-default:active,
-        .btn-default.active,
-        .open > .dropdown-toggle.btn-default {
+        .cyb-btn-default:active,
+        .cyb-btn-default.cyb-active,
+        .cyb-open > .cyb-dropdown-toggle.cyb-btn-default {
             background-image: none;
         }
 
-        .btn-default.disabled:hover,
-        .btn-default[disabled]:hover,
-        fieldset[disabled] .btn-default:hover,
-        .btn-default.disabled:focus,
-        .btn-default[disabled]:focus,
-        fieldset[disabled] .btn-default:focus,
-        .btn-default.disabled.focus,
-        .btn-default[disabled].focus,
-        fieldset[disabled] .btn-default.focus {
+        .cyb-btn-default.cyb-disabled:hover,
+        .cyb-btn-default[disabled]:hover,
+        fieldset[disabled] .cyb-btn-default:hover,
+        .cyb-btn-default.cyb-disabled:focus,
+        .cyb-btn-default[disabled]:focus,
+        fieldset[disabled] .cyb-btn-default:focus,
+        .cyb-btn-default.cyb-disabled.cyb-focus,
+        .cyb-btn-default[disabled].cyb-focus,
+        fieldset[disabled] .cyb-btn-default.cyb-focus {
             background-color: #fff;
             border-color: #ccc;
         }
 
-        .btn-default .badge {
+        .cyb-btn-default .cyb-badge {
             color: #fff;
             background-color: #333;
         }
