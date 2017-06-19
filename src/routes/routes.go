@@ -34,8 +34,7 @@ func retargetingCreator(ctx echo.Context, e *middlewares.RequestData, len int) s
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/native", tc.selectNativeAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/select", tc.selectWebAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
-	e.POST("/demand/web", tc.selectDemandWebAd, middlewares.RequestExchangeCollectorGenerator(webCopCreateor), middlewares.Header)
-	e.POST("/demand/app", tc.selectDemandAppAd, middlewares.RequestExchangeCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.POST("/demand", tc.selectDemandAd, middlewares.RequestExchangeCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/show/:type/:mega/:wid/:ad", tc.show, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/click/:typ/:wid/:mega/:ad/:rand", tc.click, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/conversion/", tc.conversion, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
