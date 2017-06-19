@@ -145,6 +145,7 @@ type nativeContainer struct {
 	Style    string
 	FontSize string
 	Font     string
+	Position string
 }
 
 type nativeAd struct {

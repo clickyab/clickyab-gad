@@ -107,6 +107,11 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		Title:    params.Get("title"),
 		Font:     params.Get("font"),
 		FontSize: params.Get("fontsize"),
+		Position: params.Get("position"),
+	}
+	if params.Get("version") == "2" {
+		return c.HTML(200, renderNative2(n))
+
 	}
 
 	return c.HTML(200, renderNative(n))
