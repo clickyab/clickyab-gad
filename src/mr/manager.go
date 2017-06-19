@@ -19,6 +19,8 @@ func NewManager() *Manager {
 func (m *Manager) Initialize() {
 	m.AddTableWithName(Slot{}, "slots").SetKeys(true, "ID")
 	m.AddTableWithName(CookieProfile{}, "cookie_profiles").SetKeys(true, "ID")
+	m.AddTableWithName(App{}, "apps").SetKeys(true, "ID")
+	m.AddTableWithName(Website{}, "websites").SetKeys(true, "WID")
 }
 
 func init() {

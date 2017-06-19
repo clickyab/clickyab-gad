@@ -336,6 +336,22 @@ func (selectController) insertNewSlots(wID int64, newSlots []int64, newSize []in
 	return result
 }
 
+func (selectController) insertNewAppSlots(appID int64, newSlots []int64, newSize []int) map[string]int64 {
+	assert.True(len(newSlots) == len(newSize), "[BUG] slot public and count is not matched")
+	result := make(map[string]int64)
+	if len(newSlots) > 0 {
+		for i := range newSlots {
+			insertedSlots, err := mr.NewManager().InsertSlots(0, appID, newSlots[i], newSize[i])
+			if err == nil {
+				p := fmt.Sprintf("%d", insertedSlots.PublicID)
+				result[p] = insertedSlots.ID
+			}
+		}
+	}
+
+	return result
+}
+
 // CalculateCtr calculate ctr
 func (selectController) calculateCTR(ad *mr.AdData, slot *slotData) float64 {
 	//fmt.Println(ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect),slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect),(ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100))
@@ -366,7 +382,7 @@ func (tc *selectController) makeShow(
 		u := url.URL{
 			Scheme: rd.Scheme,
 			Host:   rd.Host,
-			Path:   fmt.Sprintf("/show/%s/%s/%d/%s", typ, rd.MegaImp, publisher.GetID(), tmp),
+			Path:   fmt.Sprintf("/show/%s/%s/%d/%s", publisher.GetType(), rd.MegaImp, publisher.GetID(), tmp),
 		}
 		v := url.Values{}
 		v.Set("tid", rd.TID)

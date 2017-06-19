@@ -56,6 +56,31 @@ func (m *Manager) FetchWebSlots(publicID string, wID int64) ([]Slot, error) {
 	return res, nil
 }
 
+// FetchAppSlots fetch all slots
+func (m *Manager) FetchAppSlots(publicID string, appID int64) ([]Slot, error) {
+	var res []Slot
+	// TODO : this is dangerous to cache this one
+	//key := utils.Sha1(fmt.Sprintf("slot_%s_%d", publicID, wID))
+	//err := fetch(key, &res)
+	//if err == nil {
+	//	return res, nil
+	//}
+
+	query := fmt.Sprintf(`SELECT * FROM slots WHERE slot_pubilc_id IN (%s) AND app_id = ?`, publicID)
+
+	_, err := m.GetProperDBMap().Select(
+		&res,
+		query,
+		appID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	//_ = store(key, &res, time.Hour)
+	return res, nil
+}
+
 // insertSlotsTODO use this after making the slots table unique
 func (m *Manager) insertSlotsTODO(wID int64, appID int64, slotsPublic ...int64) ([]Slot, error) {
 	assert.True((appID == 0 && wID > 0) || (appID > 0 && wID == 0), "[BUG] invalid input")
@@ -93,8 +118,6 @@ func (m *Manager) insertSlotsTODO(wID int64, appID int64, slotsPublic ...int64) 
 // InsertSlots create as many slots you want
 func (m *Manager) InsertSlots(wID int64, appID int64, slotsPublic int64, size int) (*Slot, error) {
 	assert.True((appID == 0 && wID > 0) || (appID > 0 && wID == 0), "[BUG] invalid input")
-	key := utils.Sha1(fmt.Sprintf("slot_%d_%d", slotsPublic, wID))
-	_ = store(key, "", 0)
 	s := &Slot{PublicID: slotsPublic, Size: sql.NullString{String: fmt.Sprint(size), Valid: size != 0}}
 	if wID > 0 {
 		s.WID = wID
