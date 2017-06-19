@@ -3,10 +3,12 @@ package mr
 import (
 	"assert"
 	"config"
+	"crypto/md5"
 	"database/sql"
 	"errors"
 	"fmt"
 	"gmaps"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -24,6 +26,7 @@ type App struct {
 	AppName              string         `db:"app_name"`
 	EnAppName            string         `db:"en_app_name"`
 	AppPackage           string         `db:"app_package"`
+	AppSupplier          string         `db:"app_supplier"`
 	AmID                 int            `db:"am_id"`
 	MinBID               int64          `db:"app_minbid"`
 	AppFloorCPM          sql.NullInt64  `db:"app_floor_cpm"`
@@ -177,7 +180,7 @@ func (m *Manager) GetAppByID(id int64) (*App, error) {
 	}
 
 	q := "SELECT * FROM `apps` WHERE `app_id`=?"
-	err = m.GetRDbMap().SelectOne(&res, q, id)
+	err = m.GetProperDBMap().SelectOne(&res, q, id)
 	if err != nil {
 		return nil, err
 	}
@@ -266,4 +269,61 @@ func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int64, carrier string) (*Ce
 	res.Lon = lon
 
 	return &res, nil
+}
+
+// FetchAppByPack fetch app by package and supplier name
+func (m *Manager) FetchAppByPack(pack, supplier string) (*App, error) {
+	res := App{}
+	key := utils.Sha1(fmt.Sprintf("AppPackageSupplier_%s_%s", pack, supplier))
+	err := fetch(key, &res)
+	if err == nil {
+		return &res, nil
+	}
+	q := "SELECT * FROM apps WHERE app_supplier=? AND app_package=? AND app_status NOT IN (2,3) LIMIT 1"
+	err = m.GetRDbMap().SelectOne(&res, q, supplier, pack)
+	if err != nil {
+		return nil, err
+	}
+	_ = store(key, &res, time.Hour)
+	return &res, nil
+}
+
+// FetchValidAppByID find app by ID
+func (m *Manager) FetchValidAppByID(ID int64) (*App, error) {
+	res := App{}
+	key := utils.Sha1(fmt.Sprintf("App_%d", ID))
+	err := fetch(key, &res)
+	if err == nil {
+		return &res, nil
+	}
+	q := "SELECT * FROM apps WHERE app_id=? AND app_status NOT IN (2,3) LIMIT 1"
+	err = m.GetProperDBMap().SelectOne(&res, q, ID)
+	if err != nil {
+		return nil, err
+	}
+	_ = store(key, &res, time.Hour)
+	return &res, nil
+}
+
+// InsertApp insert application
+func (m *Manager) InsertApp(pack, supplier string, userID int64) (*App, error) {
+	if supplier == "clickyab" {
+		// we are not allow to register sites from clickyab
+		return nil, fmt.Errorf("the clickyab supplier is not allowed to register website on the fly")
+	}
+	ins := App{
+		UserID:      userID,
+		AppPackage:  pack,
+		AppSupplier: supplier,
+		AppToken:    fmt.Sprintf("%x", md5.Sum([]byte(pack+fmt.Sprintf("%d", rand.Intn(899999999999)+100000000000)))),
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+		AppStatus:   1,
+		AppDate:     int(time.Now().Unix()),
+	}
+	err := m.GetWDbMap().Insert(&ins)
+	if err != nil {
+		return nil, err
+	}
+	return &ins, nil
 }

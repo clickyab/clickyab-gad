@@ -32,6 +32,19 @@ type RequestData struct {
 	CopID          int64
 	TID            string
 	Parent         string
+
+	//App part
+	Network    string
+	Brand      string
+	CID        int64
+	LAC        int64
+	MCC        int64
+	MNC        int64
+	Language   string
+	Model      string
+	Operator   string
+	OSIdentity string
+	Carrier    string
 }
 
 const requestDataToken = "__request_data__"

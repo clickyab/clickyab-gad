@@ -67,7 +67,7 @@ func (tc *selectController) show(c echo.Context) error {
 	if typ == "sync" {
 		typ = "web"
 	}
-	if typ != "web" && typ != "vast" {
+	if typ != "web" && typ != "vast" && typ != "app" {
 		return c.String(http.StatusNotFound, "not found")
 	}
 
@@ -78,8 +78,16 @@ func (tc *selectController) show(c echo.Context) error {
 		return c.String(http.StatusNoContent, "")
 	}
 	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
-	website, err := mr.NewManager().FetchWebsite(websiteID)
-	assert.Nil(err)
+	var publisher Publisher
+	if typ == "web" || typ == "vast" {
+		website, err := mr.NewManager().FetchWebsite(websiteID)
+		assert.Nil(err)
+		publisher = website
+	} else {
+		app, err := mr.NewManager().FetchValidAppByID(websiteID)
+		publisher = app
+		assert.Nil(err)
+	}
 
 	//TODO :validate Wid compare to us
 
@@ -122,9 +130,9 @@ func (tc *selectController) show(c echo.Context) error {
 	}
 	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, adID)], 10, 64)
 	assert.Nil(err)
-	imp := tc.fillImp(rd, suspicious, ads, winnerFinalBid, website, slotID)
+	imp := tc.fillImp(rd, suspicious, ads, winnerFinalBid, publisher, slotID)
 
-	go tc.callWebWorker(website, slotID, adID, mega, rnd, imp, rd)
+	go tc.callWebWorker(publisher, slotID, adID, mega, rnd, imp, rd)
 	if typ == "vast" {
 		return c.XMLBlob(http.StatusOK, []byte(res))
 	}
@@ -161,7 +169,7 @@ func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.
 
 // makeAdData
 func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool) (string, error) {
-	if typ == "web" {
+	if typ == "web" || typ == "app" {
 		return tc.makeWebTemplate(c, typ, ads, url, long, pos, https)
 	}
 

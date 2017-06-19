@@ -52,7 +52,6 @@ type RequestDataFromExchange struct {
 			Long  float64 `json:"long"`
 		} `json:"latlon"`
 	} `json:"location"`
-
 	Attributes map[string]interface{} `json:"attributes"`
 	Slots      []Slot                 `json:"slots"`
 
@@ -131,7 +130,7 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 				rde.Referrer = v.(string)
 			}
 			if vv, ok := e.Attributes["parent"]; ok {
-				rde.Referrer = vv.(string)
+				rde.Parent = vv.(string)
 			}
 			rde.MegaImp = e.TrackID
 			rde.TID = e.UserTrackID
@@ -144,7 +143,39 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			if e.Scheme == "https" {
 				rde.Scheme = e.Scheme
 			}
-
+			if e.Platform == "app" {
+				logrus.Warn(e.Attributes)
+				if v, ok := e.Attributes["brand"]; ok {
+					rde.Brand = v.(string)
+				}
+				if v, ok := e.Attributes["cid"]; ok {
+					rde.CID = int64(v.(float64))
+				}
+				if v, ok := e.Attributes["lac"]; ok {
+					rde.LAC = int64(v.(float64))
+				}
+				if v, ok := e.Attributes["language"]; ok {
+					rde.Language = v.(string)
+				}
+				if v, ok := e.Attributes["mcc"]; ok {
+					rde.MCC = int64(v.(float64))
+				}
+				if v, ok := e.Attributes["mnc"]; ok {
+					rde.MNC = int64(v.(float64))
+				}
+				if v, ok := e.Attributes["model"]; ok {
+					rde.Model = v.(string)
+				}
+				if v, ok := e.Attributes["operator"]; ok {
+					rde.Operator = v.(string)
+				}
+				if v, ok := e.Attributes["os_identity"]; ok {
+					rde.OSIdentity = v.(string)
+				}
+				if v, ok := e.Attributes["carrier"]; ok {
+					rde.Carrier = v.(string)
+				}
+			}
 			ctx.Set(requestDataToken, rde)
 			return next(ctx)
 		}

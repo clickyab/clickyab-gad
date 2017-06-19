@@ -118,7 +118,7 @@ func (m *Manager) FetchWebsite(ID int64) (*Website, error) {
 // FetchWebsiteByDomain return a function based on its domain
 func (m *Manager) FetchWebsiteByDomain(domain, supplier string) (*Website, error) {
 	var res = Website{}
-	key := utils.Sha1(fmt.Sprintf("WebsiteDomain_%s", domain))
+	key := utils.Sha1(fmt.Sprintf("WebsiteDomainSupplier_%s_%s", domain, supplier))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
@@ -138,20 +138,24 @@ func (m *Manager) FetchWebsiteByDomain(domain, supplier string) (*Website, error
 	return &res, nil
 }
 
-func (m *Manager) InsertWebsite(domain, supplier string, userID int64) (int64, error) {
+func (m *Manager) InsertWebsite(domain, supplier string, userID int64) (*Website, error) {
 	if supplier == "clickyab" {
 		// we are not allow to register sites from clickyab
-		return 0, fmt.Errorf("the clickyab supplier is not allowed to register website on the fly")
+		return nil, fmt.Errorf("the clickyab supplier is not allowed to register website on the fly")
 	}
-	q := `INSERT INTO websites
-	(u_id,w_domain,w_supplier,w_date,w_pub_id,w_status,updated_at,created_at)
-	VALUES
-	(	?,?		  ,? ,	?	,	?	,	?	,	NOW(),NOW())`
-
-	r, err := m.GetWDbMap().Exec(q, userID, domain, time.Now().Unix(), fmt.Sprintf("%d%d", rand.Intn(899)+100, time.Now().Unix()), 1)
+	ins := Website{
+		UserID:    userID,
+		WDomain:   sql.NullString{String: domain, Valid: true},
+		WSupplier: supplier,
+		CreatedAt: sql.NullString{String: time.Now().String(), Valid: true},
+		UpdatedAt: sql.NullString{String: time.Now().String(), Valid: true},
+		WStatus:   1,
+		WDate:     int(time.Now().Unix()),
+		WPubID:    int64(rand.Intn(899) + 100),
+	}
+	err := m.GetWDbMap().Insert(&ins)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	id, _ := r.LastInsertId()
-	return id, nil
+	return &ins, nil
 }
