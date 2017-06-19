@@ -33,10 +33,89 @@ type Demand struct {
 	SlotTrackID string `json:"slot_track_id"`
 }
 
-// selectDemandWebAd function is the route that the real biding happens
-func (tc *selectController) selectDemandWebAd(c echo.Context) error {
-	//t := time.Now()
-	rd, e, website, province, err := tc.getWebDataExchangeFromCtx(c)
+func (tc *selectController) selectDemandAppAd(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) error {
+	rd, e, app, province, phone, cell, err := tc.getDemandAppDataFromCtx(c, rd, e)
+	if err != nil {
+		return c.HTML(http.StatusBadRequest, err.Error())
+	}
+	slotSize, sizeNumSlice, trackIDs, err := tc.slotSizeAppExchange(e.Slots, *app)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	m := selector.Context{
+		RequestData:  *rd,
+		App:          app,
+		Size:         sizeNumSlice,
+		Province:     province,
+		PhoneData:    phone,
+		CellLocation: cell,
+	}
+	var sel selector.FilterFunc
+	if e.Platform == "app" {
+		sel = appSelector
+	} else {
+		return c.HTML(http.StatusBadRequest, "not supported platform")
+	}
+	lockSession := "DRD_SESS_" + e.SessionKey
+	redlock.Lock(lockSession, lockSession, 100*time.Millisecond)
+	defer redlock.Unlock([]string{lockSession}, lockSession)
+	var sessionAds []int64
+	// This is when the supplier is not support grouping
+	if e.SessionKey != "" {
+		e.SessionKey = "EXC_SESS_" + e.SessionKey
+		sessionAds = aredis.SMembersInt(e.SessionKey)
+		if len(sessionAds) > 0 {
+			sel = selector.Mix(sel, func(_ *selector.Context, a mr.AdData) bool {
+				for _, i := range sessionAds {
+					if i == a.AdID {
+						return false
+					}
+				}
+				return true
+			})
+		}
+	}
+
+	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true)
+
+	//substitute the webMobile slot if exists
+	dm := []Demand{}
+	for i := range ads {
+		if ads[i] == nil {
+			continue
+		}
+
+		d := Demand{
+			ID:          fmt.Sprint(ads[i].AdID),
+			Height:      config.GetSizeByNumStringHeight(ads[i].AdSize),
+			Width:       config.GetSizeByNumStringWith(ads[i].AdSize),
+			URL:         show[i],
+			CPM:         int64(float64(ads[i].WinnerBid) * ads[i].CTR * 10),
+			Landing:     stripURLParts(ads[i].AdURL.String),
+			SlotTrackID: trackIDs[ads[i].SlotPublicID],
+		}
+		assert.False(d.SlotTrackID == "", "[BUG] invalid track id")
+		dm = append(dm, d)
+		sessionAds = append(sessionAds, ads[i].AdID)
+	}
+	if len(dm) < 1 {
+		return c.NoContent(http.StatusNoContent)
+	}
+
+	if e.SessionKey != "" {
+		err := aredis.SAddInt(e.SessionKey, true, time.Minute, sessionAds...)
+		if err != nil {
+			logrus.Warn(err)
+		}
+	}
+
+	return c.JSON(http.StatusOK, dm)
+}
+
+func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) error {
+	rd, e, website, province, err := tc.getWebDataExchangeFromCtx(c, rd, e)
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
@@ -115,93 +194,22 @@ func (tc *selectController) selectDemandWebAd(c echo.Context) error {
 	return c.JSON(http.StatusOK, dm)
 }
 
-// Select function is the route that the real biding happens
-func (tc *selectController) selectDemandAppAd(c echo.Context) error {
+// selectDemandWebAd function is the route that the real biding happens
+func (tc *selectController) selectDemandAd(c echo.Context) error {
 	//t := time.Now()
-	rd, e, app, province, phone, cell, err := tc.getDemandAppDataFromCtx(c)
-	if err != nil {
-		return c.HTML(http.StatusBadRequest, err.Error())
+	rd := middlewares.MustGetRequestData(c)
+	e := middlewares.MustExchangeGetRequestData(c)
+	if e.Platform != "app" && e.Platform != "web" {
+		return c.HTML(http.StatusBadRequest, "wrong platform")
 	}
-	slotSize, sizeNumSlice, trackIDs, err := tc.slotSizeAppExchange(e.Slots, *app)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, err.Error())
-	}
-
-	m := selector.Context{
-		RequestData:  *rd,
-		App:          app,
-		Size:         sizeNumSlice,
-		Province:     province,
-		PhoneData:    phone,
-		CellLocation: cell,
-	}
-	var sel selector.FilterFunc
-	if e.Platform == "app" {
-		sel = appSelector
-	} else {
-		return c.HTML(http.StatusBadRequest, "not supported platform")
-	}
-	lockSession := "DRD_SESS_" + e.SessionKey
-	redlock.Lock(lockSession, lockSession, 100*time.Millisecond)
-	defer redlock.Unlock([]string{lockSession}, lockSession)
-	var sessionAds []int64
-	// This is when the supplier is not support grouping
-	if e.SessionKey != "" {
-		e.SessionKey = "EXC_SESS_" + e.SessionKey
-		sessionAds = aredis.SMembersInt(e.SessionKey)
-		if len(sessionAds) > 0 {
-			sel = selector.Mix(sel, func(_ *selector.Context, a mr.AdData) bool {
-				for _, i := range sessionAds {
-					if i == a.AdID {
-						return false
-					}
-				}
-				return true
-			})
-		}
-	}
-
-	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
-	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true)
-
-	//substitute the webMobile slot if exists
-	dm := []Demand{}
-	for i := range ads {
-		if ads[i] == nil {
-			continue
-		}
-
-		d := Demand{
-			ID:          fmt.Sprint(ads[i].AdID),
-			Height:      config.GetSizeByNumStringHeight(ads[i].AdSize),
-			Width:       config.GetSizeByNumStringWith(ads[i].AdSize),
-			URL:         show[i],
-			CPM:         int64(float64(ads[i].WinnerBid) * ads[i].CTR * 10),
-			Landing:     stripURLParts(ads[i].AdURL.String),
-			SlotTrackID: trackIDs[ads[i].SlotPublicID],
-		}
-		assert.False(d.SlotTrackID == "", "[BUG] invalid track id")
-		dm = append(dm, d)
-		sessionAds = append(sessionAds, ads[i].AdID)
-	}
-	if len(dm) < 1 {
-		return c.NoContent(http.StatusNoContent)
-	}
-
-	if e.SessionKey != "" {
-		err := aredis.SAddInt(e.SessionKey, true, time.Minute, sessionAds...)
-		if err != nil {
-			logrus.Warn(err)
-		}
-	}
-
-	return c.JSON(http.StatusOK, dm)
+	if e.Platform == "web" {
+		return tc.selectDemandWebAd(c, rd, e)
+	} // app platform selected
+	return tc.selectDemandAppAd(c, rd, e)
 
 }
 
-func (tc *selectController) getDemandAppDataFromCtx(c echo.Context) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.App, *mr.Province, *mr.PhoneData, *mr.CellLocation, error) {
-	rd := middlewares.MustGetRequestData(c)
-	e := middlewares.MustExchangeGetRequestData(c)
+func (tc *selectController) getDemandAppDataFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.App, *mr.Province, *mr.PhoneData, *mr.CellLocation, error) {
 	name, userID, err := config.GetSupplier(e.Source.Supplier)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, fmt.Errorf("can not accept from %s demand", e.Source.Supplier)
@@ -237,9 +245,7 @@ func stripURLParts(in string) string {
 	return u.Host
 }
 
-func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.Website, *mr.Province, error) {
-	rd := middlewares.MustGetRequestData(c)
-	e := middlewares.MustExchangeGetRequestData(c)
+func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.Website, *mr.Province, error) {
 	name, userID, err := config.GetSupplier(e.Source.Supplier)
 	if err != nil {
 		return nil, nil, nil, nil, fmt.Errorf("can not accept from %s supplier", e.Source.Supplier)
