@@ -382,7 +382,7 @@ func (tc *selectController) makeShow(
 		u := url.URL{
 			Scheme: rd.Scheme,
 			Host:   rd.Host,
-			Path:   fmt.Sprintf("/show/%s/%s/%d/%s", publisher.GetType(), rd.MegaImp, publisher.GetID(), tmp),
+			Path:   fmt.Sprintf("/show/%s/%s/%d/%s", typ, rd.MegaImp, publisher.GetID(), tmp),
 		}
 		v := url.Values{}
 		v.Set("tid", rd.TID)
