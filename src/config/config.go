@@ -34,6 +34,7 @@ type AppConfig struct {
 	CORS            bool   `onion:"cors"`
 	MaxCPUAvailable int    `onion:"max_cpu_available"`
 	MountPoint      string `onion:"mount_point"`
+	ServerID        string `onion:"server_id"`
 
 	Site  string
 	Proto string
