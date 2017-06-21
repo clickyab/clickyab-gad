@@ -4,7 +4,7 @@ import (
 	"config"
 	"os"
 
-	"src/gopkg.in/labstack/echo.v3"
+	"gopkg.in/labstack/echo.v3"
 )
 
 // ServerID set server id header for routes
