@@ -32,6 +32,7 @@ func retargetingCreator(ctx echo.Context, e *middlewares.RequestData, len int) s
 
 // Routes function register all routes in system
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
+	e.Use(middlewares.ServerID)
 	e.GET("/native", tc.selectNativeAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/select", tc.selectWebAd, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.POST("/demand", tc.selectDemandAd, middlewares.RequestExchangeCollectorGenerator(webCopCreateor), middlewares.Header)
