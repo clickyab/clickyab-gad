@@ -86,33 +86,14 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	if len(ads) == 0 {
 		return c.HTML(http.StatusBadRequest, "<div class=\"no-ads\"></div>")
 	}
-	var layout layout
-	switch params.Get("position") {
-	case "left":
-		layout = layoutTitleRight
-	case "right":
-		layout = layoutImageRight
-	case "top":
-		layout = layoutImageFirst
-	case "bottom":
-		layout = layoutImageLast
-	case "middle":
-		layout = layoutTitleFirst
-	default:
-		return c.HTML(http.StatusBadRequest, "position not valid")
-	}
+
 	n := nativeContainer{
 		Ads:      ads,
-		Layout:   layout,
 		Title:    params.Get("title"),
-		Font:     params.Get("font"),
 		FontSize: params.Get("fontsize"),
 		Position: params.Get("position"),
 	}
-	if params.Get("version") == "2" {
-		return c.HTML(200, renderNative2(n))
-
-	}
 
 	return c.HTML(200, renderNative(n))
+
 }
