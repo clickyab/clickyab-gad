@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"mr"
+
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -42,11 +44,19 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	if rd.Scheme == httpsScheme {
 		p = httpsScheme
 	}
-
+	var countFilledAds int
+	var filledAds []*mr.AdData
 	for _, j := range h {
-		if j == nil {
-			continue
+		if j != nil {
+			countFilledAds++
+			filledAds = append(filledAds, j)
+
 		}
+	}
+	if countFilledAds != 1 && countFilledAds%2 != 0 {
+		filledAds = filledAds[1:]
+	}
+	for _, j := range filledAds {
 
 		rnd := <-utils.ID
 		u := url.URL{
