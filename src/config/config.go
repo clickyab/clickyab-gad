@@ -122,9 +122,10 @@ type AppConfig struct {
 
 		RetargettingHour int `onion:"retargetting_hour"`
 
-		MinCPCWeb  int64 `onion:"min_cpc_web"`
-		MinCPCApp  int64 `onion:"min_cpc_app"`
-		MinCPCVast int64 `onion:"min_cpc_vast"`
+		MinCPCWeb    int64 `onion:"min_cpc_web"`
+		MinCPCNative int64 `onion:"min_cpc_native"`
+		MinCPCApp    int64 `onion:"min_cpc_app"`
+		MinCPCVast   int64 `onion:"min_cpc_vast"`
 	}
 
 	PHPCode struct {
@@ -234,6 +235,7 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.min_cpc_vast", 2000))
 	assert.Nil(d.SetDefault("clickyab.min_cpc_app", 700))
 	assert.Nil(d.SetDefault("clickyab.min_cpc_web", 2000))
+	assert.Nil(d.SetDefault("clickyab.min_cpc_native", 1000))
 
 	p, err = expand.Path("$HOME/gad/clickyab-server/a")
 	assert.Nil(err)

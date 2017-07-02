@@ -36,7 +36,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
 	logrus.Debug("Pass filters => ", len(filteredAds[20]))
 	// TODO : Currently underfloor is always true
-	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, true, true)
+	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCNative, true, true)
 	logrus.Debugf("%+v", h)
 
 	ads := make([]nativeAd, 0)
