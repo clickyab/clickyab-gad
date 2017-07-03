@@ -4,8 +4,6 @@ import (
 	"assert"
 	"bytes"
 	"text/template"
-
-	"github.com/Sirupsen/logrus"
 )
 
 type protocol string
@@ -98,7 +96,6 @@ var addRenderer = func(ads []nativeAd) string {
 			b.WriteString(`<div class="cyb-pack cyb-custom-pack">`)
 		}
 		e := t.Lookup("ad").Execute(b, ad)
-		logrus.Warn(e)
 		assert.Nil(e)
 
 		if len(ads)-1 == i {

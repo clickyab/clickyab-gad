@@ -144,7 +144,6 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 				rde.Scheme = e.Scheme
 			}
 			if e.Platform == "app" {
-				logrus.Warn(e.Attributes)
 				if v, ok := e.Attributes["brand"]; ok {
 					rde.Brand = v.(string)
 				}

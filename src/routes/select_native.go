@@ -22,7 +22,6 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	params := c.QueryParams()
 	rd, website, province, err := tc.getWebDataFromCtx(c)
 	if err != nil {
-		logrus.Warn(1)
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	slotSize, sizeNumSlice := tc.slotSizeNative(params, *website)
