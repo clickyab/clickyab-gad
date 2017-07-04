@@ -39,6 +39,7 @@ var (
 		filter.CheckWebBlackList,
 		filter.CheckWebCategory,
 		filter.CheckProvince,
+		filter.CheckVastOtherNetwork,
 	)
 
 	nativeSelector = selector.Mix(

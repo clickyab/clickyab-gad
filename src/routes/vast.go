@@ -31,6 +31,7 @@ var (
 		filter.CheckWebBlackList,
 		filter.CheckWebCategory,
 		filter.CheckProvince,
+		filter.CheckVastNetwork,
 	)
 )
 
