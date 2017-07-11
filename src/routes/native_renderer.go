@@ -54,7 +54,7 @@ const nativeTmpl = `{{define "ads"}}<div class="cyb-holder cyb-custom-holder" st
 const adTmpl = `{{define "ad"}}
        <div class="cyb-suggest cyb-custom-suggest ">
                 <div class="cyb-img-holder cyb-custom-img-holder">
-                    <a target="_blank" href="{{.Site}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)"
+                    <a target="_blank" href="{{.URL}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)"
                        ondblclick="cybOpen(event)" data-href="{{.URL}}">
                         <img src="{{.Image}}" alt="{{.Title}}"
                              class="cyb-img {{isRound .Corners}} cyb-custom-img">
@@ -62,7 +62,7 @@ const adTmpl = `{{define "ad"}}
                 </div>
                 <div class="cyb-desc-holder cyb-custom-desc-holder">
                     <div class="cyb-desc cyb-custom-desc">
-                        <a target="_blank" href="{{.Site}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)"
+                        <a target="_blank" href="{{.URL}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)"
                            ondblclick="cybOpen(event)" data-href="{{.URL}}">
                             {{.Title}}
                         </a>
