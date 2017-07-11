@@ -149,6 +149,7 @@ func LimitCharacter(s string, c int) string {
 		count := 0
 		for i := range strArr {
 			count = count + len([]rune(strArr[i]))
+			count++ //space
 			if count > c-3 {
 				break
 			}
@@ -157,6 +158,5 @@ func LimitCharacter(s string, c int) string {
 	} else {
 		return s
 	}
-
-	return res
+	return res + "..."
 }
