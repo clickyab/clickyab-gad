@@ -139,3 +139,24 @@ func Sha1(k string) string {
 	_, _ = h.Write([]byte(k))
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
+
+// LimitCharacter limit character
+func LimitCharacter(s string, c int) string {
+	l := len([]rune(s))
+	var res = ""
+	if l > c {
+		strArr := strings.Split(s, " ")
+		count := 0
+		for i := range strArr {
+			count = count + len([]rune(strArr[i]))
+			if count > c-3 {
+				break
+			}
+			res = res + " " + strArr[i]
+		}
+	} else {
+		return s
+	}
+
+	return res
+}
