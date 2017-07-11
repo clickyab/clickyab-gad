@@ -79,12 +79,13 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		if p == httpsScheme {
 			j.AdImg.String = strings.Replace(j.AdImg.String, "http://", "https://", -1)
 		}
+		fixTitle := utils.LimitCharacter(j.AdName.String, 50)
 		ads = append(ads, nativeAd{
 			Image:   j.AdImg.String,
 			URL:     u.String(),
 			Lead:    j.AdAttribute["banner_description_text_type"].(string),
 			More:    params.Get("more"),
-			Title:   j.AdName.String,
+			Title:   fixTitle,
 			Corners: params.Get("corners"),
 			Site:    j.AdURL.String,
 		})
@@ -99,7 +100,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	n := nativeContainer{
 		Ads:      ads,
 		Title:    params.Get("title"),
-		FontSize: params.Get("fontsize"),
+		FontSize: params.Get("fontSize"),
 		Position: params.Get("position"),
 	}
 
