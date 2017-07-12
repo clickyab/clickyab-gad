@@ -68,6 +68,20 @@ func Initialize() {
 	})
 }
 
+// MysqlHealth check mysql health
+func MysqlHealth() []error {
+	var res = []error{}
+	err := rdb.Ping()
+	if err != nil {
+		res = append(res, err)
+	}
+	err = wdb.Ping()
+	if err != nil {
+		res = append(res, err)
+	}
+	return res
+}
+
 // Register a new initializer module
 func Register(m ...utils.Initializer) {
 	all = append(all, m...)

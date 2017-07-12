@@ -44,6 +44,7 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/:cpid/retarget", tc.allAds, middlewares.RequestCollectorGenerator(retargetingCreator), middlewares.Header)
 	e.GET("/version", tc.version, middlewares.Header)
 	e.GET("/ads/inapp.php", tc.inApp, middlewares.RequestCollectorGenerator(appCopCreateor), middlewares.Header)
+	e.GET("/healthz", tc.healthz, middlewares.Header)
 
 	postfix := "-min.js"
 	if config.Config.DevelMode {
