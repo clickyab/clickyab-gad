@@ -4,6 +4,7 @@ import (
 	"assert"
 	"config"
 	"database/sql"
+	"errors"
 	"fmt"
 	"redis"
 	"sort"
@@ -91,6 +92,15 @@ func (m *Manager) LoadAds() ([]AdData, error) {
 	assert.False(time.Since(last) > 5*time.Minute, "[BUG] the loader is not called for so long!")
 	last = time.Now()
 	return res, nil
+}
+
+// LoaderHealth check loader timeout
+func LoaderHealth() []error {
+	var res = []error{}
+	if time.Since(last) > 2*time.Minute {
+		res = append(res, errors.New("loader not called for so long"))
+	}
+	return res
 }
 
 // Build implode slice of string with ,

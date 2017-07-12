@@ -222,3 +222,12 @@ func SAddInt(key string, touch bool, expire time.Duration, members ...int64) err
 
 	return SAdd(key, touch, expire, r...)
 }
+
+// RedisHealth check redis health
+func RedisHealth() []error {
+	var res = []error{}
+	if err := Client.Ping().Err(); err != nil {
+		res = append(res, err)
+	}
+	return res
+}
