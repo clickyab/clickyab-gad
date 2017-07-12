@@ -1,0 +1,25 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gad-config
+  namespace: gad
+data:
+  GAD_AMQP_DSN: REDACTED
+  GAD_CLICKYAB_ACCEPTED_DEMANDS: clickyab:clickyab:30708
+  GAD_CLICKYAB_UNDER_FLOOR: 'true'
+  GAD_DEVEL_MODE: 'false'
+  GAD_MYSQL_DATABASE: clickyab
+  GAD_MYSQL_MAX_CONNECTION: '10'
+  GAD_MYSQL_MAX_IDLE_CONNECTION: '3'
+  GAD_MYSQL_RDSN: REDACTED
+  GAD_MYSQL_WDSN: REDACTED
+  GAD_PROFILE: disable
+  GAD_PROTO: http
+  GAD_REDIS_ADDRESS: 192.168.100.30:2222
+  GAD_REDIS_DATABASE: '7'
+  GAD_REDIS_PASSWORD: bita123
+  GAD_REDIS_SIZE: '250'
+  GAD_SERVER_ID: web-1
+  GAD_SITE: a.clickyab.com
+  PORT: '9001'
