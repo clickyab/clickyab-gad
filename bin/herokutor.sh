@@ -40,7 +40,7 @@ BUILD_PACKS_DIR=$(mktemp -d)
 
 #GIT_DIR=$(cd "${SOURCE_DIR}/" && pwd)
 pushd ${SOURCE_DIR}
-GIT_WORK_TREE=${BUILD} git checkout -f ${BRANCH}
+GIT_WORK_TREE=${BUILD} git checkout -f HEAD
 
 export LONGHASH=$(git log -n1 --pretty="format:%H" | cat)
 export SHORTHASH=$(git log -n1 --pretty="format:%h"| cat)
