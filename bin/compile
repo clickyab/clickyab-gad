@@ -80,6 +80,7 @@ go version || grep ${GOVERSION} || install_go "go version is not ${GOVERSION}"
 step "Get gb"
 cd ${ROOT}
 make -f ${ROOT}/Makefile gb
+make -f ${ROOT}/Makefile stylegen
 
 diff ${CACHE}/vendor/manifest ${ROOT}/vendor/manifest || cache_vendor
 cp -R ${CACHE}/vendor/src ${ROOT}/vendor/
