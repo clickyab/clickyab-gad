@@ -11,4 +11,4 @@ config-dist.yml
 node_modules/
 *.retry
 .vscode
-.gen.go
+*.gen.go
