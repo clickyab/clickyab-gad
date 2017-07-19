@@ -13,6 +13,7 @@ env
 APP=${APP:-}
 BRANCH=${BRANCH_NAME:-master}
 BRANCH=${CHANGE_TARGET:-${BRANCH}}
+CACHE_ROOT=${CACHE_ROOT:-/var/lib/jenkins/cache}
 
 [ -z ${CHANGE_AUTHOR} ] && PUSH="--push"
 [ -z ${APP} ] && exit_message "The APP is not defined." # WTF, the APP_NAME is important
@@ -25,7 +26,7 @@ SOURCE_DIR=${1:-}
 SOURCE_DIR=$(cd "${SOURCE_DIR}/" && pwd)
 
 BUILD_DIR=${2:-${SOURCE_DIR}-build}
-CACHE_DIR=${3:-${SOURCE_DIR}-cache}
+CACHE_DIR=${CACHE_ROOT}/${APP}-${BRANCH}
 ENV_DIR=$(mktemp -d)
 
 mkdir -p "${BUILD_DIR}" "${CACHE_DIR}" "${ENV_DIR}"
@@ -75,8 +76,11 @@ rocker build ${PUSH} -var Build=${BUILD} -var EnvDir=${VARS} -var Cache=${CACHE}
 
 popd
 
-rm -rf ${VARS} || true
-rm -rf ${TARGET} || true
+echo "${VARS}" >> /tmp/kill-me
+echo "${TARGET}" >> /tmp/kill-me
+echo "${TEMPORARY}" >> /tmp/kill-me
+echo "${BUILD_DIR}" >> /tmp/kill-me
+echo "${BUILD_PACKS_DIR}" >> /tmp/kill-me
 
 [ -z ${CHANGE_AUTHOR} ] || exit_message "Build OK" 0
 
@@ -88,5 +92,3 @@ do
 done
 
 fi
-
-
