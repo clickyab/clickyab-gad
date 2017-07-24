@@ -19,6 +19,8 @@ import (
 	"transport"
 	"utils"
 
+	"strings"
+
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -194,11 +196,34 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 	return c.JSON(http.StatusOK, dm)
 }
 
+func isSupplierFake(sn string) bool {
+	fakeSuppliers := strings.Split(config.Config.Clickyab.FakeSupplier, ",")
+	for i := range fakeSuppliers {
+		if fakeSuppliers[i] == sn {
+			return true
+		}
+	}
+
+	return false
+}
+
 // selectDemandWebAd function is the route that the real biding happens
 func (tc *selectController) selectDemandAd(c echo.Context) error {
-	//t := time.Now()
 	rd := middlewares.MustGetRequestData(c)
 	e := middlewares.MustExchangeGetRequestData(c)
+	if isSupplierFake(rd.SuppliersName) {
+		dm := []Demand{}
+		for i := range e.Slots {
+			dm = append(dm, Demand{
+				Height:      e.Slots[i].Height,
+				Width:       e.Slots[i].Width,
+				URL:         fmt.Sprintf("%s://clickyab.com/fake-support/%dx%d.html", rd.Scheme, e.Slots[i].Width, e.Slots[i].Height),
+				SlotTrackID: <-utils.ID,
+			})
+		}
+		return c.JSON(http.StatusOK, dm)
+	}
+
 	if e.Platform != "app" && e.Platform != "web" {
 		return c.HTML(http.StatusBadRequest, "wrong platform")
 	}

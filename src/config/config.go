@@ -126,6 +126,8 @@ type AppConfig struct {
 		MinCPCNative int64 `onion:"min_cpc_native"`
 		MinCPCApp    int64 `onion:"min_cpc_app"`
 		MinCPCVast   int64 `onion:"min_cpc_vast"`
+
+		FakeSupplier string `onion:"fake_supplier"`
 	}
 
 	PHPCode struct {
