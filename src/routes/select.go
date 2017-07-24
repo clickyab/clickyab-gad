@@ -311,6 +311,9 @@ func (tc selectController) slotSizeNative(params map[string][]string, website mr
 	if err != nil || countInt < 1 {
 		return make(map[string]*slotData), make(map[string]int)
 	}
+	if countInt > 10 {
+		countInt = 10
+	}
 
 	for i := 1; i <= countInt; i++ { //range  over slots
 		pub := fmt.Sprintf("%d%s%d", website.WID, "470", i)
