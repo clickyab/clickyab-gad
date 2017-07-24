@@ -30,11 +30,12 @@ var o = onion.New()
 
 // AppConfig is the application config
 type AppConfig struct {
-	DevelMode       bool   `onion:"devel_mode"`
-	CORS            bool   `onion:"cors"`
-	MaxCPUAvailable int    `onion:"max_cpu_available"`
-	MountPoint      string `onion:"mount_point"`
-	ServerID        string `onion:"server_id"`
+	DevelMode       bool          `onion:"devel_mode"`
+	CORS            bool          `onion:"cors"`
+	MaxCPUAvailable int           `onion:"max_cpu_available"`
+	MountPoint      string        `onion:"mount_point"`
+	ServerID        string        `onion:"server_id"`
+	Retry           time.Duration `onion:"retry"`
 
 	Site  string
 	Proto string
@@ -55,7 +56,7 @@ type AppConfig struct {
 	}
 
 	Mysql struct {
-		RDSN              string `onion:"rdsn"`
+		RDSNSlice         string `onion:"rdsn"`
 		WDSN              string `onion:"wdsn"`
 		MaxConnection     int    `onion:"max_connection"`
 		MaxIdleConnection int    `onion:"max_idle_connection"`
@@ -138,6 +139,7 @@ func defaultLayer() onion.Layer {
 	d := onion.NewDefaultLayer()
 	assert.Nil(d.SetDefault("site", "gad.loc"))
 	assert.Nil(d.SetDefault("mount_point", "/"))
+	assert.Nil(d.SetDefault("retry", 1*time.Minute))
 	assert.Nil(d.SetDefault("devel_mode", true))
 	assert.Nil(d.SetDefault("cors", true))
 	assert.Nil(d.SetDefault("max_cpu_available", runtime.NumCPU()))

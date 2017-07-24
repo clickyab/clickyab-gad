@@ -1,13 +1,10 @@
 package mr
 
-import (
-	"models"
-	"models/common"
-)
+import "models"
 
 // Manager is the model manager for aaa package
 type Manager struct {
-	common.Manager
+	models.Manager
 }
 
 // NewManager create and return a manager for this module
