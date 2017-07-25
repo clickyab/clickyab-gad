@@ -17,6 +17,11 @@ const (
 	WEBSITE = "W"
 	// APP is for app keys
 	APP = "A"
+	// CUSTOM_CLICK_URL is for app keys
+	CUSTOM_CLICK_URL = "CCU"
+	// CUSTOM_CLICK_PARAM is for app keys
+	CUSTOM_CLICK_PARAM = "CCP"
+
 
 	// FRAUD_PREFIX for all fraud key
 	FRAUD_PREFIX = "F"

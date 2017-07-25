@@ -4,6 +4,7 @@ import (
 	"assert"
 	"bytes"
 	"config"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"math/rand"
@@ -61,6 +62,7 @@ func (tc *selectController) show(c echo.Context) error {
 	rd := middlewares.MustGetRequestData(c)
 	var suspicious bool
 	mega := c.Param("mega")
+
 	typ := c.Param("type")
 	long := c.Request().URL.Query().Get("l")
 	pos := c.Request().URL.Query().Get("pos")
@@ -123,13 +125,32 @@ func (tc *selectController) show(c echo.Context) error {
 	v.Set("ref", rd.Referrer)
 	v.Set("parent", rd.Parent)
 	u.RawQuery = v.Encode()
+	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, adID)], 10, 64)
+	assert.Nil(err)
 
+	ccu, ccuok := megaImp[fmt.Sprintf(
+		"%s%s%d",
+		transport.CUSTOM_CLICK_URL,
+		transport.DELIMITER,
+		slotID)]
+	ccp, ccpok := megaImp[fmt.Sprintf(
+		"%s%s%d",
+		transport.CUSTOM_CLICK_PARAM,
+		transport.DELIMITER,
+		slotID)]
+	if ccuok && ccpok {
+		cu, e := url.Parse(ccu)
+		assert.Nil(e)
+		qu := cu.Query()
+		qu.Set(ccp, base64.URLEncoding.WithPadding(rune('.')).EncodeToString([]byte(u.String())))
+		cu.RawQuery = qu.Encode()
+		u = *cu
+	}
 	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos, rd.Scheme != "http")
 	if err != nil {
 		return err
 	}
-	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, adID)], 10, 64)
-	assert.Nil(err)
+
 	imp := tc.fillImp(rd, suspicious, ads, winnerFinalBid, publisher, slotID)
 
 	go tc.callWebWorker(publisher, slotID, adID, mega, rnd, imp, rd)

@@ -64,9 +64,10 @@ type RequestDataFromExchange struct {
 }
 
 type Slot struct {
-	Width   int    `json:"width"`
-	Height  int    `json:"height"`
-	TrackID string `json:"track_id"`
+	Width      int               `json:"width"`
+	Height     int               `json:"height"`
+	TrackID    string            `json:"track_id"`
+	Attributes map[string]string `json:"attributes"`
 }
 type Source struct {
 	Website      string                 `json:"website"`
