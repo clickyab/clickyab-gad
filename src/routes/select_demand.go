@@ -38,7 +38,7 @@ func (tc *selectController) selectDemandAppAd(c echo.Context, rd *middlewares.Re
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
-	slotSize, sizeNumSlice, trackIDs, err := tc.slotSizeAppExchange(e.Slots, *app)
+	slotSize, sizeNumSlice, trackIDs, attr, err := tc.slotSizeAppExchange(e.Slots, *app)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err.Error())
 	}
@@ -78,7 +78,7 @@ func (tc *selectController) selectDemandAppAd(c echo.Context, rd *middlewares.Re
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
-	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, attr, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true)
 
 	//substitute the webMobile slot if exists
 	dm := []Demand{}
@@ -119,7 +119,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
-	slotSize, sizeNumSlice, trackIDs, err := tc.slotSizeWebExchange(e.Slots, *website)
+	slotSize, sizeNumSlice, trackIDs, attr, err := tc.slotSizeWebExchange(e.Slots, *website)
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, "slot size was wrong, reason : "+err.Error())
 	}
@@ -158,7 +158,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
-	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, website, false, e.Source.FloorCPM, e.Underfloor, true)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, attr, website, false, e.Source.FloorCPM, e.Underfloor, true)
 
 	//substitute the webMobile slot if exists
 	dm := []Demand{}
@@ -302,13 +302,18 @@ func (tc *selectController) fetchAppPackage(pack, supplier string, userID int64)
 	return app, nil
 }
 
-func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website mr.Website) (map[string]*slotData, map[string]int, map[string]string, error) {
+func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website mr.Website) (map[string]*slotData, map[string]int, map[string]string, map[string]map[string]string, error) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublics []string
 	var trackIDs = make(map[string]string)
+	var attr = make(map[string]map[string]string)
 	for slot := range slots {
 		size, err := config.GetSize(fmt.Sprintf("%dx%d", slots[slot].Width, slots[slot].Height))
 		slotPublic := fmt.Sprintf("%d%d%d", website.WPubID, size, slot)
+		attr[slotPublic] = make(map[string]string)
+		for k, v := range slots[slot].Attributes {
+			attr[slotPublic][k] = v
+		}
 		if err == nil {
 			sizeNumSlice[slotPublic] = size
 			slotPublics = append(slotPublics, slotPublic)
@@ -316,19 +321,25 @@ func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website
 		}
 	}
 	if len(slotPublics) == 0 {
-		return nil, nil, nil, errors.New("no supported slot size")
+		return nil, nil, nil, nil, errors.New("no supported slot size")
 	}
 	all, size := tc.slotSizeNormal(slotPublics, website.WID, sizeNumSlice)
-	return all, size, trackIDs, nil
+
+	return all, size, trackIDs, attr, nil
 }
 
-func (tc selectController) slotSizeAppExchange(slots []middlewares.Slot, app mr.App) (map[string]*slotData, map[string]int, map[string]string, error) {
+func (tc selectController) slotSizeAppExchange(slots []middlewares.Slot, app mr.App) (map[string]*slotData, map[string]int, map[string]string, map[string]map[string]string, error) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublics []string
 	var trackIDs = make(map[string]string)
+	var attr = make(map[string]map[string]string)
+
 	for slot := range slots {
 		size, err := config.GetSize(fmt.Sprintf("%dx%d", slots[slot].Width, slots[slot].Height))
 		slotPublic := fmt.Sprintf("%d0%d0%d", app.ID, app.UserID, size)
+		for k, v := range slots[slot].Attributes {
+			attr[slotPublic][k] = v
+		}
 		if err == nil {
 			sizeNumSlice[slotPublic] = size
 			slotPublics = append(slotPublics, slotPublic)
@@ -336,10 +347,10 @@ func (tc selectController) slotSizeAppExchange(slots []middlewares.Slot, app mr.
 		}
 	}
 	if len(slotPublics) == 0 {
-		return nil, nil, nil, errors.New("no supported slot size")
+		return nil, nil, nil, nil, errors.New("no supported slot size")
 	}
 	all, size := tc.slotSizeAppExchangeNormal(slotPublics, app.ID, sizeNumSlice)
-	return all, size, trackIDs, nil
+	return all, size, trackIDs, attr, nil
 }
 
 func (tc selectController) slotSizeAppExchangeNormal(slotPublic []string, appID int64, sizeNumSlice map[string]int) (map[string]*slotData, map[string]int) {

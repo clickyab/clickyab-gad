@@ -94,7 +94,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true)
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true)
 
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
@@ -144,7 +144,7 @@ func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website P
 	)
 }
 
-func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int64, winnerBid int64, slotID int64) {
+func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int64, winnerBid int64, slotID int64, clickURL, clickParam string) {
 	assert.Nil(aredis.StoreHashKey(
 		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
 		fmt.Sprintf(
@@ -165,6 +165,30 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 		strconv.FormatInt(slotID, 10),
 		config.Config.Clickyab.MegaImpExpire,
 	))
+	if clickURL != "" && clickParam != "" {
+		assert.Nil(aredis.StoreHashKey(
+			fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+			fmt.Sprintf(
+				"%s%s%d",
+				transport.CUSTOM_CLICK_URL,
+				transport.DELIMITER,
+				slotID),
+			clickURL,
+			config.Config.Clickyab.MegaImpExpire,
+		))
+
+		assert.Nil(aredis.StoreHashKey(
+			fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+			fmt.Sprintf(
+				"%s%s%d",
+				transport.CUSTOM_CLICK_PARAM,
+				transport.DELIMITER,
+				slotID),
+			clickParam,
+			config.Config.Clickyab.MegaImpExpire,
+		))
+	}
+
 }
 
 func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.Province, error) {
@@ -366,6 +390,7 @@ func (tc *selectController) makeShow(
 	filteredAds map[int][]*mr.AdData,
 	sizeNumSlice map[string]int,
 	slotSize map[string]*slotData,
+	attr map[string]map[string]string,
 	publisher Publisher,
 	multipleVideo bool,
 	minCPC int64,
@@ -511,7 +536,12 @@ func (tc *selectController) makeShow(
 			if !multipleVideo {
 				noVideo = noVideo || sorted[0].AdType == config.AdTypeVideo
 			}
-			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotSize[slotID].ID)
+			var clu, clp string
+			if sa, ok := attr[slotID]; ok {
+				clu = sa["click_url"]
+				clp = sa["click_parameter"]
+			}
+			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotSize[slotID].ID, clu, clp)
 			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
 			assert.Nil(storeCapping(rd.CopID, sorted[0].AdID))
 			selected[slotSize[slotID].SlotSize]++
