@@ -215,10 +215,13 @@ func (tc *selectController) selectDemandAd(c echo.Context) error {
 		dm := []Demand{}
 		for i := range e.Slots {
 			dm = append(dm, Demand{
+				ID:          e.Slots[i].TrackID,
 				Height:      e.Slots[i].Height,
 				Width:       e.Slots[i].Width,
 				URL:         fmt.Sprintf("%s://clickyab.com/fake-support/%dx%d.html", rd.Scheme, e.Slots[i].Width, e.Slots[i].Height),
 				SlotTrackID: <-utils.ID,
+				Landing:     "clickyab.com",
+				CPM:         e.Source.FloorCPM,
 			})
 		}
 		return c.JSON(http.StatusOK, dm)
