@@ -7,6 +7,9 @@ import (
 
 // IsWebNetwork filter network for campaigns
 func IsWebNetwork(c *selector.Context, in mr.AdData) bool {
+	if in.CampaignNetwork == 0 {
+		return in.CampaignWeb == 1 || in.CampaignWebMobile == 1
+	}
 	return in.CampaignNetwork == 0 || in.CampaignNetwork == 2
 }
 
