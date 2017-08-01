@@ -14,11 +14,12 @@ const (
 )
 
 type nativeContainer struct {
-	Ads      []nativeAd
-	Title    string
-	Style    string
-	FontSize string
-	Position string
+	Ads        []nativeAd
+	Title      string
+	Style      string
+	FontSize   string
+	Position   string
+	IsVertical bool
 }
 
 type nativeAd struct {
@@ -32,11 +33,11 @@ type nativeAd struct {
 	Site     string
 }
 
-const nativeTmpl = `{{define "ads"}}<div class="cyb-holder cyb-custom-holder" style="font-size: {{.FontSize}}">
+const nativeTmpl = `{{define "ads"}}<div class="cyb-holder {{if .IsVertical}}cyb-side {{end}} cyb-custom-holder" style="font-size: {{.FontSize}}">
 	<style>
 	{{.Style}}
 	</style>
-    <div class="cyb-title-holder cyb-custom-title-holder">
+    <div class="cyb-title-holder  cyb-custom-title-holder">
         <div class="cyb-title-before cyb-custom-title-before"></div>
         <div class="cyb-title cyb-custom-title">{{.Title}}</div>
          <div class="cyb-title-after cyb-custom-title-after"></div>
@@ -61,7 +62,7 @@ const nativeTmpl = `{{define "ads"}}<div class="cyb-holder cyb-custom-holder" st
 
 const adTmpl = `{{define "ad"}}
        <div class="cyb-suggest cyb-custom-suggest ">
-                <div class="cyb-img-holder cyb-custom-img-holder">
+                <div class="cyb-img-holder  cyb-custom-img-holder">
                     <a rel="nofollow" target="_blank" href="{{.URL}}" onclick="cybOpen(event)" oncontextmenu="cybOpen(event)"
                        ondblclick="cybOpen(event)" data-href="{{.URL}}">
                         <img src="{{.Image}}" alt="{{.Title}}"

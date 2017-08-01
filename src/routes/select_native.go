@@ -35,7 +35,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
 	logrus.Debug("Pass filters => ", len(filteredAds[20]))
 	// TODO : Currently underfloor is always true
-	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize,nil, website, false, config.Config.Clickyab.MinCPCNative, true, true)
+	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCNative, true, true)
 	logrus.Debugf("%+v", h)
 
 	ads := make([]nativeAd, 0)
@@ -98,10 +98,11 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	}
 
 	n := nativeContainer{
-		Ads:      ads,
-		Title:    params.Get("title"),
-		FontSize: params.Get("fontSize"),
-		Position: params.Get("position"),
+		Ads:        ads,
+		Title:      params.Get("title"),
+		FontSize:   params.Get("fontSize"),
+		Position:   params.Get("position"),
+		IsVertical: params.Get("orientation") == "vertical",
 	}
 
 	return c.HTML(200, renderNative(n))
