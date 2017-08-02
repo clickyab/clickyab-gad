@@ -13,13 +13,15 @@ import (
 	"time"
 	"transport"
 	"utils"
+
+	"github.com/Sirupsen/logrus"
 )
 
 var last time.Time = time.Now()
 
 // LoadAds load all ads at once and return them
-func (m *Manager) LoadAds() ([]AdData, error) {
-	var res []AdData
+func (m *Manager) LoadAds() (res []AdData, err error) {
+	defer logrus.Debugf("Loading ads done. err was %s", err)
 	//t:= strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 	t := time.Now()
 	u := t.Unix()                                                        //return date in unixtimestamp
