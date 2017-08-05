@@ -473,17 +473,17 @@ func (tc *selectController) makeShow(
 
 			var sorted []*mr.AdData
 			var (
-				ef     mr.ByCapping
+				ef     mr.ByMulti
 				secBid bool
 			)
 
 			// order is to get data from exceed flor, then capping passed and if the config allowed,
 			// use the under floor. for under floor there is no second biding pricing
 			if len(exceedFloor) > 0 {
-				ef = mr.ByCapping(exceedFloor)
+				ef = mr.ByMulti(exceedFloor)
 				secBid = true
 			} else if allowUnderFloor && len(underFloor) > 0 {
-				ef = mr.ByCapping(underFloor)
+				ef = mr.ByMulti(exceedFloor)
 				secBid = false
 			}
 			if len(ef) == 0 {
