@@ -26,7 +26,7 @@ type CappingInterface interface {
 	IncView(int64, int, bool)
 	// GetSelected return if this campaign is already selected in this batch
 	GetSelected() bool
-	// IsTargeted return if the current campaign is targeted for this user?
+	// IsTargeted return if targeted
 	IsTargeted() bool
 }
 
