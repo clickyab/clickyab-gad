@@ -12,8 +12,10 @@ import (
 
 	"strconv"
 
+	"fmt"
+
 	"github.com/Sirupsen/logrus"
-	"gopkg.in/fzerorubigd/onion.v2"
+	onion "gopkg.in/fzerorubigd/onion.v2"
 	"gopkg.in/fzerorubigd/onion.v2/extraenv"
 )
 
@@ -85,6 +87,8 @@ func Initialize() {
 	for i := range all {
 		all[i].Loaded()
 	}
+
+	fmt.Printf("%+v", Config)
 
 }
 
