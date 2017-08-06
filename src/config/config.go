@@ -12,7 +12,7 @@ import (
 	"regexp"
 
 	"github.com/fzerorubigd/expand"
-	"gopkg.in/fzerorubigd/onion.v2"
+	onion "gopkg.in/fzerorubigd/onion.v2"
 	_ "gopkg.in/fzerorubigd/onion.v2/yamlloader" // config need this to load yaml file
 )
 
@@ -129,6 +129,14 @@ type AppConfig struct {
 		MinCPCVast   int64 `onion:"min_cpc_vast"`
 
 		FakeSupplier string `onion:"fake_supplier"`
+
+		FloorDiv struct {
+			Web    int64 `onion:"web"`
+			App    int64 `onion:"app"`
+			Native int64 `onion:"native"`
+			Vast   int64 `onion:"vast"`
+			Demand int64 `onion:"demand"`
+		} `onion:"floor_div"`
 	}
 
 	PHPCode struct {
@@ -240,6 +248,7 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.min_cpc_app", 700))
 	assert.Nil(d.SetDefault("clickyab.min_cpc_web", 2000))
 	assert.Nil(d.SetDefault("clickyab.min_cpc_native", 1000))
+	assert.Nil(d.SetDefault("clickyab.floor_div.native", 3))
 
 	p, err = expand.Path("$HOME/gad/clickyab-server/a")
 	assert.Nil(err)

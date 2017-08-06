@@ -11,14 +11,15 @@ import (
 	"middlewares"
 	"mr"
 	"net/http"
-	"redis"
+	aredis "redis"
 	"selector"
 	"strconv"
 	"transport"
 	"utils"
 
+	echo "gopkg.in/labstack/echo.v3"
+
 	"github.com/Sirupsen/logrus"
-	"gopkg.in/labstack/echo.v3"
 )
 
 var (
@@ -69,7 +70,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
-	show, _ := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, nil, website, true, config.Config.Clickyab.MinCPCVast, config.Config.Clickyab.UnderFloor, true)
+	show, _ := tc.makeShow(c, "vast", rd, filteredAds, sizeNumSlice, slotSize, nil, website, true, config.Config.Clickyab.MinCPCVast, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast)
 
 	var v = make([]vastAdTemplate, 0)
 	for i := range sizeNumSlice {

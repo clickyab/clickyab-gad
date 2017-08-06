@@ -94,7 +94,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true)
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web)
 
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
@@ -110,14 +110,17 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData) bool {
+func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData, floorDiv int64) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
 	)
 	adData.CPM = utils.Cpm(adData.CampaignMaxBid, adData.CTR)
 	//exceed cpm floor
-	return adData.CPM >= website.FloorCPM()
+	if floorDiv < 1 {
+		floorDiv = 1
+	}
+	return adData.CPM >= website.FloorCPM()/floorDiv
 }
 
 func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.AdData) int64 {
@@ -398,7 +401,9 @@ func (tc *selectController) makeShow(
 	multipleVideo bool,
 	minCPC int64,
 	allowUnderFloor bool,
-	capping bool) (map[string]string, map[string]*mr.AdData) {
+	capping bool,
+	floorDiv int64, // I hate add parameter to this function :/ TODO : implement the function option pattern
+) (map[string]string, map[string]*mr.AdData) {
 	var (
 		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
@@ -455,7 +460,7 @@ func (tc *selectController) makeShow(
 				if adData.AdType == config.AdTypeVideo && noVideo {
 					continue
 				}
-				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID]) {
+				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv) {
 					exceedFloor = append(exceedFloor, adData)
 					logrus.Debug("append to exceed => ", adData.AdName)
 				} else if adData.WinnerBid == 0 {
