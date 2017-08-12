@@ -7,7 +7,6 @@ type capping struct {
 	Sizes     map[int64]int
 	Frequency int
 	Selected  bool
-	Target    bool
 }
 
 // CappingInterface interface capping
@@ -26,20 +25,17 @@ type CappingInterface interface {
 	IncView(int64, int, bool)
 	// GetSelected return if this campaign is already selected in this batch
 	GetSelected() bool
-	// IsTargeted return if targeted
-	IsTargeted() bool
 }
 
 // CappingContext is the type used to handle capping locker
 type CappingContext map[int64]CappingInterface
 
 // NewCapping create new capping
-func (caps CappingContext) NewCapping(cpID int64, view, freq int, target bool) CappingInterface {
+func (caps CappingContext) NewCapping(cpID int64, view, freq int) CappingInterface {
 	if _, ok := caps[cpID]; !ok {
 		caps[cpID] = &capping{
 			View:      view,
 			Frequency: freq,
-			Target:    target,
 			Ads:       make(map[int64]int),
 			Sizes:     make(map[int64]int),
 		}
@@ -61,9 +57,6 @@ func (c *capping) GetFrequency() int {
 }
 
 func (c *capping) GetCapping() int {
-	if c.Target {
-		return 0
-	}
 	return c.View / c.Frequency
 }
 
@@ -81,8 +74,4 @@ func (c *capping) IncView(ad int64, a int, sel bool) {
 
 func (c *capping) GetSelected() bool {
 	return c.Selected
-}
-
-func (c *capping) IsTargeted() bool {
-	return c.Target
 }

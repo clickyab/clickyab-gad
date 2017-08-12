@@ -9,8 +9,6 @@ import (
 	"time"
 	"transport"
 
-	"strconv"
-
 	"github.com/Sirupsen/logrus"
 )
 
@@ -42,7 +40,6 @@ func emptyCapping(filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
 				filteredAds[i][j].CampaignID,
 				0,
 				filteredAds[i][j].CampaignFrequency,
-				false,
 			)
 			filteredAds[i][j].Capping = capp
 
@@ -56,25 +53,15 @@ func emptyCapping(filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
 }
 
 func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
-
-	// Retargeting structure is like this :
-	/*
-		map[string]int {
-			"campaign_id" : unix_time_of_retargeting
-			"cp_2" : utime_2
-		}
-
-	*/
 	c := make(mr.CappingContext)
-	retargetings, _ := aredis.HGetAll(retargetingKey(copID), false, 0)
-	if retargetings == nil {
-		retargetings = make(map[string]int)
-	}
 	results, _ := aredis.HGetAll(getCappingKey(copID), true, config.Config.Clickyab.DailyCapExpire)
 	for i := range sizeNumSlice {
 		found := false
 		sizeCap := map[string]string{}
 		for ad := range filteredAds[sizeNumSlice[i]] {
+			if filteredAds[sizeNumSlice[i]][ad].CampaignFrequency <= 0 {
+				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency = config.Config.Clickyab.MinFrequency
+			}
 			key := fmt.Sprintf(
 				"%s%s%d",
 				transport.ADVERTISE,
@@ -84,7 +71,7 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 			view := results[key]
 			sizeCap[key] = "0"
 			n := view / filteredAds[sizeNumSlice[i]][ad].CampaignFrequency
-			if n < 1 {
+			if n <= 1 {
 				found = true
 				break // there is still one campaign
 			}
@@ -107,20 +94,10 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 					filteredAds[sizeNumSlice[i]][ad].AdID,
 				)]
 			}
-			if filteredAds[sizeNumSlice[i]][ad].CampaignFrequency <= 0 {
-				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency = config.Config.Clickyab.MinFrequency
-			}
-			retarget := false
-			if v, ok := retargetings[strconv.FormatInt(filteredAds[sizeNumSlice[i]][ad].CampaignID, 10)]; ok {
-				if time.Since(time.Unix(int64(v), 0)) < time.Duration(config.Config.Clickyab.RetargettingHour)*time.Hour {
-					retarget = true
-				}
-			}
 			capp := c.NewCapping(
 				filteredAds[sizeNumSlice[i]][ad].CampaignID,
 				0,
 				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency,
-				retarget,
 			)
 			capp.IncView(filteredAds[sizeNumSlice[i]][ad].AdID, view, false)
 			filteredAds[sizeNumSlice[i]][ad].Capping = capp
