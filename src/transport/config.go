@@ -21,7 +21,8 @@ const (
 	CUSTOM_CLICK_URL = "CCU"
 	// CUSTOM_CLICK_PARAM is for app keys
 	CUSTOM_CLICK_PARAM = "CCP"
-
+	// CUSTOM_CLICK_TYPE is for app keys
+	CUSTOM_CLICK_TYPE = "CCT"
 
 	// FRAUD_PREFIX for all fraud key
 	FRAUD_PREFIX = "F"

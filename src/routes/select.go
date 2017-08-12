@@ -147,7 +147,7 @@ func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website P
 	)
 }
 
-func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int64, winnerBid int64, slotID int64, clickURL, clickParam string) {
+func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int64, winnerBid int64, slotID int64, clickURL, clickParam, clickType string) {
 	assert.Nil(aredis.StoreHashKey(
 		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
 		fmt.Sprintf(
@@ -188,6 +188,16 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 				transport.DELIMITER,
 				slotID),
 			clickParam,
+			config.Config.Clickyab.MegaImpExpire,
+		))
+		assert.Nil(aredis.StoreHashKey(
+			fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+			fmt.Sprintf(
+				"%s%s%d",
+				transport.CUSTOM_CLICK_TYPE,
+				transport.DELIMITER,
+				slotID),
+			clickType,
 			config.Config.Clickyab.MegaImpExpire,
 		))
 	}
@@ -544,12 +554,13 @@ func (tc *selectController) makeShow(
 			if !multipleVideo {
 				noVideo = noVideo || sorted[0].AdType == config.AdTypeVideo
 			}
-			var clu, clp string
+			var clu, clp, clt string
 			if sa, ok := attr[slotID]; ok {
 				clu = sa["click_url"]
 				clp = sa["click_parameter"]
+				clt = sa["type"]
 			}
-			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotSize[slotID].ID, clu, clp)
+			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotSize[slotID].ID, clu, clp, clt)
 			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
 			assert.Nil(storeCapping(rd.CopID, sorted[0].AdID))
 			selected[slotSize[slotID].SlotSize]++
