@@ -138,13 +138,27 @@ func (tc *selectController) show(c echo.Context) error {
 		transport.CUSTOM_CLICK_PARAM,
 		transport.DELIMITER,
 		slotID)]
+	cct := megaImp[fmt.Sprintf(
+		"%s%s%d",
+		transport.CUSTOM_CLICK_TYPE,
+		transport.DELIMITER,
+		slotID)]
 	if ccuok && ccpok {
 		cu, e := url.Parse(ccu)
 		assert.Nil(e)
-		qu := cu.Query()
-		qu.Set(ccp, base64.URLEncoding.WithPadding(rune('.')).EncodeToString([]byte(u.String())))
-		cu.RawQuery = qu.Encode()
-		u = *cu
+		b := base64.URLEncoding.WithPadding(rune('.')).EncodeToString([]byte(u.String()))
+		if cct == "replace" {
+			tu, e := url.Parse(strings.Replace(cu.String(), ccp, b, -1))
+			assert.Nil(e)
+			u = *tu
+		} else {
+
+			qu := cu.Query()
+			qu.Set(ccp, b)
+			cu.RawQuery = qu.Encode()
+			u = *cu
+		}
+
 	}
 	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos, rd.Scheme != "http")
 	if err != nil {
