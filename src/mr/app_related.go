@@ -42,6 +42,9 @@ type App struct {
 	AppFatFinger         sql.NullBool   `db:"app_fatfinger"`
 	CreatedAt            time.Time      `db:"created_at"`
 	UpdatedAt            time.Time      `db:"updated_at"`
+
+	AppPrepayment  int `db:"app_prepayment"`
+	AppPublishCost int `db:"app_publish_cost"`
 }
 
 // CellLocation is the location of the cell

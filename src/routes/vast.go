@@ -195,6 +195,7 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 			ID:       insertedSlots[i],
 			PublicID: i,
 			SlotSize: sizeNumSlice[i],
+			Ctr:      config.Config.Clickyab.DefaultCTR,
 		}
 	}
 
