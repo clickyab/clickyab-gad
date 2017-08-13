@@ -12,6 +12,8 @@ import (
 
 	"mr"
 
+	"sort"
+
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -45,10 +47,16 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	}
 	var countFilledAds int
 	var filledAds []*mr.AdData
-	for _, j := range h {
-		if j != nil {
+	order := []string{}
+	for i := range h {
+		order = append(order, i)
+	}
+	sort.Strings(order)
+
+	for i := len(order) - 1; i >= 0; i-- {
+		if h[order[i]] != nil {
 			countFilledAds++
-			filledAds = append(filledAds, j)
+			filledAds = append(filledAds, h[order[i]])
 
 		}
 	}
