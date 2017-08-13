@@ -183,7 +183,7 @@ func (m *Manager) GetAppByID(id int64) (*App, error) {
 	}
 
 	q := "SELECT * FROM `apps` WHERE `app_id`=?"
-	err = m.GetProperDBMap().SelectOne(&res, q, id)
+	err = m.GetRDbMap().SelectOne(&res, q, id)
 	if err != nil {
 		return nil, err
 	}

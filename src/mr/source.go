@@ -17,43 +17,46 @@ type AdData struct {
 	AdID              int64            `json:"ad_id" db:"ad_id"`
 	CampaignFrequency int              `json:"cp_frequency" db:"cp_frequency"`
 	CTR               float64          `json:"ctr" db:"ctr"`
-	AdCTR             float64          `json:"ad_ctr" db:"ad_ctr"`
+	CaCTR             sql.NullFloat64  `json:"-" db:"ca_ctr"`
+	AdCTR             float64          `json:"ad_ctr" db:"-"`
 	CPM               int64            `json:"cpm" db:"cpm"`
 	Capping           CappingInterface `json:"capping" db:"-"`
 	WinnerBid         int64            `json:"winner_bid" db:"-"`
 	CampaignMaxBid    int64            `json:"cp_maxbid" db:"cp_maxbid"`
 	CampaignID        int64            `json:"cp_id" db:"cp_id"`
 	CampaignName      sql.NullString   `json:"cp_name" db:"cp_name"`
-	AdType            int              `json:"ad_type" db:"ad_type"`
-	SlotID            int64            `json:"slot_id" db:"-"`
+	AdType            int              `json:"-" db:"ad_type"`
+	SlotID            int64            `json:"-" db:"-"`
 	SlotPublicID      string           `json:"-" db:"-"`
-	Campaign
-	AdSize         int            `json:"ad_size" db:"ad_size"`
-	UserID         int64          `json:"u_id" db:"u_id"`
-	AdName         sql.NullString `json:"ad_name" db:"ad_name"`
-	AdURL          sql.NullString `json:"ad_url" db:"ad_url"`
-	AdCode         sql.NullString `json:"ad_code" db:"ad_code"`
-	AdTitle        sql.NullString `json:"ad_title" db:"ad_title"`
-	AdBody         sql.NullString `json:"ad_body" db:"ad_body"`
-	AdImg          sql.NullString `json:"ad_img" db:"ad_img"`
-	AdStatus       int            `json:"ad_status" db:"ad_status"`
-	AdRejectReason sql.NullString `json:"ad_reject_reason" db:"ad_reject_reason"`
-	AdConversion   int            `json:"ad_conv" db:"ad_conv"`
-	AdTime         int            `json:"ad_time" db:"ad_time"`
+	Campaign          `json:"-"`
+	AdSize            int            `json:"-" db:"ad_size"`
+	UserID            int64          `json:"-" db:"u_id"`
+	AdName            sql.NullString `json:"-" db:"ad_name"`
+	AdURL             sql.NullString `json:"-" db:"ad_url"`
+	AdCode            sql.NullString `json:"-" db:"ad_code"`
+	AdTitle           sql.NullString `json:"-" db:"ad_title"`
+	AdBody            sql.NullString `json:"-" db:"ad_body"`
+	AdImg             sql.NullString `json:"-" db:"ad_img"`
+	AdStatus          int            `json:"-" db:"ad_status"`
+	AdRejectReason    sql.NullString `json:"-" db:"ad_reject_reason"`
+	AdConversion      int            `json:"-" db:"ad_conv"`
+	AdTime            int            `json:"-" db:"ad_time"`
 
-	AdMainText      sql.NullString          `json:"ad_mainText" db:"ad_mainText"`
-	AdDefineText    sql.NullString          `json:"ad_defineText" db:"ad_defineText"`
-	AdTextColor     sql.NullString          `json:"ad_textColor" db:"ad_textColor"`
-	AdTarget        sql.NullString          `json:"ad_target" db:"ad_target"`
-	AdAttribute     common.GenericJSONField `json:"ad_attribute" db:"ad_attribute"`
-	AdHashAttribute sql.NullString          `json:"ad_hash_attribute" db:"ad_hash_attribute"`
-	CreatedAt       sql.NullString          `json:"created_at" db:"created_at"`
-	UpdatedAt       sql.NullString          `json:"updated_at" db:"updated_at"`
-	UserEmail       string                  `json:"u_email" db:"u_email"`
-	UserBalance     string                  `json:"u_balance" db:"u_balance"`
-	IsCrm           int                     `json:"is_crm" db:"is_crm"`
-	CpLock          int                     `json:"cp_lock" db:"cp_lock"`
-	CampaignAdID    int64                   `json:"ca_id" db:"ca_id"`
+	AdMainText      sql.NullString          `json:"-" db:"ad_mainText"`
+	AdDefineText    sql.NullString          `json:"-" db:"ad_defineText"`
+	AdTextColor     sql.NullString          `json:"-" db:"ad_textColor"`
+	AdTarget        sql.NullString          `json:"-" db:"ad_target"`
+	AdAttribute     common.GenericJSONField `json:"-" db:"ad_attribute"`
+	AdHashAttribute sql.NullString          `json:"-" db:"ad_hash_attribute"`
+	CreatedAt       sql.NullString          `json:"-" db:"created_at"`
+	UpdatedAt       sql.NullString          `json:"-" db:"updated_at"`
+	UserEmail       string                  `json:"-" db:"u_email"`
+	UserBalance     string                  `json:"-" db:"u_balance"`
+	IsCrm           int                     `json:"-" db:"is_crm"`
+	CpLock          int                     `json:"-" db:"cp_lock"`
+	CampaignAdID    int64                   `json:"-" db:"ca_id"`
+
+	Extra string `db:"-"`
 }
 
 // Campaign is a single campaign data
@@ -123,6 +126,10 @@ type Campaign struct {
 // ByCapping sort by Capping
 type ByCapping []*AdData
 
+func (ad AdData) StringSS() string {
+	return fmt.Sprintf("%d => %d * %f (%s)", ad.CPM, ad.CampaignMaxBid, ad.AdCTR, ad.Extra)
+}
+
 func (a ByCapping) Len() int {
 	return len(a)
 }
@@ -142,7 +149,7 @@ func (a ByCapping) Less(i, j int) bool {
 		return a[i].Capping.GetCapping() < a[j].Capping.GetCapping()
 	}
 
-	return a[i].CPM < a[j].CPM
+	return a[i].CPM > a[j].CPM
 }
 
 // Scan convert the json array ino string slice

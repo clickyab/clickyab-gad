@@ -6,13 +6,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"redis"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
-	"transport"
-	"utils"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -30,7 +27,7 @@ func (m *Manager) LoadAds() (res []AdData, err error) {
 
 	query := fmt.Sprintf(`SELECT
 		A.ad_id, C.u_id, ad_name, ad_url,ad_code, ad_title, ad_body, ad_img, ad_status,ad_size,
-	 ad_reject_reason, ad_ctr, ad_conv, ad_time, ad_type, ad_mainText, ad_defineText,
+	 ad_reject_reason, CA.ca_ctr , ad_conv, ad_time, ad_type, ad_mainText, ad_defineText,
 	 ad_textColor, ad_target, ad_attribute, ad_hash_attribute, A.created_at, A.updated_at,
 	 U.u_email, U.u_balance, C.cp_id, cp_type, cp_billing_type, cp_name, cp_network, cp_placement,
 	 cp_wfilter, cp_retargeting, cp_frequency, cp_segment_id, cp_app_brand, cp_net_provider,
@@ -67,17 +64,25 @@ func (m *Manager) LoadAds() (res []AdData, err error) {
 
 	for i := range res {
 		//get redis key for ad
-		result, err := aredis.SumHMGetField(
-			transport.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)),
-			config.Config.Redis.Days,
-			"i",
-			"c",
-		)
-		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
-			res[i].AdCTR = config.Config.Clickyab.DefaultCTR
+		//result, err := aredis.SumHMGetField(
+		//	transport.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)),
+		//	config.Config.Redis.Days,
+		//	"i",
+		//	"c",
+		//)
+
+		if res[i].CaCTR.Valid {
+			res[i].AdCTR = res[i].CaCTR.Float64
 		} else {
-			res[i].AdCTR = utils.Ctr(result["i"], result["c"])
+			res[i].AdCTR = config.Config.Clickyab.DefaultCTR
 		}
+		//if res[i].AdCTR < 0.001 {
+		//	if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
+		//		res[i].AdCTR = config.Config.Clickyab.DefaultCTR
+		//	} else {
+		//		res[i].AdCTR = utils.Ctr(result["i"], result["c"])
+		//	}
+		//}
 		// if res[i].CampaignNetwork != 1 {
 		// 	// Web and vast
 		// 	if res[i].CampaignMaxBid < config.Config.Clickyab.WebMinBid {

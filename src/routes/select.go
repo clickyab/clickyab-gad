@@ -120,7 +120,7 @@ func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *sl
 	if floorDiv < 1 {
 		floorDiv = 1
 	}
-	logrus.Debugf("%d / %f ==> %d >= %d", adData.CampaignMaxBid, adData.CTR, adData.CPM, website.FloorCPM()/floorDiv)
+	//logrus.Debugf("%d / %f ==> %d >= %d", adData.CampaignMaxBid, adData.CTR, adData.CPM, website.FloorCPM()/floorDiv)
 	return adData.CPM >= website.FloorCPM()/floorDiv
 }
 
@@ -386,8 +386,6 @@ func (selectController) insertNewAppSlots(appID int64, newSlots []int64, newSize
 
 // CalculateCtr calculate ctr
 func (selectController) calculateCTR(ad *mr.AdData, slot *slotData) float64 {
-	logrus.Debugf("%f , %f", ad.AdCTR, slot.Ctr)
-
 	return (ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100)
 }
 
@@ -406,6 +404,7 @@ func (tc *selectController) makeShow(
 	capping bool,
 	floorDiv int64, // I hate add parameter to this function :/ TODO : implement the function option pattern
 ) (map[string]string, map[string]*mr.AdData) {
+	//var dum []*mr.AdData
 	var (
 		winnerAd = make(map[string]*mr.AdData)
 		show     = make(map[string]string)
@@ -457,6 +456,7 @@ func (tc *selectController) makeShow(
 		for slotID := range slotSize {
 			exceedFloor := []*mr.AdData{}
 			underFloor := []*mr.AdData{}
+			//alreadySelected := []*mr.AdData{}
 			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
 				total[slotSize[slotID].SlotSize]++
 				if adData.AdType == config.AdTypeVideo && noVideo {
@@ -464,15 +464,21 @@ func (tc *selectController) makeShow(
 				}
 				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv) {
 					exceedFloor = append(exceedFloor, adData)
-					logrus.Debug("append to exceed => ", adData.AdName)
+					//logrus.Debug("append to exceed => ", adData.AdName)
 				} else if adData.WinnerBid == 0 {
 					underFloor = append(underFloor, adData)
-					logrus.Debug("append to under => ", adData.AdName)
-				} else {
-					logrus.Debug("already selected => ", adData.AdName)
+					//logrus.Debug("append to under => ", adData.AdName)
 				}
+				//} else {
+				//	alreadySelected = append(alreadySelected, adData)
+				//	//logrus.Debug("already selected => ", adData.AdName)
+				//}
 			}
 
+			//logrus.Debugf("exceed : %d , Under %d , Selected %d", len(exceedFloor), len(underFloor), len(alreadySelected))
+			//for i := range alreadySelected {
+			//	logrus.Printf("CPID : %d / AdID : %d", alreadySelected[i].CampaignID, alreadySelected[i].AdID)
+			//}
 			var sorted []*mr.AdData
 			var (
 				ef     mr.ByMulti
@@ -520,6 +526,10 @@ func (tc *selectController) makeShow(
 
 			sort.Sort(ef)
 			sorted = []*mr.AdData(ef)
+			//if dum == nil {
+			//	dum = append(dum, sorted...)
+			//}
+
 			// Do not do second biding pricing on this ads, they can not pass CPMFloor
 			if secBid {
 				secondCPM := tc.getSecondCPM(publisher.FloorCPM(), sorted)
@@ -562,6 +572,8 @@ func (tc *selectController) makeShow(
 	if typ == "sync" {
 		allAds = <-wait
 	}
+	//t, _ := json.MarshalIndent(dum, "\t", "\t")
+	//fmt.Println(string(t))
 	return show, allAds
 }
 

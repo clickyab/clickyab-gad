@@ -55,7 +55,12 @@ func emptyCapping(filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
 func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
 	c := make(mr.CappingContext)
 	results, _ := aredis.HGetAll(getCappingKey(copID), true, config.Config.Clickyab.DailyCapExpire)
+	doneSized := make(map[int]bool)
 	for i := range sizeNumSlice {
+		if doneSized[sizeNumSlice[i]] {
+			continue
+		}
+		doneSized[sizeNumSlice[i]] = true
 		found := false
 		sizeCap := map[string]string{}
 		for ad := range filteredAds[sizeNumSlice[i]] {
@@ -102,9 +107,9 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 			capp.IncView(filteredAds[sizeNumSlice[i]][ad].AdID, view, false)
 			filteredAds[sizeNumSlice[i]][ad].Capping = capp
 		}
-		sortCap := mr.ByCapping(filteredAds[sizeNumSlice[i]])
-		sort.Sort(sortCap)
-		filteredAds[sizeNumSlice[i]] = []*mr.AdData(sortCap)
+		//sortCap := mr.ByCapping(filteredAds[sizeNumSlice[i]])
+		//sort.Sort(sortCap)
+		//filteredAds[sizeNumSlice[i]] = []*mr.AdData(sortCap)
 	}
 	return filteredAds
 }
