@@ -18,6 +18,9 @@ import (
 
 	"net/http"
 
+	"redis"
+	"transport"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -144,10 +147,19 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 			SlotSize: bs,
 			ID:       s.ID,
 			PublicID: slotString,
+			Ctr:      config.Config.Clickyab.DefaultCTR,
 		},
 	}
 	sizes := map[string]int{slotString: bs}
 
+	for i := range data {
+		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(data[i].ID, 10)), config.Config.Redis.Days, "i", "c")
+		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
+			data[i].Ctr = config.Config.Clickyab.DefaultCTR
+		} else {
+			data[i].Ctr = utils.Ctr(result["i"], result["c"])
+		}
+	}
 	return data, sizes, slotString, full
 }
 

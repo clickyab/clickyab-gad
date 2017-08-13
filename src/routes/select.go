@@ -120,6 +120,7 @@ func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *sl
 	if floorDiv < 1 {
 		floorDiv = 1
 	}
+	logrus.Debugf("%d / %f ==> %d >= %d", adData.CampaignMaxBid, adData.CTR, adData.CPM, website.FloorCPM()/floorDiv)
 	return adData.CPM >= website.FloorCPM()/floorDiv
 }
 
@@ -385,7 +386,8 @@ func (selectController) insertNewAppSlots(appID int64, newSlots []int64, newSize
 
 // CalculateCtr calculate ctr
 func (selectController) calculateCTR(ad *mr.AdData, slot *slotData) float64 {
-	//fmt.Println(ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect),slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect),(ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100))
+	logrus.Debugf("%f , %f", ad.AdCTR, slot.Ctr)
+
 	return (ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100)
 }
 
