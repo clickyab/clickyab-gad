@@ -21,6 +21,9 @@ import (
 	"redis"
 	"transport"
 
+	"bytes"
+	"encoding/json"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -39,6 +42,16 @@ var (
 		filter.CheckAppAreaInGlob,
 	)
 )
+
+const inAppJson string = `{"status":1,"apps":[{"name":"snapp","packaage":"cab.snapp.passenger"},{"name":"tap30","packaage":"taxi.tap30.passenger"},{"name":"ajancy","packaage":"com.mammutgroup.ajancy.passenger"},{"name":"digikala","packaage":"com.digikala"},{"name":"bamilo","packaage":"com.bamilo.android"},{"name":"pintapin","packaage":"com.pintapin.pintapin"},{"name":"alibaba","packaage":"ir.alibaba"}]}`
+
+type appJson struct {
+	Status int64 `json:"status"`
+	Apps   []struct {
+		Name     string `json:"name"`
+		Packaage string `json:"packaage"`
+	} `json:"apps"`
+}
 
 func (tc *selectController) inApp(c echo.Context) error {
 	//t := time.Now()
@@ -110,6 +123,14 @@ func (tc *selectController) inApp(c echo.Context) error {
 
 	// This is the actual imp so call the imp
 	return c.HTML(http.StatusOK, d)
+}
+
+func (tc *selectController) inAppJson(c echo.Context) error {
+	res := appJson{}
+	dec := json.NewDecoder(bytes.NewBuffer([]byte(inAppJson)))
+	err:=dec.Decode(&res)
+	assert.Nil(err)
+	return c.JSON(http.StatusOK, res)
 }
 
 func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[string]*slotData, map[string]int, string, string) {

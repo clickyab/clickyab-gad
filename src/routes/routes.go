@@ -6,6 +6,7 @@ import (
 	"net"
 	"statics"
 	"utils"
+
 	"gopkg.in/labstack/echo.v3"
 )
 
@@ -37,6 +38,7 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/allads", tc.allAds, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/version", tc.version, middlewares.Header)
 	e.GET("/ads/inapp.php", tc.inApp, middlewares.RequestCollectorGenerator(appCopCreateor), middlewares.Header)
+	e.GET("/ads/json-inapp.php", tc.inAppJson, middlewares.Header)
 	e.GET("/healthz", tc.healthz, middlewares.Header)
 
 	postfix := "-min.js"
