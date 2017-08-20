@@ -80,7 +80,7 @@ func (tc *selectController) selectDemandAppAd(c echo.Context, rd *middlewares.Re
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
-	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, attr, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Demand)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, attr, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Demand)
 
 	//substitute the webMobile slot if exists
 	dm := []Demand{}
@@ -160,7 +160,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
-	show, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, attr, website, false, e.Source.FloorCPM, e.Underfloor, true, config.Config.Clickyab.FloorDiv.Demand)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, attr, website, false, e.Source.FloorCPM, e.Underfloor, true, config.Config.Clickyab.FloorDiv.Demand)
 
 	//substitute the webMobile slot if exists
 	dm := []Demand{}

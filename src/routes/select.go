@@ -94,7 +94,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, _ := tc.makeShow(c, "web", rd, filteredAds, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web)
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web)
 
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
@@ -336,30 +336,32 @@ func (tc selectController) slotSizeWeb(params map[string][]string, website mr.We
 	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 }
 
-func (tc selectController) slotSizeNative(params map[string][]string, website mr.Website) (map[string]*slotData, map[string]int) {
+func (tc selectController) slotSizeNative(params map[string][]string, website mr.Website) (map[string]*slotData, map[string]int, []string) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
 
 	count, ok := params["count"]
 	if !ok {
-		return make(map[string]*slotData), make(map[string]int)
+		return make(map[string]*slotData), make(map[string]int), nil
 	}
 	countString := count[0]
 	countInt, err := strconv.Atoi(countString)
 	if err != nil || countInt < 1 {
-		return make(map[string]*slotData), make(map[string]int)
+		return make(map[string]*slotData), make(map[string]int), nil
 	}
 	if countInt > 10 {
 		countInt = 10
 	}
-
+	order := []string{}
 	for i := 1; i <= countInt; i++ { //range  over slots
 		pub := fmt.Sprintf("%d%s%d", website.WID, "470", i)
+		order = append(order, pub)
 		sizeNumSlice[pub] = 20
 		slotPublic = append(slotPublic, pub)
 	}
 
-	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
+	res, sizes := tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
+	return res, sizes, order
 }
 
 func (selectController) insertNewSlots(wID int64, newSlots []int64, newSize []int) map[string]int64 {
@@ -404,6 +406,7 @@ func (tc *selectController) makeShow(
 	typ string,
 	rd *middlewares.RequestData,
 	filteredAds map[int][]*mr.AdData,
+	order []string,
 	sizeNumSlice map[string]int,
 	slotSize map[string]*slotData,
 	attr map[string]map[string]string,
@@ -420,8 +423,16 @@ func (tc *selectController) makeShow(
 		show     = make(map[string]string)
 		noVideo  bool // once set, never unset it again
 	)
+
+	if order == nil {
+		for i := range slotSize {
+			order = append(order, i)
+		}
+	}
+
 	reserve := make(map[string]string)
-	for slotID := range slotSize {
+	for o := range order {
+		slotID := order[o]
 		tmp := config.Config.MachineName + <-utils.ID
 		reserve[slotID] = tmp
 		u := url.URL{
@@ -463,7 +474,9 @@ func (tc *selectController) makeShow(
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		selected := make(map[int]int)
 		total := make(map[int]int)
-		for slotID := range slotSize {
+
+		for o := range order {
+			slotID := order[o]
 			exceedFloor := []*mr.AdData{}
 			underFloor := []*mr.AdData{}
 			//alreadySelected := []*mr.AdData{}
@@ -474,21 +487,12 @@ func (tc *selectController) makeShow(
 				}
 				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv) {
 					exceedFloor = append(exceedFloor, adData)
-					//logrus.Debug("append to exceed => ", adData.AdName)
 				} else if adData.WinnerBid == 0 {
 					underFloor = append(underFloor, adData)
-					//logrus.Debug("append to under => ", adData.AdName)
 				}
-				//} else {
-				//	alreadySelected = append(alreadySelected, adData)
-				//	//logrus.Debug("already selected => ", adData.AdName)
-				//}
 			}
 
-			//logrus.Debugf("exceed : %d , Under %d , Selected %d", len(exceedFloor), len(underFloor), len(alreadySelected))
-			//for i := range alreadySelected {
-			//	logrus.Printf("CPID : %d / AdID : %d", alreadySelected[i].CampaignID, alreadySelected[i].AdID)
-			//}
+			extra := fmt.Sprintf("For Slot %s", slotID)
 			var sorted []*mr.AdData
 			var (
 				ef     mr.ByMulti
@@ -500,9 +504,11 @@ func (tc *selectController) makeShow(
 			if len(exceedFloor) > 0 {
 				ef = mr.ByMulti(exceedFloor)
 				secBid = true
+				extra += " From Exceed, SecBID "
 			} else if allowUnderFloor && len(underFloor) > 0 {
-				ef = mr.ByMulti(exceedFloor)
+				ef = mr.ByMulti(underFloor)
 				secBid = false
+				extra += " From Under, FirstBID "
 			}
 			if len(ef) == 0 {
 				logrus.Debug("No ad????")
@@ -513,7 +519,9 @@ func (tc *selectController) makeShow(
 						When:  time.Now(),
 						Where: publisher.GetName(),
 						Message: fmt.Sprintf(
-							"no ad pass the bid \n"+"size was %sx%s \n"+"the floor was %d \n"+"all add count in this size %d \n"+"pass the floor %d \n"+"under floor is allowd? %v \n"+"under floor count %d \n"+"currently %d item of %d in this request is filled",
+							"no ad pass the bid \nsize was %sx%s \nthe floor was %d \nall add count in this size %d \n"+
+								"pass the floor %d \nunder floor is allowd? %v \nunder floor count %d \n"+
+								"currently %d item of %d in this request is filled",
 							w, h,
 							publisher.FloorCPM(),
 							len(filteredAds[slotSize[slotID].SlotSize]),
@@ -536,31 +544,40 @@ func (tc *selectController) makeShow(
 
 			sort.Sort(ef)
 			sorted = []*mr.AdData(ef)
-			//if dum == nil {
-			//	dum = append(dum, sorted...)
-			//}
 
 			// Do not do second biding pricing on this ads, they can not pass CPMFloor
 			if secBid {
 				secondCPM := tc.getSecondCPM(publisher.FloorCPM(), sorted)
 				sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
+				extra += fmt.Sprintf(" WinnerCPM = %d, SecCPM = %d , CTR = %f, WinnerBID: %d", sorted[0].CPM, secondCPM, sorted[0].CTR, sorted[0].WinnerBid)
+				if len(sorted) > 0 {
+					extra += fmt.Sprintf("%s == %d", sorted[1].AdName.String, sorted[1].CampaignID)
+
+					//if sorted[0].CPM == secondCPM {
+					//	sorted[0], sorted[1] = sorted[1], sorted[0]
+					//}
+				}
 			} else {
 				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
+				extra += fmt.Sprintf(" WinnerCPM = %d, MaxBID is requested", sorted[0].CPM)
 			}
 
 			if sorted[0].WinnerBid > sorted[0].CampaignMaxBid {
 				// TODO : must not happen, but it happen some how. check it later
 				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
+				extra += " WTF? the winner bid is greater than max bid? fixing. "
 			}
 
 			if sorted[0].WinnerBid < minCPC {
 				sorted[0].WinnerBid = minCPC
+				extra += " Winner bid is less than min CPC? fixing. "
 			}
 
 			sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
 			winnerAd[slotID].SlotPublicID = slotSize[slotID].PublicID
+			sorted[0].Extra = extra
 			ads[slotID] = sorted[0]
 
 			if !multipleVideo {

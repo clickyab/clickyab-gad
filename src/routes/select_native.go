@@ -10,10 +10,6 @@ import (
 	"fmt"
 	"net/url"
 
-	"mr"
-
-	"sort"
-
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -26,7 +22,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
-	slotSize, sizeNumSlice := tc.slotSizeNative(params, *website)
+	slotSize, sizeNumSlice, order := tc.slotSizeNative(params, *website)
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -35,35 +31,20 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
-	logrus.Debug("Pass filters => ", len(filteredAds[20]))
 	// TODO : Currently underfloor is always true
-	_, h := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCNative, true, true, config.Config.Clickyab.FloorDiv.Native)
-	logrus.Debugf("%+v", h)
-
+	_, h := tc.makeShow(c, "sync", rd, filteredAds, order, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCNative, true, true, config.Config.Clickyab.FloorDiv.Native)
 	ads := make([]nativeAd, 0)
 	var p protocol = httpScheme
 	if rd.Scheme == httpsScheme {
 		p = httpsScheme
 	}
-	var countFilledAds int
-	var filledAds []*mr.AdData
-	order := []string{}
-	for i := range h {
-		order = append(order, i)
-	}
-	sort.Strings(order)
-
+	var count int
 	for i := len(order) - 1; i >= 0; i-- {
-		if h[order[i]] != nil {
-			countFilledAds++
-			filledAds = append(filledAds, h[order[i]])
-
+		j := h[order[i]]
+		if j == nil {
+			continue
 		}
-	}
-	if countFilledAds != 1 && countFilledAds%2 != 0 {
-		filledAds = filledAds[1:]
-	}
-	for _, j := range filledAds {
+		count++
 
 		rnd := <-utils.ID
 		u := url.URL{
@@ -96,11 +77,15 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 			Title:   fixTitle,
 			Corners: params.Get("corners"),
 			Site:    j.AdURL.String,
+			Extra:   fmt.Sprintf("CTR=%f, CPM=%d, Winner=%d == %s", j.CTR, j.CPM, j.WinnerBid, j.Extra),
 		})
 
 	}
+	// TODO : handle this in select
+	if count >= 1 && count%2 == 1 {
+		ads = ads[:len(ads)-1]
+	}
 
-	logrus.Debugf("%+v", ads)
 	if len(ads) == 0 {
 		return c.HTML(http.StatusBadRequest, "<div class=\"no-ads\"></div>")
 	}

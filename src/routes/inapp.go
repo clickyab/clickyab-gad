@@ -72,7 +72,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 		CellLocation: cell,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), appSelector)
-	_, ads := tc.makeShow(c, "sync", rd, filteredAds, sizeNumSlice, slotSize, nil, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.App)
+	_, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.App)
 	assert.True(len(ads) == 1, "[BUG] why select no ad?")
 
 	var (
@@ -128,7 +128,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 func (tc *selectController) inAppJson(c echo.Context) error {
 	res := appJson{}
 	dec := json.NewDecoder(bytes.NewBuffer([]byte(inAppJson)))
-	err:=dec.Decode(&res)
+	err := dec.Decode(&res)
 	assert.Nil(err)
 	return c.JSON(http.StatusOK, res)
 }
