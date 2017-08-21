@@ -94,7 +94,7 @@ func init() {
 
 	go func() {
 		h := sha1.New()
-		c := []byte(time.Now().String())
+		c := []byte(time.Now().String() + fmt.Sprint(rand.Float64()))
 		for {
 			_, _ = h.Write(c)
 			ID <- fmt.Sprintf("%x", h.Sum(nil))

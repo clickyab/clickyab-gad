@@ -18,9 +18,9 @@ func (a ByMulti) Less(i, j int) bool {
 		return a[i].Capping.GetAdCapping(a[i].AdID) < a[j].Capping.GetAdCapping(a[j].AdID)
 	}
 
-	if a[i].Capping.GetCapping() != a[j].Capping.GetCapping() {
-		return a[i].Capping.GetCapping() < a[j].Capping.GetCapping()
-	}
+	//if a[i].Capping.GetCapping() != a[j].Capping.GetCapping() {
+	//	return a[i].Capping.GetCapping() < a[j].Capping.GetCapping()
+	//}
 
 	if a[i].CampaignNetwork != a[j].CampaignNetwork {
 		return a[i].CampaignNetwork == 2
