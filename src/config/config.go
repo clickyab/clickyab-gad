@@ -113,7 +113,10 @@ type AppConfig struct {
 		FastClick        int64         `onion:"fast_click"`
 		ConvDelay        time.Duration `onion:"conv_delay"`
 		ConvRetry        int64         `onion:"conv_retry"`
-		Vast             struct {
+		Native           struct {
+			MaxCount int `onion:"max_count"`
+		}
+		Vast struct {
 			DefaultDuration string `onion:"default_duration"`
 			DefaultSkipOff  string `onion:"default_skipoff"`
 		}
@@ -238,6 +241,7 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.fast_click", 2))
 	assert.Nil(d.SetDefault("clickyab.ad_ctr_effect", 70))
 	assert.Nil(d.SetDefault("clickyab.slot_ctr_effect", 30))
+	assert.Nil(d.SetDefault("clickyab.native.max_count", 12))
 	assert.Nil(d.SetDefault("clickyab.vast.default_duration", "00:00:05"))
 	assert.Nil(d.SetDefault("clickyab.vast.default_skipoff", "00:00:03"))
 	assert.Nil(d.SetDefault("clickyab.under_floor", true))

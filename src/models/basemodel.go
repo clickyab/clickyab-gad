@@ -35,7 +35,7 @@ type gorpLogger struct {
 }
 
 func (g gorpLogger) Printf(format string, v ...interface{}) {
-	//logrus.Debugf(format, v...)
+	logrus.Debugf(format, v...)
 }
 
 func createDBMap(dsn, mark string) *gorp.DbMap {
