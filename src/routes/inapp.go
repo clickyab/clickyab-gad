@@ -24,6 +24,8 @@ import (
 	"bytes"
 	"encoding/json"
 
+	"ip2location"
+
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -184,31 +186,28 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 	return data, sizes, slotString, full
 }
 
-func (tc *selectController) getAppDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.App, *mr.Province, *mr.PhoneData, *mr.CellLocation, error) {
+func (tc *selectController) getAppDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.App, int64, *mr.PhoneData, *mr.CellLocation, error) {
 	rd := middlewares.MustGetRequestData(c)
 
 	token := c.Request().URL.Query().Get("token")
 	if len(token) < 1 {
-		return nil, nil, nil, nil, nil, errors.New("invalid request")
+		return nil, nil, 0, nil, nil, errors.New("invalid request")
 	}
 	m := mr.NewManager()
 	app, err := m.GetApp(token)
 	if err != nil {
-		return nil, nil, nil, nil, nil, err
+		return nil, nil, 0, nil, nil, err
 	}
 
 	if !app.GetActive() {
-		return nil, nil, nil, nil, nil, errors.New("app is disabled")
+		return nil, nil, 0, nil, nil, errors.New("app is disabled")
 	}
 
 	if !m.IsUserActive(app.UserID) {
-		return nil, nil, nil, nil, nil, errors.New("user is banned")
+		return nil, nil, 0, nil, nil, errors.New("user is banned")
 	}
 
-	province, err := tc.fetchProvince(rd.IP, c.Request().Header.Get("Cf-Ipcountry"))
-	if err != nil {
-		logrus.Debug(err)
-	}
+	province := ip2location.GetProvinceIDByIP(rd.IP)
 
 	phone := m.GetPhoneData(c.Request().URL.Query().Get("brand"), c.Request().URL.Query().Get("carrier"), c.Request().URL.Query().Get("network"))
 	mcc, _ := strconv.ParseInt(c.Request().URL.Query().Get("mcc"), 10, 0)

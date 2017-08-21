@@ -12,3 +12,5 @@ node_modules/
 *.retry
 .vscode
 *.gen.go
+contrib/*.BIN
+contrib/*.BIN.md5

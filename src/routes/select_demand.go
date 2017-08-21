@@ -21,6 +21,8 @@ import (
 
 	"strings"
 
+	"ip2location"
+
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -237,22 +239,19 @@ func (tc *selectController) selectDemandAd(c echo.Context) error {
 
 }
 
-func (tc *selectController) getDemandAppDataFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.App, *mr.Province, *mr.PhoneData, *mr.CellLocation, error) {
+func (tc *selectController) getDemandAppDataFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.App, int64, *mr.PhoneData, *mr.CellLocation, error) {
 	name, userID, err := config.GetSupplier(e.Source.Supplier)
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, fmt.Errorf("can not accept from %s demand", e.Source.Supplier)
+		return nil, nil, nil, 0, nil, nil, fmt.Errorf("can not accept from %s demand", e.Source.Supplier)
 	}
 	e.Source.Supplier = name
 	app, err := tc.fetchAppPackage(e.Source.Name, e.Source.Supplier, userID)
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, errors.New("invalid request")
+		return nil, nil, nil, 0, nil, nil, errors.New("invalid request")
 	}
-	var province *mr.Province
+	var province int64
 	if e.Location.Province.Valid {
-		province, err = tc.fetchProvinceDemand(e.Location.Province.Name)
-		if err != nil {
-			logrus.Debug(err)
-		}
+		province = ip2location.GetProvinceIDByName(e.Location.Province.Name)
 	}
 	m := mr.NewManager()
 	phone := m.GetPhoneData(rd.Brand, rd.Carrier, rd.Network)
@@ -273,32 +272,29 @@ func stripURLParts(in string) string {
 	return u.Host
 }
 
-func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.Website, *mr.Province, error) {
+func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.Website, int64, error) {
 	name, userID, err := config.GetSupplier(e.Source.Supplier)
 	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("can not accept from %s supplier", e.Source.Supplier)
+		return nil, nil, nil, 0, fmt.Errorf("can not accept from %s supplier", e.Source.Supplier)
 	}
 	e.Source.Supplier = name
 	website, err := tc.fetchWebsiteDomain(e.Source.Name, e.Source.Supplier, userID)
 	if err != nil {
-		return nil, nil, nil, nil, err //errors.New("invalid request")
+		return nil, nil, nil, 0, err //errors.New("invalid request")
 	}
 	// Set the floor here. its related to the demand request not our data
 	website.WFloorCpm.Int64, website.WFloorCpm.Valid = int64(e.Source.FloorCPM), true
 	if !website.GetActive() {
-		return nil, nil, nil, nil, errors.New("website is not active")
+		return nil, nil, nil, 0, errors.New("website is not active")
 	}
 
 	if !mr.NewManager().IsUserActive(website.UserID) {
-		return nil, nil, nil, nil, errors.New("user is banned")
+		return nil, nil, nil, 0, errors.New("user is banned")
 	}
 
-	var province *mr.Province
+	var province int64
 	if e.Location.Province.Valid {
-		province, err = tc.fetchProvinceDemand(e.Location.Province.Name)
-		if err != nil {
-			logrus.Debug(err)
-		}
+		province = ip2location.GetProvinceIDByName(e.Location.Province.Name)
 	}
 	return rd, e, website, province, nil
 }

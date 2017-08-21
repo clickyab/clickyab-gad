@@ -25,6 +25,8 @@ import (
 	"transport"
 	"utils"
 
+	"ip2location"
+
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -205,42 +207,38 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 
 }
 
-func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.Province, error) {
+func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, int64, error) {
 	rd := middlewares.MustGetRequestData(c)
 	params := c.QueryParams()
 	publicParams, ok := params["i"]
 	if !ok {
-		return nil, nil, nil, errors.New("invalid request")
+		return nil, nil, 0, errors.New("invalid request")
 	}
 	publicID, err := strconv.ParseInt(publicParams[0], 10, 0)
 	if err != nil {
-		return nil, nil, nil, errors.New("invalid request")
+		return nil, nil, 0, errors.New("invalid request")
 	}
 	domain, ok := params["d"]
 	if !ok {
-		return nil, nil, nil, errors.New("invalid request")
+		return nil, nil, 0, errors.New("invalid request")
 	}
 	//fetch website and set in Context
 	website, err := tc.fetchWebsite(publicID)
 	if err != nil {
-		return nil, nil, nil, errors.New("invalid request")
+		return nil, nil, 0, errors.New("invalid request")
 	}
 
 	if !website.GetActive() {
-		return nil, nil, nil, errors.New("web is not active")
+		return nil, nil, 0, errors.New("web is not active")
 	}
 
 	if !mr.NewManager().IsUserActive(website.UserID) {
-		return nil, nil, nil, errors.New("user is banned")
+		return nil, nil, 0, errors.New("user is banned")
 	}
-
-	province, err := tc.fetchProvince(rd.IP, c.Request().Header.Get("Cf-Ipcountry"))
-	if err != nil {
-		logrus.Debug(err)
-	}
+	province := ip2location.GetProvinceIDByIP(rd.IP)
 	//check if the website domain is valid
 	if website.WDomain.Valid && website.WDomain.String != domain[0] {
-		return nil, nil, nil, errors.New("domain and public id mismatch")
+		return nil, nil, 0, errors.New("domain and public id mismatch")
 	}
 
 	return rd, website, province, nil

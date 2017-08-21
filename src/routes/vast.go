@@ -19,7 +19,7 @@ import (
 
 	echo "gopkg.in/labstack/echo.v3"
 
-	"github.com/Sirupsen/logrus"
+	"ip2location"
 )
 
 var (
@@ -120,33 +120,30 @@ func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, len
 
 }
 
-func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, *mr.Province, string, map[string][]string, error) {
+func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, int64, string, map[string][]string, error) {
 	rd := middlewares.MustGetRequestData(c)
 
 	publicID, err := strconv.ParseInt(c.QueryParam("a"), 10, 0)
 	if err != nil {
-		return nil, nil, nil, "", nil, errors.New("invalid request")
+		return nil, nil, 0, "", nil, errors.New("invalid request")
 	}
 	//fetch website and set in Context
 	website, err := tc.fetchWebsite(publicID)
 	if err != nil {
-		return nil, nil, nil, "", nil, errors.New("invalid request")
+		return nil, nil, 0, "", nil, errors.New("invalid request")
 	}
 	start := c.QueryParam("start")
 	mid := c.QueryParam("mid")
 	end := c.QueryParam("end")
 	if !website.GetActive() {
-		return nil, nil, nil, "", nil, errors.New("web is not active")
+		return nil, nil, 0, "", nil, errors.New("web is not active")
 	}
 
 	if !mr.NewManager().IsUserActive(website.UserID) {
-		return nil, nil, nil, "", nil, errors.New("user is banned")
+		return nil, nil, 0, "", nil, errors.New("user is banned")
 	}
 
-	province, err := tc.fetchProvince(rd.IP, c.Request().Header.Get("Cf-Ipcountry"))
-	if err != nil {
-		logrus.Debug(err)
-	}
+	province := ip2location.GetProvinceIDByIP(rd.IP)
 	lenVast, vastCon := config.MakeVastLen(c.QueryParam("l"), start, mid, end)
 	return rd, website, province, lenVast, vastCon, nil
 }

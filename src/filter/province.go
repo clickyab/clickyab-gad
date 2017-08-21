@@ -7,9 +7,9 @@ import (
 
 //CheckProvince find province client in campaign
 func CheckProvince(c *selector.Context, in mr.AdData) bool {
-	if c.Province == nil {
+	if c.Province == 0 {
 		return len(in.CampaignGeos) == 0
 	}
 	// The 1 means iran. watch for it please!
-	return in.CampaignGeos.Has(true, c.Province.ID, 1)
+	return in.CampaignGeos.Has(true, c.Province, 1)
 }
