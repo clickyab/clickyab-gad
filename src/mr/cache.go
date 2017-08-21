@@ -23,3 +23,12 @@ func fetch(key string, in interface{}) error {
 
 	return utils.ByteToInterface([]byte(s), in)
 }
+
+func fetchTouch(key string, in interface{}, expire time.Duration) error {
+	s, err := aredis.GetKey("CACHE_"+key, true, expire)
+	if err != nil {
+		return err
+	}
+
+	return utils.ByteToInterface([]byte(s), in)
+}

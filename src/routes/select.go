@@ -573,6 +573,7 @@ func (tc *selectController) makeShow(
 				extra += " Winner bid is less than min CPC? fixing. "
 			}
 
+			extra += fmt.Sprintf("CPID = %d", sorted[0].CampaignID)
 			sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID

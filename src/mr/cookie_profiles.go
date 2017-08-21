@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net"
+	"strconv"
 	"time"
 	"utils"
 )
@@ -25,32 +26,28 @@ type CookieProfile struct {
 	Date    sql.NullInt64  `json:"cop_active_date" db:"cop_active_date"`
 }
 
-// FetchCookieProfile get data from table cookie
-func (m *Manager) FetchCookieProfile(key string) (*CookieProfile, error) {
+func randInt64() int64 {
+	x := <-utils.ID
+	i, err := strconv.ParseInt(x[:8], 16, 64)
+	assert.Nil(err)
+	return i
+}
+
+// fetchCookieProfile get data from table cookie
+func (m *Manager) fetchCookieProfile(key string) (*CookieProfile, error) {
 	var res = CookieProfile{}
-	hash := utils.Sha1(fmt.Sprintf("cookie_%d", key))
-	err := fetch(hash, &res)
+	hash := utils.Sha1(fmt.Sprintf("cookie_%s", key))
+	err := fetchTouch(hash, &res, 3*24*time.Hour)
 	if err == nil {
 		return &res, nil
 	}
-	query := `SELECT * FROM cookie_profiles WHERE cop_key = ?  LIMIT 1`
-
-	err = m.GetProperDBMap().SelectOne(
-		&res,
-		query,
-		key,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	_ = store(hash, &res, time.Hour)
-	return &res, nil
+	return nil, err
 }
 
-// InsertCookieProfile create a new cookie profile and return it
-func (m *Manager) InsertCookieProfile(cop string, ip net.IP) (*CookieProfile, error) {
-
+// insertCookieProfile create a new cookie profile and return it
+func (m *Manager) insertCookieProfile(cop string, ip net.IP) (*CookieProfile, error) {
+	var res = CookieProfile{}
+	hash := utils.Sha1(fmt.Sprintf("cookie_%s", cop))
 	ipNullString := toNullString(ip.String())
 	date := toNullInt64(time.Now().Unix())
 	co := &CookieProfile{
@@ -58,28 +55,19 @@ func (m *Manager) InsertCookieProfile(cop string, ip net.IP) (*CookieProfile, er
 		IP:   ipNullString,
 		Date: date,
 	}
+	co.ID = randInt64()
+	_ = store(hash, &res, 3*24*time.Hour)
 
-	q := "INSERT INTO cookie_profiles (`cop_key`, `cop_last_ip`,`cop_active_date`) " +
-		"VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `cop_active_date`= ?"
-	d, err := m.GetWDbMap().Exec(q, co.Key, co.IP, co.Date, co.Date)
-	if err != nil {
-		return nil, err
-	}
-	co.ID, err = d.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
 	return co, nil
 }
 
 // CreateCookieProfile try to select/create a cookie profile
 func (m *Manager) CreateCookieProfile(key string, ip net.IP) *CookieProfile {
 	//key = key[:config.Config.Clickyab.CopLen]
-	res, err := m.FetchCookieProfile(key)
+	res, err := m.fetchCookieProfile(key)
 	if err != nil {
-		res, err = m.InsertCookieProfile(key, ip)
+		res, err = m.insertCookieProfile(key, ip)
 		assert.Nil(err)
-
 	}
 	return res
 }
