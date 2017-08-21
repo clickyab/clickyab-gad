@@ -13,7 +13,7 @@ type Context struct {
 	// TODO : its better to have a unique size array
 	Size         map[string]int
 	Website      *mr.Website
-	Province     *mr.Province
+	Province     int64
 	App          *mr.App
 	PhoneData    *mr.PhoneData
 	CellLocation *mr.CellLocation

@@ -172,3 +172,13 @@ stylegen:
 	cat $(ROOT)/src/routes/native_style.css >>  $(ROOT)/src/routes/native_style.gen.go
 	echo "\`" >> $(ROOT)/src/routes/native_style.gen.go
 	rm $(ROOT)/src/routes/native_style.css
+
+$(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN:
+	mkdir -p $(ROOT)/contrib
+	cd $(ROOT)/contrib && wget -c http://static.clickyab.com/IP-COUNTRY-REGION-CITY-ISP.BIN.gz
+	cd $(ROOT)/contrib && gunzip IP-COUNTRY-REGION-CITY-ISP.BIN.gz
+	cd $(ROOT)/contrib && rm -f IP-COUNTRY-REGION-CITY-ISP.BIN.md5 && wget -c http://static.clickyab.com/IP-COUNTRY-REGION-CITY-ISP.BIN.md5
+	cd $(ROOT)/contrib && md5sum -c IP-COUNTRY-REGION-CITY-ISP.BIN.md5
+
+ip2location: $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN
+	mv $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN $(BIN)

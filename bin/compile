@@ -81,6 +81,7 @@ step "Get gb"
 cd ${ROOT}
 make -f ${ROOT}/Makefile gb
 make -f ${ROOT}/Makefile stylegen
+make -f ${ROOT}/Makefile ip2location
 
 diff ${CACHE}/vendor/manifest ${ROOT}/vendor/manifest || cache_vendor
 cp -R ${CACHE}/vendor/src ${ROOT}/vendor/
