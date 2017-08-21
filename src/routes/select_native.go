@@ -82,7 +82,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 
 	}
 	// TODO : handle this in select
-	if count >= 1 && count%2 == 1 {
+	if count > 1 && count%2 == 1 {
 		ads = ads[:len(ads)-1]
 	}
 

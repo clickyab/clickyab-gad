@@ -347,8 +347,8 @@ func (tc selectController) slotSizeNative(params map[string][]string, website mr
 	if err != nil || countInt < 1 {
 		return make(map[string]*slotData), make(map[string]int), nil
 	}
-	if countInt > 10 {
-		countInt = 10
+	if countInt > config.Config.Clickyab.Native.MaxCount {
+		countInt = config.Config.Clickyab.Native.MaxCount
 	}
 	order := []string{}
 	for i := 1; i <= countInt; i++ { //range  over slots
