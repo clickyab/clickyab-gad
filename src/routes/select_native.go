@@ -94,6 +94,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		Ads:        ads,
 		Title:      params.Get("title"),
 		FontSize:   params.Get("fontSize"),
+		FontFamily: params.Get("fontFamily"),
 		Position:   params.Get("position"),
 		IsVertical: params.Get("orientation") == "vertical",
 	}
