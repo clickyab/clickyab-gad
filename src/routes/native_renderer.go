@@ -18,6 +18,7 @@ type nativeContainer struct {
 	Title      string
 	Style      string
 	FontSize   string
+	FontFamily string
 	Position   string
 	IsVertical bool
 }
@@ -34,7 +35,7 @@ type nativeAd struct {
 	Extra    string
 }
 
-const nativeTmpl = `{{define "ads"}}<div class="cyb-holder {{if .IsVertical}}cyb-side {{end}} cyb-custom-holder" style="font-size: {{.FontSize}}">
+const nativeTmpl = `{{define "ads"}}<div class="cyb-holder {{if .IsVertical}}cyb-side {{end}} cyb-custom-holder" style="font-size: {{.FontSize}};font-family:{{.FontFamily}}">
 	<style>
 	{{.Style}}
 	</style>
