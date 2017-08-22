@@ -6,7 +6,6 @@ import (
 	"middlewares"
 	"mr"
 	"net"
-	"net/url"
 	"selector"
 	"sort"
 	"strconv"
@@ -14,6 +13,7 @@ import (
 	echo "gopkg.in/labstack/echo.v3"
 
 	"assert"
+	"fmt"
 )
 
 // AllData return all data required to render the all routes
@@ -66,7 +66,7 @@ func UniqueStr(input []string) []string {
 	return u
 }
 
-type allAdsPayload struct {
+type allAdsWebPayload struct {
 	TID   int64  `json:"tid"`
 	IP    net.IP `json:"ip"`
 	Slots []struct {
@@ -75,40 +75,60 @@ type allAdsPayload struct {
 	} `json:"slots"`
 }
 
-func (tc *selectController) allAds(c echo.Context) error {
-	params := c.QueryParams()
-	adType := params.Get("type")
+type allAdsResponse struct {
+	CTR    float64 `json:"ctr"`
+	AdID   int64   `json:"ad_id"`
+	CampID int64   `json:"camp_id"`
+	AdImg  string  `json:"ad_img"`
+}
 
-	var err error
+type allAdsNativePayload struct {
+	TID   int64  `json:"tid"`
+	IP    net.IP `json:"ip"`
+	Count int    `json:"count"`
+}
+
+type allAdsVastPayload struct {
+	Start string `json:"start"`
+	Mid   string `json:"mid"`
+	End   string `json:"end"`
+	L     string `json:"l"`
+}
+
+func (tc *selectController) allAds(c echo.Context) error {
+	adType := c.QueryParams().Get("type")
+
+	rd := middlewares.MustGetRequestData(c)
+
+	wid := c.QueryParam("i")
+	wpid, _ := strconv.ParseInt(wid, 10, 0)
+	website, err := mr.NewManager().FetchWebsite(wpid)
+	assert.Nil(err)
+
+	province, err := tc.fetchProvince(rd.IP, c.Request().Header.Get("Cf-Ipcountry"))
+	assert.Nil(err)
+
 	switch adType {
 	case "web":
-		err = tc.allWebAds(c)
-	case "app":
-		err = tc.allAppAds(params)
+		err = tc.allWebAds(c, rd, website, province)
+	case "native":
+		err = tc.allNativeAds(c, rd, website, province)
 	case "vast":
-		err = tc.allVastAds(params)
+		err = tc.allVastAds(c, rd, website, province)
 	}
 
 	return err
 }
 
-func (tc *selectController) allWebAds(c echo.Context) error {
-	var payload allAdsPayload
+func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestData, website *mr.Website, province *mr.Province) error {
+	payload := allAdsWebPayload{}
 	err := c.Bind(&payload)
 	assert.Nil(err)
 
-	rd := middlewares.MustGetRequestData(c)
+	c.Set("payload", payload)
+
 	rd.CopID = payload.TID
-	wid := c.QueryParam("i")
-	wpid, _ := strconv.ParseInt(wid, 10, 0)
-	website, _ := mr.NewManager().FetchWebsite(wpid)
-
-	province, err := tc.fetchProvince(rd.IP, c.Request().Header.Get("Cf-Ipcountry"))
-	assert.Nil(err)
-
 	slotSize, sizeNumSlice := tc.slotSizeWeb(c, *website, rd.Mobile, true)
-	caf := c.QueryParam("capping")
-	capping, _ := strconv.ParseBool(caf)
 
 	m := selector.Context{
 		RequestData: *rd,
@@ -117,7 +137,7 @@ func (tc *selectController) allWebAds(c echo.Context) error {
 		Province:    province,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	winnerAds := tc.webBiding(rd, filteredAds, slotSize, sizeNumSlice, capping)
+	winnerAds := tc.webBiding(rd, filteredAds, slotSize, sizeNumSlice)
 
 	// map[size]number
 	var sizeNum = make(map[int]int)
@@ -129,15 +149,71 @@ func (tc *selectController) allWebAds(c echo.Context) error {
 		winnerAds[i] = winnerAds[i][:sizeNum[i]]
 	}
 
-	return c.JSON(200, winnerAds)
+	//filling ads url
+	resp := map[string][]allAdsResponse{}
+	for i := range winnerAds {
+		for _, j := range winnerAds[i] {
+			// not sure bout the true part
+			ad, err := mr.NewManager().GetAd(j.AdID, true)
+			assert.Nil(err)
+
+			temp := allAdsResponse{
+				AdImg:  ad.AdImg.String,
+				AdID:   j.AdID,
+				CampID: j.CampaignAdID,
+				CTR:    j.CTR,
+			}
+
+			assert.Nil(storeCapping(rd.CopID, j.AdID))
+			resp[config.GetSizeByNumString(i)] = append(resp[config.GetSizeByNumString(i)], temp)
+		}
+	}
+
+	return c.JSON(200, resp)
 }
 
-func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int, capping bool) map[int][]*mr.AdData {
-	if capping {
-		filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
-	} else {
-		filteredAds = emptyCapping(filteredAds)
+func (tc *selectController) allNativeAds(ctx echo.Context, rd *middlewares.RequestData, website *mr.Website, province *mr.Province) error {
+	slotSize, sizeNumSlice := tc.slotSizeNative(ctx, *website, true)
+	println(fmt.Sprintf("%v", slotSize))
+	println(fmt.Sprintf("%v", sizeNumSlice))
+
+	m := selector.Context{
+		RequestData: *rd,
+		Website:     website,
+		Size:        sizeNumSlice,
+		Province:    province,
 	}
+	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
+	winnerAds := tc.nativeBiding(rd, filteredAds, slotSize, sizeNumSlice)
+
+	resp := []allAdsResponse{}
+	for _, i := range winnerAds[20][:len(sizeNumSlice)] {
+		// not sure bout the true part
+		ad, err := mr.NewManager().GetAd(i.AdID, true)
+		assert.Nil(err)
+
+		resp = append(resp, allAdsResponse{
+			AdID:   i.AdID,
+			CTR:    i.CTR,
+			CampID: i.CampaignAdID,
+			AdImg:  ad.AdImg.String,
+		})
+	}
+
+	return ctx.JSON(200, resp)
+}
+
+func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.RequestData, website *mr.Website, province *mr.Province) error {
+	/*var payload allAdsVastPayload
+	err := ctx.Bind(&payload)
+	assert.Nil(err)
+
+	lenVast, vastCon := config.MakeVastLen(ctx.QueryParam("l"), payload.Start, payload.Mid, payload.End)*/
+	return nil
+}
+
+func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*mr.AdData {
+	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
 
 	for i := range filteredAds {
 		Ads := mr.ByMulti(filteredAds[i])
@@ -149,12 +225,17 @@ func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds m
 	return filteredAds
 }
 
-func (tc *selectController) allVastAds(p url.Values) error {
-	return nil
-}
+func (tc *selectController) nativeBiding(rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*mr.AdData {
+	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
 
-func (tc *selectController) allAppAds(p url.Values) error {
-	return nil
+	for i := range filteredAds {
+		Ads := mr.ByMulti(filteredAds[i])
+		sort.Sort(Ads)
+
+		filteredAds[i] = []*mr.AdData(Ads)
+	}
+
+	return filteredAds
 }
 
 func allDate() AllData {

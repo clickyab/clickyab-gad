@@ -22,7 +22,11 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
+<<<<<<< 226ace1222ecd93ca8d55f275305661bf580a73e
 	slotSize, sizeNumSlice, order := tc.slotSizeNative(params, *website)
+=======
+	slotSize, sizeNumSlice := tc.slotSizeNative(c, *website)
+>>>>>>> allads native part implemented
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
