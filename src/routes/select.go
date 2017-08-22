@@ -7,6 +7,7 @@ import (
 	"errors"
 	"filter"
 	"fmt"
+	"math/rand"
 	"middlewares"
 	"modules"
 	"mr"
@@ -84,12 +85,11 @@ type vastSlotData struct {
 // Select function is the route that the real biding happen
 func (tc *selectController) selectWebAd(c echo.Context) error {
 	t := time.Now()
-	params := c.QueryParams()
 	rd, website, province, isp, err := tc.getWebDataFromCtx(c)
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
-	slotSize, sizeNumSlice := tc.slotSizeWeb(params, *website, rd.Mobile)
+	slotSize, sizeNumSlice := tc.slotSizeWeb(c, *website, rd.Mobile)
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -309,7 +309,37 @@ func (tc *selectController) fetchProvinceDemand(r string) (*mr.Province, error) 
 
 }
 
-func (tc selectController) slotSizeWeb(params map[string][]string, website mr.Website, mobile bool) (map[string]*slotData, map[string]int) {
+func (tc selectController) slotSizeWeb(c echo.Context, website mr.Website, mobile bool, allAdsCase ...bool) (map[string]*slotData, map[string]int) {
+	// main if for all ads data
+	if len(allAdsCase) == 1 && allAdsCase[0] {
+		var pubAd = make(map[string]*slotData)
+		var pubSize = make(map[string]int)
+		var payload allAdsPayload
+
+		err := c.Bind(&payload)
+		assert.Nil(err)
+		println(fmt.Sprintf("%v", payload))
+
+		for _, pid := range payload.Slots {
+			for i := 0; i < pid.Repeat; i++ {
+				s, _ := config.GetSize(pid.Size)
+				r := fmt.Sprintf("%d", rand.Intn(10000))
+
+				pubAd[r] = &slotData{
+					Ctr:      .1,
+					PublicID: r,
+					SlotSize: s,
+				}
+
+				pubSize[r] = s
+			}
+		}
+
+		return pubAd, pubSize
+	}
+
+	params := c.QueryParams()
+
 	var size = make(map[string]string)
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
