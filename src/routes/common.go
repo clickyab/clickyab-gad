@@ -116,6 +116,9 @@ func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, m
 	tmp := map[string]string{
 		"IP":     rd.IP.String(),
 		"UA":     rd.UserAgent,
+		"AID":    rd.AndroidID,     //android id
+		"DID":    rd.AndroidDevice, //android device id
+		"GID":    rd.GoogleID,      //google id
 		"WS":     strconv.FormatInt(pub.GetID(), 10),
 		"T":      strconv.FormatInt(time.Now().Unix(), 10),
 		"S":      strconv.FormatInt(slotID, 10),
