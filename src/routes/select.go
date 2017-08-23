@@ -422,7 +422,9 @@ func (tc *selectController) makeShow(
 		noVideo  bool // once set, never unset it again
 	)
 
+	sel := true // for campaign with order (native) do not handle selected and duplicates
 	if order == nil {
+		sel = false
 		for i := range slotSize {
 			order = append(order, i)
 		}
@@ -572,7 +574,7 @@ func (tc *selectController) makeShow(
 			}
 
 			extra += fmt.Sprintf("CPID = %d", sorted[0].CampaignID)
-			sorted[0].Capping.IncView(sorted[0].AdID, 1, true)
+			sorted[0].Capping.IncView(sorted[0].AdID, 1, sel)
 			winnerAd[slotID] = sorted[0]
 			winnerAd[slotID].SlotID = slotSize[slotID].ID
 			winnerAd[slotID].SlotPublicID = slotSize[slotID].PublicID
