@@ -157,7 +157,7 @@ func (tc *selectController) click(c echo.Context) error {
 	if pub != nil {
 		domain = pub.GetName()
 	}
-	body := tc.replaceParameters(url, domain, cpName, rand, result["IMPR"])
+	body := tc.replaceParameters(url, domain, cpName, rand, result["IMPR"], rd.IP.String(), result["GID"], result["AID"], result["DID"])
 	return c.HTML(http.StatusOK, body)
 }
 
@@ -219,7 +219,7 @@ func (selectController) fillClick(
 	}
 }
 
-func (selectController) replaceParameters(url, domain, campaign, clickID, impID string) string {
+func (selectController) replaceParameters(url, domain, campaign, clickID, impID, ip, googlead_id, android_id, android_device string) string {
 	r := strings.NewReplacer(
 		"[app]",
 		domain,
@@ -239,6 +239,23 @@ func (selectController) replaceParameters(url, domain, campaign, clickID, impID 
 		impID,
 		"{click_id}",
 		clickID,
+
+		"{ip}",
+		ip,
+		"[ip]",
+		ip,
+		"{googlead_id}",
+		googlead_id,
+		"[googlead_id]",
+		googlead_id,
+		"{android_id}",
+		android_id,
+		"[android_id]",
+		android_id,
+		"{android_device}",
+		android_device,
+		"[android_device]",
+		android_device,
 	)
 
 	url = r.Replace(url)

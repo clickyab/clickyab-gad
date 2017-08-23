@@ -46,6 +46,10 @@ type RequestData struct {
 	Operator   string
 	OSIdentity string
 	Carrier    string
+	//other app stuff
+	GoogleID      string
+	AndroidID     string
+	AndroidDevice string
 }
 
 const requestDataToken = "__request_data__"
@@ -82,6 +86,12 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 				e.TID = copKey(ctx, e, config.Config.Clickyab.CopLen)
 			}
 			e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
+
+			//extract app stuff
+			e.GoogleID = ctx.Request().URL.Query().Get("GoogleAdvertisingId")
+			e.AndroidID = ctx.Request().URL.Query().Get("androidid")
+			e.AndroidDevice = ctx.Request().URL.Query().Get("deviceid")
+
 			ctx.Set(requestDataToken, e)
 			return next(ctx)
 		}
