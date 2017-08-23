@@ -502,15 +502,21 @@ func (tc *selectController) makeShow(
 			// order is to get data from exceed flor, then capping passed and if the config allowed,
 			// use the under floor. for under floor there is no second biding pricing
 			if len(exceedFloor) > 0 {
-				ef = mr.ByMulti(exceedFloor)
+				ef = mr.ByMulti{
+					Ads:   exceedFloor,
+					Video: multipleVideo,
+				}
 				secBid = true
 				extra += " From Exceed, SecBID "
 			} else if allowUnderFloor && len(underFloor) > 0 {
-				ef = mr.ByMulti(underFloor)
+				ef = mr.ByMulti{
+					Ads:   underFloor,
+					Video: multipleVideo,
+				}
 				secBid = false
 				extra += " From Under, FirstBID "
 			}
-			if len(ef) == 0 {
+			if len(ef.Ads) == 0 {
 				logrus.Debug("No ad????")
 				middlewares.SafeGO(c, false, false, func() {
 					w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
@@ -543,20 +549,20 @@ func (tc *selectController) makeShow(
 			}
 
 			sort.Sort(ef)
-			sorted = []*mr.AdData(ef)
+			sorted = ef.Ads
 
 			// Do not do second biding pricing on this ads, they can not pass CPMFloor
 			if secBid {
 				secondCPM := tc.getSecondCPM(publisher.FloorCPM(), sorted)
 				sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
 				extra += fmt.Sprintf(" WinnerCPM = %d, SecCPM = %d , CTR = %f, WinnerBID: %d", sorted[0].CPM, secondCPM, sorted[0].CTR, sorted[0].WinnerBid)
-				if len(sorted) > 0 {
-					extra += fmt.Sprintf("%s == %d", sorted[1].AdName.String, sorted[1].CampaignID)
-
-					//if sorted[0].CPM == secondCPM {
-					//	sorted[0], sorted[1] = sorted[1], sorted[0]
-					//}
-				}
+				//if len(sorted) > 1 {
+				//	extra += fmt.Sprintf("%s == %d", sorted[1].AdName.String, sorted[1].CampaignID)
+				//
+				//	//if sorted[0].CPM == secondCPM {
+				//	//	sorted[0], sorted[1] = sorted[1], sorted[0]
+				//	//}
+				//}
 			} else {
 				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
 				extra += fmt.Sprintf(" WinnerCPM = %d, MaxBID is requested", sorted[0].CPM)
