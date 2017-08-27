@@ -7,6 +7,8 @@ import (
 	"math/big"
 	"net"
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // metaData
@@ -196,7 +198,7 @@ func readUint8(pos int64) uint8 {
 	data := make([]byte, 1)
 	_, err := f.ReadAt(data, pos-1)
 	if err != nil {
-		fmt.Println("File read failed:", err)
+		logrus.Debugf("File read failed:", err)
 	}
 	retval = data[0]
 	return retval
@@ -209,7 +211,7 @@ func readUint32(pos uint32) uint32 {
 	data := make([]byte, 4)
 	_, err := f.ReadAt(data, pos2-1)
 	if err != nil {
-		fmt.Println("File read failed:", err)
+		logrus.Debugf("File read failed:", err)
 	}
 	buf := bytes.NewReader(data)
 	err = binary.Read(buf, binary.LittleEndian, &retval)
@@ -226,7 +228,7 @@ func readUint128(pos uint32) *big.Int {
 	data := make([]byte, 16)
 	_, err := f.ReadAt(data, pos2-1)
 	if err != nil {
-		fmt.Println("File read failed:", err)
+		logrus.Debugf("File read failed:", err)
 	}
 
 	// little endian to big endian
@@ -244,13 +246,13 @@ func readStr(pos uint32) string {
 	lenbyte := make([]byte, 1)
 	_, err := f.ReadAt(lenbyte, pos2)
 	if err != nil {
-		fmt.Println("File read failed:", err)
+		logrus.Debugf("File read failed:", err)
 	}
 	strlen := lenbyte[0]
 	data := make([]byte, strlen)
 	_, err = f.ReadAt(data, pos2+1)
 	if err != nil {
-		fmt.Println("File read failed:", err)
+		logrus.Debugf("File read failed:", err)
 	}
 	retval = string(data[:strlen])
 	return retval
@@ -263,7 +265,7 @@ func readFloat(pos uint32) float32 {
 	data := make([]byte, 4)
 	_, err := f.ReadAt(data, pos2-1)
 	if err != nil {
-		fmt.Println("File read failed:", err)
+		logrus.Debugf("File read failed:", err)
 	}
 	buf := bytes.NewReader(data)
 	err = binary.Read(buf, binary.LittleEndian, &retval)
