@@ -67,6 +67,7 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 	if imp.App != nil {
 		appID.Valid = true
 		appID.Int64 = imp.App.AppID
+		slot = imp.App.SlotID
 	}
 
 	res, err := m.GetWDbMap().Exec(query,
