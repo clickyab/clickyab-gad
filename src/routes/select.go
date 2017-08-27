@@ -317,7 +317,7 @@ func (tc selectController) slotSizeWeb(c echo.Context, website mr.Website, mobil
 		payload := c.Get("payload").(allAdsWebPayload)
 
 		for _, pid := range payload.Slots {
-			for i := 0; i < pid.Repeat; i++ {
+			for i := 0; i < pid.Count; i++ {
 				s, _ := config.GetSize(pid.Size)
 				r := fmt.Sprintf("%d", rand.Intn(10000))
 
@@ -363,19 +363,13 @@ func (tc selectController) slotSizeWeb(c echo.Context, website mr.Website, mobil
 	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 }
 
-<<<<<<< 226ace1222ecd93ca8d55f275305661bf580a73e
-func (tc selectController) slotSizeNative(params map[string][]string, website mr.Website) (map[string]*slotData, map[string]int, []string) {
-=======
-func (tc selectController) slotSizeNative(c echo.Context, website mr.Website, test ...bool) (map[string]*slotData, map[string]int) {
+func (tc selectController) slotSizeNative(c echo.Context, website mr.Website, test ...bool) (map[string]*slotData, map[string]int, []string) {
 	if len(test) == 1 && test[0] {
 		var pubAd = make(map[string]*slotData)
 		var pubSize = make(map[string]int)
 
-		var payload allAdsNativePayload
-		err := c.Bind(&payload)
-		assert.Nil(err)
+		payload := c.Get("payload").(allAdsNativePayload)
 
-		println(payload.Count)
 		for i := 0; i < payload.Count; i++ {
 			pid := strconv.FormatInt(int64(i), 10)
 			pubAd[pid] = &slotData{
@@ -388,10 +382,9 @@ func (tc selectController) slotSizeNative(c echo.Context, website mr.Website, te
 			pubSize[pid] = 20
 		}
 
-		return pubAd, pubSize
+		return pubAd, pubSize, nil
 	}
 	params := c.QueryParams()
->>>>>>> allads native part implemented
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
 
@@ -549,10 +542,8 @@ func (tc *selectController) makeShow(
 				}
 			}
 
-<<<<<<< 226ace1222ecd93ca8d55f275305661bf580a73e
 			extra := fmt.Sprintf("For Slot %s", slotID)
-=======
->>>>>>> allads native part implemented
+
 			var sorted []*mr.AdData
 			var (
 				ef     mr.ByMulti

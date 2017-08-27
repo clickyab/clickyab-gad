@@ -89,7 +89,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	return c.XMLBlob(http.StatusOK, result.Bytes())
 }
 
-func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, length map[string][]string, website mr.Website) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
+func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, length map[string][]string, website mr.Website, alladscase ...bool) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
 	var vastSlot = make(map[string]vastSlotData)
@@ -151,7 +151,21 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 }
 
 // TODO : Move this function to models and fix the cache problem
-func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, sizeNumSlice map[string]int) (map[string]*slotData, map[string]int) {
+func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, sizeNumSlice map[string]int, alladscase ...bool) (map[string]*slotData, map[string]int) {
+	if len(alladscase) == 1 && alladscase[0] {
+		slotData2 := make(map[string]*slotData)
+
+		for i := range sizeNumSlice {
+			slotData2[i] = &slotData{
+				PublicID: i,
+				Ctr:      .1,
+				SlotSize: sizeNumSlice[i],
+			}
+		}
+
+		return slotData2, sizeNumSlice
+	}
+
 	slotPublicString := mr.Build(slotPublic)
 	res, err := mr.NewManager().FetchWebSlots(slotPublicString, webID)
 	assert.Nil(err)
