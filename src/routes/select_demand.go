@@ -111,7 +111,7 @@ func (tc *selectController) selectDemandAppAd(c echo.Context, rd *middlewares.Re
 	if e.SessionKey != "" {
 		err := aredis.SAddInt(e.SessionKey, true, time.Minute, sessionAds...)
 		if err != nil {
-			logrus.Warn(err)
+			logrus.Debug(err)
 		}
 	}
 
@@ -191,7 +191,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 	if e.SessionKey != "" {
 		err := aredis.SAddInt(e.SessionKey, true, time.Minute, sessionAds...)
 		if err != nil {
-			logrus.Warn(err)
+			logrus.Debug(err)
 		}
 	}
 

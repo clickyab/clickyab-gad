@@ -151,7 +151,7 @@ bigLoop:
 			if v, ok := cp.(validator); ok {
 				if !v.Validate() {
 					_ = job.Reject(false)
-					logrus.Warn("Validation failed")
+					logrus.Debug("Validation failed")
 				}
 			}
 
@@ -162,7 +162,7 @@ bigLoop:
 				defer func() {
 					if e := recover(); e != nil {
 						//Panic??
-						logrus.Warn(e)
+						logrus.Debug(e)
 						_ = job.Reject(false)
 					}
 				}()
