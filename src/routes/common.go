@@ -98,7 +98,7 @@ func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, m
 	imp.SLAID, err = m.InsertSlotAd(slotID, adID)
 	if err != nil {
 		// not important error
-		logrus.Warn(err)
+		logrus.Debug(err)
 	}
 	assert.Nil(m.InsertImpression(&imp))
 	//validate

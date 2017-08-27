@@ -39,7 +39,7 @@ func RedmineDoError(err interface{}, stack []byte) {
 
 	issues, err := c.FilterIssues(filters...)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.Debug(err)
 		return
 	}
 	var is *redmine.Issue
@@ -56,7 +56,7 @@ func RedmineDoError(err interface{}, stack []byte) {
 		is.Notes = string(stack)
 		err := c.UpdateIssue(*is)
 		if err != nil {
-			logrus.Warn(err)
+			logrus.Debug(err)
 		}
 	} else {
 		is = &redmine.Issue{}
@@ -66,7 +66,7 @@ func RedmineDoError(err interface{}, stack []byte) {
 
 		_, err := c.CreateIssue(*is)
 		if err != nil {
-			logrus.Warn(err)
+			logrus.Debug(err)
 		}
 	}
 }

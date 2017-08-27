@@ -216,7 +216,7 @@ func (tc *selectController) getAppDataFromCtx(c echo.Context) (*middlewares.Requ
 	lac, _ := strconv.ParseFloat(c.Request().URL.Query().Get("lac"), 64)
 	cell, err := m.GetCellLocation(mcc, mnc, int64(lac), int64(cid), phone.Carrier)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.Debug(err)
 	}
 
 	return rd, app, province, phone, cell, nil
