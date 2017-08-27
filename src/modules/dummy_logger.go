@@ -85,10 +85,10 @@ func (m *myLogger) Warnj(j log.JSON) {
 	m.logger.WithFields(l).Warn("-")
 }
 func (m *myLogger) Error(args ...interface{}) {
-	m.logger.Error(args...)
+	m.logger.Warn(args...)
 }
 func (m *myLogger) Errorf(s string, args ...interface{}) {
-	m.logger.Errorf(s, args...)
+	m.logger.Warnf(s, args...)
 }
 func (m *myLogger) Errorj(j log.JSON) {
 	l := logrus.Fields{}
@@ -96,7 +96,7 @@ func (m *myLogger) Errorj(j log.JSON) {
 		l[i] = j[i]
 	}
 
-	m.logger.WithFields(l).Error("-")
+	m.logger.WithFields(l).Warn("-")
 }
 func (m *myLogger) Fatal(args ...interface{}) {
 	m.logger.Fatal(args...)

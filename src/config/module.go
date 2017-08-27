@@ -101,7 +101,7 @@ func SetConfigParameter() {
 
 	} else {
 		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: false, DisableColors: true})
-		logrus.SetLevel(logrus.WarnLevel)
+		logrus.SetLevel(logrus.ErrorLevel)
 	}
 
 	numcpu := Config.MaxCPUAvailable
