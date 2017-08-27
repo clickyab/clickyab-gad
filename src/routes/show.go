@@ -271,8 +271,11 @@ func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, 
 	var v = ad.AdType == 3
 	r := rand.Int63n(99999)
 	r2 := rand.Int63n(99999)
-	u, _ := url.Parse(ad.AdURL.String)
-	host, _, _ := net.SplitHostPort(u.Host)
+	u, err := url.Parse(ad.AdURL.String)
+	var host string
+	if err == nil {
+		host, _, _ = net.SplitHostPort(u.Host)
+	}
 	src := ad.AdImg.String
 	if https {
 		src = strings.Replace(src, "http://", "https://", -1)
