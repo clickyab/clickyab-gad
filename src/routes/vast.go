@@ -33,6 +33,7 @@ var (
 		filter.CheckWebCategory,
 		filter.CheckProvince,
 		filter.CheckVastNetwork,
+		filter.CheckISP,
 	)
 )
 
@@ -48,7 +49,7 @@ type vastAdTemplate struct {
 // Select function is the route that the real biding happen
 func (tc *selectController) selectVastAd(c echo.Context) error {
 
-	rd, website, province, lenType, length, err := tc.getVastDataFromCtx(c)
+	rd, website, province, isp, lenType, length, err := tc.getVastDataFromCtx(c)
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
@@ -68,6 +69,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		Website:     website,
 		Size:        sizeNumSlice,
 		Province:    province,
+		ISP:         isp,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
 	show, _ := tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, config.Config.Clickyab.MinCPCVast, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast)
@@ -120,32 +122,32 @@ func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, len
 
 }
 
-func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, int64, string, map[string][]string, error) {
+func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, int64, int64, string, map[string][]string, error) {
 	rd := middlewares.MustGetRequestData(c)
 
 	publicID, err := strconv.ParseInt(c.QueryParam("a"), 10, 0)
 	if err != nil {
-		return nil, nil, 0, "", nil, errors.New("invalid request")
+		return nil, nil, 0, 0, "", nil, errors.New("invalid request")
 	}
 	//fetch website and set in Context
 	website, err := tc.fetchWebsite(publicID)
 	if err != nil {
-		return nil, nil, 0, "", nil, errors.New("invalid request")
+		return nil, nil, 0, 0, "", nil, errors.New("invalid request")
 	}
 	start := c.QueryParam("start")
 	mid := c.QueryParam("mid")
 	end := c.QueryParam("end")
 	if !website.GetActive() {
-		return nil, nil, 0, "", nil, errors.New("web is not active")
+		return nil, nil, 0, 0, "", nil, errors.New("web is not active")
 	}
 
 	if !mr.NewManager().IsUserActive(website.UserID) {
-		return nil, nil, 0, "", nil, errors.New("user is banned")
+		return nil, nil, 0, 0, "", nil, errors.New("user is banned")
 	}
 
-	province := ip2location.GetProvinceIDByIP(rd.IP)
+	province, isp := ip2location.GetProvinceISPByIP(rd.IP)
 	lenVast, vastCon := config.MakeVastLen(c.QueryParam("l"), start, mid, end)
-	return rd, website, province, lenVast, vastCon, nil
+	return rd, website, province, isp, lenVast, vastCon, nil
 }
 
 // TODO : Move this function to models and fix the cache problem

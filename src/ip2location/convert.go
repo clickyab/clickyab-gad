@@ -1,6 +1,14 @@
 package ip2location
 
-import "net"
+import (
+	"net"
+	"regexp"
+)
+
+var ispConst map[int64]*regexp.Regexp = map[int64]*regexp.Regexp{
+	1: regexp.MustCompile(`(?i)iran\s?cell`),
+	2: regexp.MustCompile(`(?i)Mobile Communication Company of Iran PLC`),
+}
 
 var m map[string]int64 = map[string]int64{
 	"IR": 1,
@@ -45,6 +53,27 @@ func GetProvinceIDByIP(ip net.IP) int64 {
 		return i
 	}
 	return 0
+}
+
+// GetProvinceIDByIP get province id by ip
+func GetProvinceISPByIP(ip net.IP) (int64, int64) {
+	var province int64
+	var uISP int64
+	rec := IP2Location(ip.String())
+	if i, ok := m[rec.Region]; ok {
+		province = i
+	}
+	if rec.ISP != "" {
+		//check isp
+		for j := range ispConst {
+			if ispConst[j].Match([]byte(rec.ISP)) {
+				uISP = j
+				break
+			}
+		}
+	}
+
+	return province, uISP
 }
 
 // GetProvinceIDByName get province id by name
