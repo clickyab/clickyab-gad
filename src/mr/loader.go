@@ -41,7 +41,7 @@ func (m *Manager) LoadAds() (res []AdData, err error) {
 	 cp_like_app, cp_app, cp_app_filter, cp_keywords, cp_platforms, cp_platform_version, cp_maxbid,
 	 cp_weekly_budget, cp_daily_budget, cp_total_budget, cp_weekly_spend, cp_total_spend,
 	 cp_today_spend, cp_clicks, cp_ctr, cp_imps, cp_cpm, cp_cpa, cp_cpc, cp_conv, cp_conv_rate,
-	 cp_revenue, cp_roi, cp_start, cp_end, cp_status, cp_lastupdate, cp_hour_start, cp_hour_end,
+	 cp_revenue, cp_roi, cp_start, cp_end, cp_status, cp_lastupdate, cp_hour_start, cp_hour_end,cp_isp,
 	 is_crm, cp_lock,CA.ca_id
 	 	FROM campaigns AS C
 	 	INNER JOIN users AS U ON C.u_id=U.u_id

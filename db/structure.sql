@@ -277,6 +277,7 @@ CREATE TABLE campaigns
     cp_fatfinger TINYINT(1) DEFAULT '1',
     cp_under TINYINT(1) DEFAULT '0',
     cp_geos VARCHAR(200),
+    cp_isp VARCHAR(200),
     cp_region VARCHAR(200),
     cp_country VARCHAR(200),
     cp_hoods VARCHAR(200),

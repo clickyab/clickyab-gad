@@ -88,6 +88,7 @@ type Campaign struct {
 	CampaignFatfinger       int             `json:"cp_fatfinger" db:"cp_fatfinger"`
 	CampaignUnder           int             `json:"cp_under" db:"cp_under"`
 	CampaignGeos            SharpArray      `json:"cp_geos" db:"cp_geos"`
+	CampaignISP             SharpArray      `json:"cp_isp" db:"cp_isp"`
 	CampaignRegion          SharpArray      `json:"cp_region" db:"cp_region"`
 	CampaignCountry         SharpArray      `json:"cp_country" db:"cp_country"`
 	CampaignHoods           SharpArray      `json:"cp_hoods" db:"cp_hoods"`
