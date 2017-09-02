@@ -314,6 +314,17 @@ func (tc *selectController) fetchWebsiteDomain(domain, supplier string, user int
 	return website, err
 }
 
+//fetchWebsiteDomainActive website
+func (tc *selectController) fetchWebsiteDomainActive(domain string) (*mr.Website, error) {
+	var res mr.Website
+	q := "SELECT * FROM `websites` WHERE `w_domain` = ? AND `w_status` IN (0,1) ORDER BY `websites`.`w_today_imps` DESC LIMIT 1"
+	err := mr.NewManager().GetRDbMap().SelectOne(&res, q, domain)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
 // fetchAppPackage fetch app if not exists insert it
 func (tc *selectController) fetchAppPackage(pack, supplier string, userID int64) (*mr.App, error) {
 	app, err := mr.NewManager().FetchAppByPack(pack, supplier)
