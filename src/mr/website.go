@@ -138,6 +138,23 @@ func (m *Manager) FetchWebsiteByDomain(domain, supplier string) (*Website, error
 	return &res, nil
 }
 
+// FetchWebsiteByDomain return a function based on its domain
+func (m *Manager) FindWebsiteByDomain(domain string) (*Website, error) {
+	var res = Website{}
+	query := `SELECT * FROM websites WHERE w_domain = ? AND w_status IN (0, 1) ORDER BY w_today_imps DESC LIMIT 1`
+
+	err := m.GetRDbMap().SelectOne(
+		&res,
+		query,
+		domain,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
 func (m *Manager) InsertWebsite(domain, supplier string, userID int64) (*Website, error) {
 	if supplier == "clickyab" {
 		// we are not allow to register sites from clickyab

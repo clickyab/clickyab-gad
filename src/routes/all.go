@@ -9,13 +9,13 @@ import (
 	"net/http"
 	"selector"
 	"sort"
-	"strconv"
 
 	echo "gopkg.in/labstack/echo.v3"
 
 	"assert"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"ip2location"
 )
 
@@ -79,11 +79,14 @@ type allAdsWebPayload struct {
 }
 
 type allAdsResponse struct {
-	CTR    float64 `json:"ctr"`
-	AdID   int64   `json:"ad_id"`
-	CampID int64   `json:"camp_id"`
-	AdImg  string  `json:"ad_img"`
-	AdType int     `json:"ad_type"`
+	AdID       int64   `json:"ad_id"`
+	AdImg      string  `json:"ad_img"`
+	AdType     int     `json:"ad_type"`
+	CampID     int64   `json:"camp_id"`
+	CampName   string  `json:"camp_name"`
+	CampMail   string  `json:"camp_mail"`
+	CampBudget int     `json:"camp_budget"`
+	CTR        float64 `json:"ctr"`
 }
 
 type allAdsNativePayload struct {
@@ -106,8 +109,7 @@ func (tc *selectController) allAds(c echo.Context) error {
 	rd := middlewares.MustGetRequestData(c)
 
 	wid := c.QueryParam("i")
-	wpid, _ := strconv.ParseInt(wid, 10, 0)
-	website, err := mr.NewManager().FetchWebsite(wpid)
+	website, err := mr.NewManager().FindWebsiteByDomain(wid)
 	assert.Nil(err)
 
 	switch adType {
@@ -159,16 +161,15 @@ func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestDat
 	resp := map[string][]allAdsResponse{}
 	for i := range winnerAds {
 		for _, j := range winnerAds[i] {
-			// not sure bout the true part
-			ad, err := mr.NewManager().GetAd(j.AdID, true)
-			assert.Nil(err)
-
 			temp := allAdsResponse{
-				AdImg:  ad.AdImg.String,
-				AdID:   j.AdID,
-				AdType: j.AdType,
-				CampID: j.CampaignAdID,
-				CTR:    j.CTR,
+				AdImg:      j.AdImg.String,
+				AdID:       j.AdID,
+				AdType:     j.AdType,
+				CampID:     j.CampaignID,
+				CTR:        j.CTR,
+				CampName:   j.CampaignName.String,
+				CampMail:   j.UserEmail,
+				CampBudget: j.CampaignTotalBudget,
 			}
 
 			assert.Nil(storeCapping(rd.CopID, j.AdID))
@@ -178,7 +179,7 @@ func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestDat
 
 	println(fmt.Sprintf("%v", resp))
 
-	return c.JSON(200, resp)
+	return c.JSON(http.StatusOK, resp)
 }
 
 func (tc *selectController) allNativeAds(ctx echo.Context, rd *middlewares.RequestData, website *mr.Website) error {
@@ -204,16 +205,16 @@ func (tc *selectController) allNativeAds(ctx echo.Context, rd *middlewares.Reque
 
 	resp := []allAdsResponse{}
 	for _, i := range winnerAds[20][:len(sizeNumSlice)] {
-		// not sure bout the true part
-		ad, err := mr.NewManager().GetAd(i.AdID, true)
-		assert.Nil(err)
 
 		resp = append(resp, allAdsResponse{
-			AdID:   i.AdID,
-			CTR:    i.CTR,
-			AdType: i.AdType,
-			CampID: i.CampaignAdID,
-			AdImg:  ad.AdImg.String,
+			AdID:       i.AdID,
+			AdType:     i.AdType,
+			AdImg:      i.AdImg.String,
+			CampBudget: i.Campaign.CampaignTotalBudget,
+			CampMail:   i.UserEmail,
+			CampName:   i.CampaignName.String,
+			CampID:     i.CampaignAdID,
+			CTR:        i.CTR,
 		})
 		assert.Nil(storeCapping(rd.CopID, i.AdID))
 	}
@@ -257,11 +258,14 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 	response := map[string][]allAdsResponse{}
 	for i := range allAds {
 		response[config.GetSizeByNumString(allAds[i].AdSize)] = append(response[config.GetSizeByNumString(allAds[i].AdSize)], allAdsResponse{
-			CTR:    .1,
-			AdImg:  allAds[i].AdImg.String,
-			AdType: allAds[i].AdType,
-			CampID: allAds[i].CampaignAdID,
-			AdID:   allAds[i].AdID,
+			CTR:        .1,
+			AdImg:      allAds[i].AdImg.String,
+			AdType:     allAds[i].AdType,
+			CampID:     allAds[i].CampaignAdID,
+			AdID:       allAds[i].AdID,
+			CampName:   allAds[i].CampaignName.String,
+			CampMail:   allAds[i].UserEmail,
+			CampBudget: allAds[i].CampaignTotalBudget,
 		})
 	}
 
@@ -319,6 +323,13 @@ func makeVastSlot(length map[string][]string, website *mr.Website) (map[string]v
 	}
 
 	return vastSlot, slotPublic, sizeNumSlice
+}
+
+func (tc *selectController) allAdsTemp(c echo.Context) error {
+	data, err := ioutil.ReadFile(`/home/develop/gad/template/allads.html`)
+	assert.Nil(err)
+
+	return c.HTML(http.StatusOK, string(data))
 }
 
 func allDate() AllData {
