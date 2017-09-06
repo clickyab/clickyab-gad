@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"bytes"
 	"config"
 	"mr"
 	"net/http"
@@ -16,19 +15,21 @@ import (
 
 	"net/url"
 
-	"assert"
 	"middlewares"
-	"redlock"
 
 	"net"
 
 	"errors"
 
-	echo "gopkg.in/labstack/echo.v3"
 	"ip2location"
-)
 
-const redLockTTL = time.Second
+	"redis"
+
+	"testlock"
+
+	"github.com/Sirupsen/logrus"
+	echo "gopkg.in/labstack/echo.v3"
+)
 
 // example request
 // a.clickyab.com/ads/show.php?a=1941478513606&width=300&height=250&slot=48812001338&eventpage=995681655&ck=true&loc=http://myreal.ir/dara&ref=false&tid=2188781033
@@ -36,6 +37,7 @@ const redLockTTL = time.Second
 const typ = "sync"
 
 func (tc *selectController) showphp(c echo.Context) error {
+
 	wpidReq := c.Request().URL.Query().Get("a")
 	width := c.Request().URL.Query().Get("width")
 	height := c.Request().URL.Query().Get("height")
@@ -48,19 +50,16 @@ func (tc *selectController) showphp(c echo.Context) error {
 
 	rd := middlewares.MustGetRequestData(c)
 	rd.TID = tid
-
 	size, err := config.GetSize(fmt.Sprintf("%sx%s", width, height))
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, "wrong slot size")
 	}
-
 	website, provinceID, ispID, err := locationStatus(tc, wpidReq, rd.IP)
 	if err != nil {
-
+		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 
-	slotSize, sizeNumSlice := tc.slotSizeNormal([]string{slotReq}, website.WPubID, map[string]int{slotReq: size})
-
+	slotSize, sizeNumSlice := tc.slotSizeNormal([]string{slotReq}, website.WID, map[string]int{slotReq: size})
 	m := selector.Context{
 		RequestData: *rd,
 		Website:     website,
@@ -68,35 +67,64 @@ func (tc *selectController) showphp(c echo.Context) error {
 		Province:    provinceID,
 		ISP:         ispID,
 	}
-	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-
-	redlock.Lock(eventpage, "", redLockTTL)
+	lockSession := "DMDS_SESS_" + eventpage
+	t := testlock.NewRedisDistributedLock(lockSession, 3000*time.Millisecond)
+	t.Lock()
+	defer t.Unlock()
+	var sel selector.FilterFunc
+	var sessionAds []int64
+	sel = webSelector
+	if eventpage != "" {
+		eventpage = "EXCS_SESS_" + eventpage
+		sessionAds = aredis.SMembersInt(eventpage)
+		if len(sessionAds) > 0 {
+			sel = selector.Mix(sel, func(_ *selector.Context, a mr.AdData) bool {
+				for _, i := range sessionAds {
+					if i == a.AdID {
+						return false
+					}
+				}
+				return true
+			})
+		}
+	}
+	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
 	_, pubsAds := tc.makeShow(c, typ, rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web)
-	redlock.Unlock([]string{eventpage}, "")
-
-	targetedAd, ok := pubsAds[slotReq]
-	assert.True(len(pubsAds) == 1 && ok, "more than one or no ads where found")
-
+	targetedAd := pubsAds[slotReq]
+	if targetedAd == nil {
+		return c.String(http.StatusNotFound, "not found")
+	}
 	ad, err := mr.NewManager().GetAd(targetedAd.AdID, false)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
+	var rnd string
+	for i := range pubsAds {
+		sessionAds = append(sessionAds, pubsAds[i].AdID)
+		rnd = <-utils.ID
+		imp := tc.fillNativeImp(rd, false, pubsAds[i], pubsAds[i].WinnerBid, website, pubsAds[i].SlotID)
+		tc.callWebWorker(website, pubsAds[i].SlotID, pubsAds[i].AdID, m.RequestData.MegaImp, rnd, imp, rd)
+		if eventpage != "" {
+			err := aredis.SAddInt(eventpage, true, time.Minute, sessionAds...)
+			if err != nil {
+				logrus.Debug(err)
+			}
+		}
+	}
 
-	buf := &bytes.Buffer{}
-	adURL := makeAdURL(rd, website.WPubID, ad.AdID, eventpage)
-	res := tc.makeSingleAdData(ad, adURL, loc[:5] == "https")
-
-	err = singleAdTemplate.Execute(buf, res)
-	assert.Nil(err)
-
-	return c.HTML(http.StatusOK, buf.String())
+	adURL := makeAdURL(rd, website.WID, ad.AdID, m.RequestData.MegaImp, rnd)
+	res, err := tc.makeWebTemplate(c, "", ad, adURL, "", "", loc[:5] == "https")
+	if err != nil {
+		return c.String(http.StatusNotFound, "not found")
+	}
+	return c.HTML(http.StatusOK, res)
 }
 
-func makeAdURL(rd *middlewares.RequestData, wpid, adID int64, mega string) string {
+func makeAdURL(rd *middlewares.RequestData, wID, adID int64, mega string, rnd string) string {
 	u := url.URL{
 		Scheme: rd.Scheme,
 		Host:   rd.Host,
-		Path:   fmt.Sprintf("/click/%s/%d/%s/%d/%s", "web", wpid, mega, adID, <-utils.ID),
+		Path:   fmt.Sprintf("/click/%s/%d/%s/%d/%s", "web", wID, mega, adID, rnd),
 	}
 
 	v := url.Values{}
@@ -116,8 +144,7 @@ func locationStatus(tc *selectController, wpid string, ip net.IP) (*mr.Website, 
 		return nil, 0, 0, errors.New("wrong website")
 	}
 
-	provinceID := ip2location.GetProvinceIDByIP(ip)
-	ispID, _ := ip2location.GetProvinceISPByIP(ip)
+	provinceID, ispID := ip2location.GetProvinceISPByIP(ip)
 
 	return website, provinceID, ispID, nil
 }

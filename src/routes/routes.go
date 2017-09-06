@@ -42,13 +42,13 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/ads/inapp.php", tc.inApp, middlewares.RequestCollectorGenerator(appCopCreateor), middlewares.Header)
 	e.GET("/ads/json-inapp.php", tc.inAppJson, middlewares.Header)
 	e.GET("/healthz", tc.healthz, middlewares.Header)
-	e.GET("/showjs", tc.showjs, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.GET("/show.js", tc.showjs, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 
 	postfix := "-min.js"
 	if config.Config.DevelMode {
 		postfix = ".js"
 	}
-	e.GET("/show.js", tc.assetRoute("show"+postfix))
+	//e.GET("/show.js", tc.assetRoute("show"+postfix))
 	e.GET("/vastAD.js", tc.assetRoute("vastAD"+postfix))
 	e.GET("/conversion/clickyab-tracking.js", tc.assetRoute("clickyab-tracking"+postfix))
 

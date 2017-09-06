@@ -96,7 +96,6 @@ func (tc *selectController) click(c echo.Context) error {
 
 		winnerBid, err := strconv.ParseInt(result["WIN"], 10, 0)
 		assertNil(noRedisKey, err)
-
 		status = changeStatus(status, suspWSMismatch, wIDStr != result["WS"])
 
 		status = changeStatus(status, suspIPMismatch, rd.IP.String() != result["IP"])
