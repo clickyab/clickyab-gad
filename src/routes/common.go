@@ -128,14 +128,6 @@ func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, m
 		"CPADID": strconv.FormatInt(imp.CampaignAdID, 10),
 		"SLAID":  strconv.FormatInt(imp.SLAID, 10),
 	}
-	logrus.Warn("uoooooooooooo")
-	logrus.Warn(fmt.Sprintf(
-		"%s%s%s%s%d",
-		transport.IMP,
-		transport.DELIMITER,
-		mega,
-		transport.DELIMITER,
-		adID))
 	err = aredis.HMSet(
 		fmt.Sprintf(
 			"%s%s%s%s%d",

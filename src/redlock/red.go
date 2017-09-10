@@ -1,48 +1,76 @@
 package redlock
 
 import (
-	"redis"
 	"time"
 
-	"fmt"
+	"redis"
+	"utils"
+
+	"github.com/Sirupsen/logrus"
 )
 
-const (
-	unlockScript = `
-		if redis.call("get",KEYS[1]) == ARGV[1] then
-		    return redis.call("del",KEYS[1])
-		else
-		    return 0
-		end
-	`
-)
+const unlockScript = `
+        if redis.call("get", KEYS[1]) == ARGV[1] then
+            return redis.call("del", KEYS[1])
+        else
+            return 0
+        end
+        `
 
-// Lock attempts to put a lock on the key for a specified duration (in milliseconds).
-// If the lock was successfully acquired, true will be returned.
+var tryCoolDown time.Duration = 200 * time.Microsecond
 
-func Lock(key, value string, timeout time.Duration) (bool, error) {
-	cmd := aredis.Client.SetNX(key, value, timeout)
-	if cmd.Err() != nil {
-		return false, nil
-	}
-	return true, nil
+type mux struct {
+	ttl      time.Duration
+	now      time.Time
+	resource string
+
+	value   string
+	retries int
 }
 
-// Unlock attempts to remove the lock on a key so long as the value matches.
-// If the lock cannot be removed, either because the key has already expired or
-// because the value was incorrect, an error will be returned.
-func Unlock(key []string, value string) error {
-	cmd := aredis.Client.Eval(unlockScript, key, value)
+// TODO : this is not compatible with redis cluster. it work only when there is one redis instance
+
+// Lock is used to set a record in redis and tries until it gets its goal
+func (m *mux) Lock() {
+	m.now = time.Now()
+
+	m.value = <-utils.ID
+
+	for i := 0; i < m.retries; i++ {
+		res := aredis.Client.SetNX(m.resource, m.value, m.TTL())
+		if ok, err := res.Result(); ok == false || err != nil {
+			time.Sleep(tryCoolDown)
+			continue
+		}
+		break
+	}
+}
+
+// Unlock tries to get the record from redis and tries until it can
+func (m *mux) Unlock() {
+	h := unlockScript
+
+	cmd := aredis.Client.Eval(h, []string{m.resource}, m.value)
 	if cmd.Err() != nil {
-		return cmd.Err()
+		logrus.Warn("unlock failed with error :", cmd.Err())
 	}
-	res, err := cmd.Result()
-	if err != nil {
-		return err
+}
+
+// Resource returns resource for no reason
+func (m *mux) Resource() string {
+	return m.resource
+}
+
+// TTL returns the duration of a lock
+func (m *mux) TTL() time.Duration {
+	return m.ttl
+}
+
+// NewRedisDistributedLock returns interface of a redlock
+func NewRedisDistributedLock(resource string, ttl time.Duration) *mux {
+	return &mux{
+		retries:  int((ttl / tryCoolDown) + 1),
+		resource: resource,
+		ttl:      ttl,
 	}
-	if res != value {
-		return fmt.Errorf("Unlock failed, key or secret incorrect %s %s", res, value)
-	}
-	// Success
-	return nil
 }
