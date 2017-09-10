@@ -273,7 +273,7 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 }
 
 func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*mr.AdData {
-	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
+	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, "")
 
 	for i := range filteredAds {
 		Ads := mr.ByMulti{Ads: filteredAds[i]}
@@ -286,7 +286,7 @@ func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds m
 }
 
 func (tc *selectController) nativeBiding(rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*mr.AdData {
-	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
+	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, "")
 
 	for i := range filteredAds {
 		Ads := mr.ByMulti{Ads: filteredAds[i]}

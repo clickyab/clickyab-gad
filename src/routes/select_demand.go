@@ -62,8 +62,9 @@ func (tc *selectController) selectDemandAppAd(c echo.Context, rd *middlewares.Re
 		return c.HTML(http.StatusBadRequest, "not supported platform")
 	}
 	lockSession := "DRD_SESS_" + e.SessionKey
-	redlock.Lock(lockSession, lockSession, 100*time.Millisecond)
-	defer redlock.Unlock([]string{lockSession}, lockSession)
+	lock := redlock.NewRedisDistributedLock(lockSession, time.Second)
+	lock.Lock()
+	defer lock.Unlock()
 	var sessionAds []int64
 	// This is when the supplier is not support grouping
 	if e.SessionKey != "" {
@@ -142,8 +143,9 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 		return c.HTML(http.StatusBadRequest, "not supported platform")
 	}
 	lockSession := "DRD_SESS_" + e.SessionKey
-	redlock.Lock(lockSession, lockSession, 100*time.Millisecond)
-	defer redlock.Unlock([]string{lockSession}, lockSession)
+	lock := redlock.NewRedisDistributedLock(lockSession, time.Second)
+	lock.Lock()
+	defer lock.Unlock()
 	var sessionAds []int64
 	// This is when the supplier is not support grouping
 	if e.SessionKey != "" {
@@ -312,17 +314,6 @@ func (tc *selectController) fetchWebsiteDomain(domain, supplier string, user int
 		website.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloorWeb
 	}
 	return website, err
-}
-
-//fetchWebsiteDomainActive website
-func (tc *selectController) fetchWebsiteDomainActive(domain string) (*mr.Website, error) {
-	var res mr.Website
-	q := "SELECT * FROM `websites` WHERE `w_domain` = ? AND `w_status` IN (0,1) ORDER BY `websites`.`w_today_imps` DESC LIMIT 1"
-	err := mr.NewManager().GetRDbMap().SelectOne(&res, q, domain)
-	if err != nil {
-		return nil, err
-	}
-	return &res, nil
 }
 
 // fetchAppPackage fetch app if not exists insert it

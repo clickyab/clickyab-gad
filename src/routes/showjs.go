@@ -12,6 +12,8 @@ import (
 
 	"math/rand"
 
+	"mr"
+
 	"time"
 
 	"gopkg.in/labstack/echo.v3"
@@ -428,7 +430,7 @@ func (tc *selectController) showjs(c echo.Context) error {
 	assert.Nil(err)
 	var wmobad int
 	var domain string
-	website, err := tc.fetchWebsiteDomainActive(u.Host)
+	website, err := mr.NewManager().FetchWebsiteByDomain(u.Host, "clickyab")
 	if err == nil {
 		wmobad = website.WMobad
 		domain = website.WDomain.String
@@ -462,6 +464,9 @@ func (tc *selectController) showjs(c echo.Context) error {
 }
 
 func random(min, max int) int {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
 }

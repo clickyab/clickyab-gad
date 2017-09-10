@@ -25,7 +25,7 @@ import (
 
 	"redis"
 
-	"testlock"
+	"redlock"
 
 	"github.com/Sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
@@ -68,27 +68,15 @@ func (tc *selectController) showphp(c echo.Context) error {
 		ISP:         ispID,
 	}
 	lockSession := "DMDS_SESS_" + eventpage
-	t := testlock.NewRedisDistributedLock(lockSession, 3000*time.Millisecond)
+	t := redlock.NewRedisDistributedLock(lockSession, 3000*time.Millisecond)
 	t.Lock()
 	defer t.Unlock()
 	var sel selector.FilterFunc
 	var sessionAds []int64
 	sel = webSelector
-	if eventpage != "" {
-		eventpage = "EXCS_SESS_" + eventpage
-		sessionAds = aredis.SMembersInt(eventpage)
-		if len(sessionAds) > 0 {
-			sel = selector.Mix(sel, func(_ *selector.Context, a mr.AdData) bool {
-				for _, i := range sessionAds {
-					if i == a.AdID {
-						return false
-					}
-				}
-				return true
-			})
-		}
-	}
+
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
+	c.Set("EVENT_PAGE", eventpage)
 	_, pubsAds := tc.makeShow(c, typ, rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web)
 	targetedAd := pubsAds[slotReq]
 	if targetedAd == nil {

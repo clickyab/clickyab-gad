@@ -517,7 +517,12 @@ func (tc *selectController) makeShow(
 		}()
 
 		if capping {
-			filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds)
+			eventPage := ""
+			if ep, ok := c.Get("EVENT_PAGE").(string); ok {
+				eventPage = ep
+			}
+
+			filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, eventPage)
 		} else {
 			filteredAds = emptyCapping(filteredAds)
 		}
