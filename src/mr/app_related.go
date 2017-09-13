@@ -5,7 +5,6 @@ import (
 	"config"
 	"crypto/md5"
 	"database/sql"
-	"errors"
 	"fmt"
 	"gmaps"
 	"math/rand"
@@ -114,8 +113,8 @@ func (m *Manager) doCacheQuery(q string, p string) (*tmpData, error) {
 		return &res, nil
 	}
 	err = m.GetRDbMap().SelectOne(&res, q, p)
-	if err == nil {
-		return nil, errors.New("not found")
+	if err != nil {
+		return nil, err
 	}
 	// Found one
 	_ = store(key, &res, 720*time.Hour)
@@ -131,21 +130,20 @@ func (m *Manager) GetPhoneData(brand, carrier, network string) *PhoneData {
 		Network:   network,
 		NetworkID: UnknownNetwork,
 	}
-	q := "SELECT ab_id as id, ab_brand as string, ab_show as show FROM apps_brands WHERE ab_brand = ? LIMIT 1"
+	q := "SELECT ab_id as id, ab_brand as string, ab_show as `show` FROM apps_brands WHERE ab_brand = ? LIMIT 1"
 	t, err := m.doCacheQuery(q, result.Brand)
 	if err == nil && t.Show > 0 {
 		// Found one
 		result.BrandID = t.ID
 	}
-
-	q = "SELECT ac_id as id, ac_carrier as string , ac_show as show FROM  apps_carriers WHERE ac_carrier = ? LIMIT 1"
+	q = "SELECT ac_id as id, ac_carrier as string , ac_show as `show` FROM  apps_carriers WHERE ac_carrier = ? LIMIT 1"
 	t, err = m.doCacheQuery(q, result.Carrier)
 	if err == nil && t.Show > 0 {
 		// Found one
 		result.CarrierID = t.ID
 	}
 
-	q = "SELECT an_id as id, an_network as string, an_show FROM `apps_networks` WHERE `an_network` = ? LIMIT 1;"
+	q = "SELECT an_id as id, an_network as string, an_show AS `show` FROM `apps_networks` WHERE `an_network` = ? LIMIT 1;"
 	t, err = m.doCacheQuery(q, result.Network)
 	if err == nil && t.Show > 0 {
 		// Found one
