@@ -30,45 +30,27 @@
     .cyb-title {
       color: inherit;
       padding: 10px;
-      font-size: .7em;
-      font-weight: 500;
+      font-size:  inherit;
+      font-weight: bold;
     }
     .cyb-logo {
       overflow: hidden;
       position: relative;
-      width: 116px;
-      margin-left: 7px;
-      transition: all .1s;
-      a {
-        width: inherit;
-        height: inherit;
+      padding: 10px;
+      a:hover{
+        color: #44B6E7;
       }
-      .cyb-logo-container {
-        position: absolute;
-        left: -77px;
-        transition: all .5s ease-in-out;
-        img {
-          transition: all .3s;
-          width: 180px;
-          position: absolute;
-          left: 14px;
-          padding: inherit;
-          top: 16px;
-          max-width: initial !important;
-        }
+      .cyb-logo-container img {
+          float: left;
+          padding-right: 5px;
+          -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+          filter: grayscale(100%);
       }
-      &:hover {
-        width: 92px;
-        .cyb-logo-container {
-          left: -12px;
-          width: inherit;
-          height: inherit;
-
-        }
+      .cyb-logo-container:hover img {
+          -webkit-filter: none; /* Safari 6.0 - 9.0 */
+          filter: none;
       }
     }
-    margin-bottom: .5em;
-    border-bottom: 2px solid #eee;
   }
   .cyb-suggests {
     display: flex;
