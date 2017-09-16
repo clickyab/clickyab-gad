@@ -15,10 +15,7 @@ import (
 	"assert"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"ip2location"
-
-	"github.com/fzerorubigd/expand"
 )
 
 // AllData return all data required to render the all routes
@@ -328,32 +325,5 @@ func makeVastSlot(length map[string][]string, website *mr.Website) (map[string]v
 }
 
 func (tc *selectController) allAdsTemp(c echo.Context) error {
-	pwd, _ := expand.Pwd()
-	data, err := ioutil.ReadFile(pwd + `/../template/allads.html`)
-	assert.Nil(err)
-
-	return c.HTML(http.StatusOK, string(data))
-}
-
-func allDate() AllData {
-	/*c, err := mr.NewManager().FetchCampaignAll()
-	if err != nil {
-		c = nil
-	}*/
-	p, err := mr.NewManager().FetchProvinceAll()
-	if err != nil {
-		p = nil
-	}
-	w, err := mr.NewManager().FetchWebsiteAll()
-	if err != nil {
-		w = nil
-	}
-	s := config.GetAllSize()
-	al := AllData{
-		//Campaign: c,
-		Province: p,
-		Website:  w,
-		Size:     s,
-	}
-	return al
+	return c.HTML(http.StatusOK, allAddTemplate)
 }

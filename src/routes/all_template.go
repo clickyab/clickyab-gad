@@ -1,3 +1,6 @@
+package routes
+
+var allAddTemplate = `
 <!doctype html>
 <html lang="en">
 <head>
@@ -47,7 +50,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            <form method="post" action="http://127.0.0.1/allads" class="full-form" id="my-form">
+            <form method="post" action="/allads" class="full-form" id="my-form">
 
                 <div class="form-group">
                     <label for="tid">TID</label>
@@ -761,3 +764,4 @@
 </script>
 </body>
 </html>
+`
