@@ -17,6 +17,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"ip2location"
+
+	"github.com/fzerorubigd/expand"
 )
 
 // AllData return all data required to render the all routes
@@ -326,7 +328,8 @@ func makeVastSlot(length map[string][]string, website *mr.Website) (map[string]v
 }
 
 func (tc *selectController) allAdsTemp(c echo.Context) error {
-	data, err := ioutil.ReadFile(`/home/develop/gad/template/allads.html`)
+	pwd, _ := expand.Pwd()
+	data, err := ioutil.ReadFile(pwd + `/../template/allads.html`)
 	assert.Nil(err)
 
 	return c.HTML(http.StatusOK, string(data))
