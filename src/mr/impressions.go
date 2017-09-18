@@ -7,27 +7,32 @@ import (
 	"transport"
 )
 
-//// Impression is the single impression record
-//type Impression struct {
-//	ID              int64          `json:"imp_id" db:"imp_id"`
-//	WebsiteID       sql.NullInt64  `json:"w_id" db:"w_id"`
-//	WP              sql.NullInt64  `json:"wp_id" db:"wp_id"`
-//	AppID           sql.NullInt64  `json:"app_id" db:"app_id"`
-//	AdID            sql.NullInt64  `json:"ad_id" db:"ad_id"`
-//	CopID           sql.NullInt64  `json:"cop_id" db:"cop_id"`
-//	CaID            sql.NullInt64  `json:"ca_id" db:"ca_id"`
-//	IP              sql.NullString `json:"imp_ipaddress" db:"imp_ipaddress"`
-//	ReferralAddress sql.NullString `json:"imp_referaddress" db:"imp_referaddress"`
-//	ParentURL       sql.NullString `json:"imp_parenturl" db:"imp_parenturl"`
-//	URL             sql.NullString `json:"imp_url" db:"imp_url"`
-//	WinnerBid       sql.NullInt64  `json:"imp_winnerbid" db:"imp_winnerbid"`
-//	Status          sql.NullInt64  `json:"imp_status" db:"imp_status"`
-//	Cookie          sql.NullInt64  `json:"imp_cookie" db:"imp_cookie"`
-//	Alexa           sql.NullInt64  `json:"imp_alexa" db:"imp_alexa"`
-//	Flash           sql.NullInt64  `json:"imp_flash" db:"imp_flash"`
-//	Time            time.Time      `json:"imp_time" db:"imp_time"`
-//	Date            int            `json:"imp_date" db:"imp_date"`
-//}
+// Impression is the single impression record
+type Impression struct {
+	ID              int64          `json:"imp_id" db:"imp_id"`
+	WP              sql.NullInt64  `json:"wp_id" db:"wp_id"`
+	CPID            sql.NullInt64  `json:"cp_id" db:"cp_id"`
+	WebsiteID       sql.NullInt64  `json:"w_id" db:"w_id"`
+	AppID           sql.NullInt64  `json:"app_id" db:"app_id"`
+	AdID            sql.NullInt64  `json:"ad_id" db:"ad_id"`
+	CopID           sql.NullInt64  `json:"cop_id" db:"cop_id"`
+	CaID            sql.NullInt64  `json:"ca_id" db:"ca_id"`
+	SlotID          sql.NullInt64  `json:"slot_id" db:"slot_id"`
+	SLAID           sql.NullInt64  `json:"sla_id" db:"sla_id"`
+	CellID          sql.NullInt64  `json:"cell_id" db:"cell_id"`
+	HoodID          sql.NullInt64  `json:"hood_id" db:"hood_id"`
+	IP              sql.NullString `json:"imp_ipaddress" db:"imp_ipaddress"`
+	ReferralAddress sql.NullString `json:"imp_referaddress" db:"imp_referaddress"`
+	ParentURL       sql.NullString `json:"imp_parenturl" db:"imp_parenturl"`
+	URL             sql.NullString `json:"imp_url" db:"imp_url"`
+	WinnerBid       sql.NullInt64  `json:"imp_winnerbid" db:"imp_winnerbid"`
+	Status          sql.NullInt64  `json:"imp_status" db:"imp_status"`
+	Cookie          sql.NullInt64  `json:"imp_cookie" db:"imp_cookie"`
+	Alexa           sql.NullInt64  `json:"imp_alexa" db:"imp_alexa"`
+	Flash           sql.NullInt64  `json:"imp_flash" db:"imp_flash"`
+	Time            sql.NullInt64  `json:"imp_time" db:"imp_time"`
+	Date            sql.NullInt64  `json:"imp_date" db:"imp_date"`
+}
 
 // InsertImpression insert into impression table
 func (m *Manager) InsertImpression(imp *transport.Impression) error {
@@ -89,4 +94,15 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 		return err
 	}
 	return nil
+}
+
+// FindImpByIDDate find imp by id and date
+func (m *Manager) FindImpByIDDate(ID int64, date string) (*Impression, error) {
+	res := Impression{}
+	q := fmt.Sprintf("SELECT * FROM impressions%s WHERE imp_id=? LIMIT 1", date)
+	err := m.GetRDbMap().SelectOne(&res, q, ID)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
 }
