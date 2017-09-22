@@ -248,10 +248,10 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.web_min_bid", 2000))
 	assert.Nil(d.SetDefault("clickyab.app_min_bid", 700))
 
-	assert.Nil(d.SetDefault("clickyab.min_cpc_vast", 1000))
+	assert.Nil(d.SetDefault("clickyab.min_cpc_vast", 2000))
 	assert.Nil(d.SetDefault("clickyab.min_cpc_app", 700))
-	assert.Nil(d.SetDefault("clickyab.min_cpc_web", 2000))
-	assert.Nil(d.SetDefault("clickyab.min_cpc_native", 1000))
+	assert.Nil(d.SetDefault("clickyab.min_cpc_web", 2500))
+	assert.Nil(d.SetDefault("clickyab.min_cpc_native", 1500))
 	assert.Nil(d.SetDefault("clickyab.floor_div.native", 3))
 	assert.Nil(d.SetDefault("clickyab.floor_div.app", 1))
 	assert.Nil(d.SetDefault("clickyab.floor_div.vast", 3))
