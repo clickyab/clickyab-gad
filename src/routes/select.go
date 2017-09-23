@@ -36,6 +36,7 @@ var (
 	webSelector = selector.Mix(
 		filter.IsWebNetwork,
 		filter.IsWebMobile,
+		filter.CheckDesktopNetwork,
 		filter.CheckWebSize,
 		filter.CheckOS,
 		filter.CheckWhiteList,
@@ -50,6 +51,7 @@ var (
 		filter.IsNativeNetwork,
 		filter.IsNativeAd,
 		filter.IsWebMobile,
+		filter.CheckDesktopNetwork,
 		filter.CheckWebSize,
 		filter.CheckOS,
 		filter.CheckWhiteList,
