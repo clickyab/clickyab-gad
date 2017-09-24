@@ -10,7 +10,6 @@ import (
 	"math/rand"
 	"middlewares"
 	"mr"
-	"net"
 	"net/http"
 	"net/url"
 	"redis"
@@ -274,7 +273,7 @@ func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, 
 	u, err := url.Parse(ad.AdURL.String)
 	var host string
 	if err == nil {
-		host, _, _ = net.SplitHostPort(u.Host)
+		host = u.Host
 	}
 	src := ad.AdImg.String
 	if https {
