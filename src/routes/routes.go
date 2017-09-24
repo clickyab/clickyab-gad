@@ -44,6 +44,8 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/healthz", tc.healthz, middlewares.Header)
 	e.GET("/show.js", tc.showjs, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
 
+	e.POST("/rtbdemand/:key", tc.selectRTBAd, middlewares.RequestOpenRTBCollectorGenerator(webCopCreateor), middlewares.Header)
+
 	postfix := "-min.js"
 	if config.Config.DevelMode {
 		postfix = ".js"
