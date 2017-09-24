@@ -23,7 +23,9 @@ import (
 
 	"ip2location"
 
+	"github.com/bsm/openrtb"
 	"github.com/sirupsen/logrus"
+
 	echo "gopkg.in/labstack/echo.v3"
 )
 
@@ -241,6 +243,44 @@ func (tc *selectController) selectDemandAd(c echo.Context) error {
 
 }
 
+// selectRTBAd function is the route that the real biding happens
+func (tc *selectController) selectRTBAd(c echo.Context) error {
+	rd := middlewares.MustGetRequestData(c)
+	e := middlewares.MustRtbGetRequestData(c)
+	e, website, province, err := tc.getRTBDataFromCtx(c, e)
+	if err != nil {
+		return c.HTML(http.StatusBadRequest, "cant get data from context : "+err.Error())
+	}
+	slotSize, sizeNumSlice, trackIDs, err := tc.slotSizeWebRTB(e.Imp, website)
+	logrus.Debug(slotSize) //use in make show
+	if err != nil {
+		return c.HTML(http.StatusBadRequest, "slot size was wrong, reason : "+err.Error())
+	}
+	logrus.Debug(trackIDs)
+	//call context
+	m := selector.Context{
+		RequestData: *rd,
+		Website:     website,
+		Size:        sizeNumSlice,
+		Province:    province,
+	}
+	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
+	logrus.Debug(filteredAds)
+	//TODO continue from here `make show` stuff and other
+	// note :
+	// 1- http or https per imp
+	// 2- bid floor per imp
+	// 3- page track id like exchange
+	// good luck :)
+	return nil
+}
+
+// getSupplierFromKey get supplier from api - key
+func getSupplierFromKey(key string) (string, error, int64) {
+	// TODO add full functionality
+	return "exchange", nil, 99999
+}
+
 func (tc *selectController) getDemandAppDataFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.App, int64, *mr.PhoneData, *mr.CellLocation, error) {
 	name, userID, err := config.GetSupplier(e.Source.Supplier)
 	if err != nil {
@@ -301,6 +341,32 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middle
 	return rd, e, website, province, nil
 }
 
+func (tc *selectController) getRTBDataFromCtx(c echo.Context, e *openrtb.BidRequest) (*openrtb.BidRequest, *mr.Website, int64, error) {
+	apiKey := c.Param("key")
+	supplier, err, userID := getSupplierFromKey(apiKey)
+	if err != nil {
+		return nil, nil, 0, errors.New("cant find supplier")
+	}
+	website, err := tc.fetchWebsiteDomain(e.Site.Domain, supplier, userID)
+	if err != nil {
+		return nil, nil, 0, errors.New("error fetching website")
+	}
+	if !website.GetActive() {
+		return nil, nil, 0, errors.New("website is not active")
+	}
+
+	if !mr.NewManager().IsUserActive(website.UserID) {
+		return nil, nil, 0, errors.New("user is banned")
+	}
+
+	var province int64
+	if e.Device.Geo.Region != "" {
+		province = ip2location.GetProvinceIDByISOName(e.Device.Geo.Region)
+	}
+	return e, website, province, nil
+
+}
+
 //fetchWebsiteDomain website and check if the minimum floor is applied
 func (tc *selectController) fetchWebsiteDomain(domain, supplier string, user int64) (*mr.Website, error) {
 	website, err := mr.NewManager().FetchWebsiteByDomain(domain, supplier)
@@ -352,6 +418,28 @@ func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website
 	all, size := tc.slotSizeNormal(slotPublics, website.WID, sizeNumSlice)
 
 	return all, size, trackIDs, attr, nil
+}
+
+// slotSizeWebRTB get slot web rtb
+func (tc selectController) slotSizeWebRTB(slots []openrtb.Impression, website *mr.Website) (map[string]*slotData, map[string]int, map[string]string, error) {
+	var sizeNumSlice = make(map[string]int)
+	var slotPublics []string
+	var trackIDs = make(map[string]string)
+	for slot := range slots {
+		size, err := config.GetSize(fmt.Sprintf("%dx%d", slots[slot].Banner.W, slots[slot].Banner.H))
+		slotPublic := fmt.Sprintf("%d%d%d", website.WPubID, size, slot)
+		if err == nil {
+			sizeNumSlice[slotPublic] = size
+			slotPublics = append(slotPublics, slotPublic)
+			trackIDs[slotPublic] = slots[slot].ID
+		}
+	}
+	if len(slotPublics) == 0 {
+		return nil, nil, nil, errors.New("no supported slot size")
+	}
+	all, size := tc.slotSizeNormal(slotPublics, website.WID, sizeNumSlice)
+
+	return all, size, trackIDs, nil
 }
 
 func (tc selectController) slotSizeAppExchange(slots []middlewares.Slot, app mr.App) (map[string]*slotData, map[string]int, map[string]string, map[string]map[string]string, error) {
