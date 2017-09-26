@@ -270,6 +270,220 @@ const showTemplate = `;(function (name, context, definition) {
   return Fingerprint;
 
 });
+function effect() {
+    var style = document.createElement("style");
+    style.innerHTML("" +
+        "    #inScreen-close {" +
+        "            background: #fff url('//static.clickyab.com/img/close.png') no-repeat center center;" +
+        "            cursor: pointer;" +
+        "            display: block;" +
+        "            filter: alpha(opacity=60);" +
+        "            -moz-opacity: 0.6;" +
+        "            -webkit-opacity: 0.6;" +
+        "            -ms-filter: alpha(opacity=60);" +
+        "            opacity: 0.6;" +
+        "            float: right;" +
+        "            height: 20px;" +
+        "            width: 20px;" +
+        "            cursor: pointer;" +
+        "        }" +
+        "    #inScreen-close:hover {" +
+        "            filter: alpha(opacity=100);" +
+        "            -moz-opacity: 1.0;" +
+        "            -webkit-opacity: 1.0;" +
+        "            -ms-filter: alpha(opacity=100);" +
+        "            opacity: 1.0;" +
+        "        }" +
+        "    #inScreen-container {" +
+        "            left: 50%;" +
+        "            position: fixed;" +
+        "            transform: translate(-50% , 100%);" +
+        "            -webkit-transform: translate(-50% , 100%);" +
+        "            -moz-transform: translate(-50% , 100%);" +
+        "            -ms-transform: translate(-50% , 100%);" +
+        "            -o-transform: translate(-50% , 100%);" +
+        "            transition: transform 0.6s ease 0s;" +
+        "            bottom: 0;" +
+        "        }" +
+        "    #inScreen-container {" +
+        "            display: block;" +
+        "            margin: 0;" +
+        "            transition: transform 0.6s ease 0.1s;" +
+        "            -webkit-transition: transform 0.6s ease 0.1s;" +
+        "            -moz-transition: transform 0.6s ease 0.1s;" +
+        "            -ms-transition: transform 0.6s ease 0.1s;" +
+        "            -o-transition: transform 0.6s ease 0.1s;" +
+        "            width: 100%;" +
+        "        }" +
+        "    #inScreen-container.close {" +
+        "            transform: translate(-50%,100%) !important;" +
+        "            -webkit-transform: translate(-50%,100%) !important;" +
+        "            -moz-transform: translate(-50%,100%) !important;" +
+        "            -ms-transform: translate(-50%,100%) !important;" +
+        "            -o-transform: translate(-50%,100%) !important;" +
+        "        }" +
+        "");
+
+    var header = document.getElementsByTagName("header");
+    header.append(style);
+
+    var InScreen = (function () {
+        "use strict";
+        /*global document: false */
+        /*global window: false */
+        // create object method
+        var method = {},
+            settings = {},
+
+            inScreenContainer = document.createElement('div'),
+            inScreenHeader = document.createElement('div'),
+            inScreenContent = document.createElement('div'),
+            inScreenClose = document.createElement('div'),
+
+            centerModal,
+
+            closeModalEvent,
+
+            defaultSettings = {
+                width: 'auto',
+                height: 'auto',
+                lock: false,
+                hideClose: false,
+                closeAfter: 0,
+                openCallback: false,
+                closeCallback: false,
+                hideOverlay: false
+            };
+
+        function insertAfter(referenceNode, newNode) {
+            referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+        }
+
+        // Open the modal
+        method.open = function (parameters) {
+            settings.width = parameters.width || defaultSettings.width;
+            settings.height = parameters.height || defaultSettings.height;
+            settings.lock = parameters.lock || defaultSettings.lock;
+            settings.hideClose = parameters.hideClose || defaultSettings.hideClose;
+            settings.closeAfter = parameters.closeAfter || defaultSettings.closeAfter;
+            settings.closeCallback = parameters.closeCallback || defaultSettings.closeCallback;
+            settings.openCallback = parameters.openCallback || defaultSettings.openCallback;
+            settings.hideOverlay = parameters.hideOverlay || defaultSettings.hideOverlay;
+
+            centerModal = function () {
+                method.show({});
+            };
+
+            if (parameters.content) {
+                var showAdsElement = document.getElementById(xadhtml);
+                showAdsElement.innerHTML = inner_loop[adcount];
+                inScreenContent.appendChild(showAdsElement);
+            } else {
+                inScreenContent.innerHTML = '';
+            }
+
+
+            inScreenContainer.style.width = settings.width;
+            inScreenContainer.style.height = settings.height;
+
+            method.show({});
+
+            if (settings.lock || settings.hideClose) {
+                inScreenClose.style.visibility = 'hidden';
+            }
+
+            inScreenContainer.style.visibility = 'visible';
+
+            document.onkeypress = function (e) {
+                if (e.keyCode === 27 && settings.lock !== true) {
+                    method.close();
+                }
+            };
+
+            inScreenClose.onclick = function () {
+                if (!settings.hideClose) {
+                    method.close();
+                } else {
+                    return false;
+                }
+            };
+
+
+            if (window.addEventListener) {
+                window.addEventListener('resize', centerModal, false);
+            } else if (window.attachEvent) {
+                window.attachEvent('onresize', centerModal);
+            }
+
+            inScreenHeader.onmousedown = function () {
+                return false;
+            };
+            if (settings.closeAfter > 0) {
+                closeModalEvent = window.setTimeout(function () {
+                    method.close();
+                }, settings.closeAfter * 1000);
+            }
+            if (settings.openCallback) {
+                settings.openCallback();
+            }
+        };
+
+        method.close = function () {
+            inScreenContainer.classList.add("close");
+
+            if (closeModalEvent) {
+                window.clearTimeout(closeModalEvent);
+            }
+            if (settings.closeCallback) {
+                settings.closeCallback();
+            }
+
+            if (window.removeEventListener) {
+                window.removeEventListener('resize', centerModal, false);
+            } else if (window.detachEvent) {
+                window.detachEvent('onresize', centerModal);
+            }
+        };
+        // Center the modal in the viewport
+        method.show = function (parameters) {
+            var inScreenContainerVar = getComputedStyle(inScreenContainer).getPropertyValue("transform");
+            var showAdEvent = window.setTimeout(function () {
+                inScreenContainer.style.transform = "translate(-50%,0)";
+                inScreenContainer.style.transform = "msTransform(-50%,0)";
+                inScreenContainer.style.transform = "WebkitTransform(-50%,0)";
+            }, 2000);
+
+        };
+        // Set the id's, append the nested elements, and append the complete modal to the document body
+        inScreenContainer.setAttribute('id', 'inScreen-container');
+        inScreenContainer.setAttribute('id', 'inScreen-container');
+        inScreenHeader.setAttribute('id', 'inScreen-header');
+        inScreenContent.setAttribute('id', 'inScreen-content');
+        inScreenClose.setAttribute('id', 'inScreen-close');
+        inScreenHeader.appendChild(inScreenClose);
+        inScreenContainer.appendChild(inScreenHeader);
+        inScreenContainer.appendChild(inScreenContent);
+
+        inScreenContainer.style.visibility = 'hidden';
+
+        if (window.addEventListener) {
+            window.addEventListener('load', function () {
+                document.body.insertBefore(inScreenContainer, document.body.firstChild);
+            }, false);
+        } else if (window.attachEvent) {
+            window.attachEvent('onload', function () {
+                document.body.insertBefore(inScreenContainer, document.body.firstChild);
+            });
+        }
+
+        return method;
+    }());
+
+    InScreen.open({
+        content: document.getElementById(xadhtml).innerHTML = inner_loop[adcount],
+    });
+
+}
 var mobad = '{{.Mobad}}';
 if(typeof cy_event_page === 'undefined') var cy_event_page = '{{.Rand}}';
 var hostofpage = '{{.Host}}';
@@ -340,7 +554,7 @@ if (typeof clickyab_ad['responsive'] === 'undefined') clickyab_ad['responsive'] 
 if(adcount <= 30){
 
     a.write('<style> .adhere iframe {  max-width:100%; display: block;margin: 0 auto; }</style><div class="adhere" id="spot_'+adcount+'"></div>');
-    clickyab_ad['ad_url'] = "{{.Scheme}}a.clickyab.com/ads/?a="+clickyab_ad['id'];
+    clickyab_ad['ad_url'] = "/ads/?a="+clickyab_ad['id'];
     addtoq("width",clickyab_ad['width']);
     addtoq("height",clickyab_ad['height']);
     addtoq("slot",clickyab_ad['slot']);
@@ -386,7 +600,7 @@ if(adcount <= 30){
                 effect = "";
             }
             if (effectString != "") {
-                document.write('\x3Cscript type="text/javascript" src="{{.Scheme}}a.clickyab.com/effect.js">\x3C/script>');
+				effect();
             }
             clickyab_ad['effect'] = "";
         }
@@ -395,7 +609,7 @@ if(adcount <= 30){
 	{{if .Mobile}}
 	{{if .Mobad}}
 		if(adcount <= 1 && window.top == window.self && fixmob == 0){
-    clickyab_ad['ad_url_m'] = "{{.Scheme}}a.clickyab.com/ads/?a="+clickyab_ad['id'];
+    clickyab_ad['ad_url_m'] = "/ads/?a="+clickyab_ad['id'];
     addtoq2("width",320);
     addtoq2("height",50);
     addtoq2("slot",clickyab_ad['slot']+"1");
@@ -455,7 +669,7 @@ func (tc *selectController) showjs(c echo.Context) error {
 		Rand:      random(999999, 999999999),
 		NotMobile: !rd.Mobile,
 		Random:    random(1, 2) == 1,
-		RURL:      "//a.clickyab.com/datacollection?b=" + base64.StdEncoding.EncodeToString([]byte(rd.Referrer)),
+		RURL:      "/datacollection?b=" + base64.StdEncoding.EncodeToString([]byte(rd.Referrer)),
 	}
 	c.Response().Header().Set("Content-Type", "application/javascript")
 	c.Response().Header().Set("Pragma", "no-cache")
