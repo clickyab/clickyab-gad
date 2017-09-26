@@ -14,6 +14,8 @@ import (
 	"net"
 	"utils"
 
+	"net/http"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/bsm/openrtb"
 	"github.com/mssola/user_agent"
@@ -29,12 +31,18 @@ func RequestOpenRTBCollectorGenerator(copKey func(echo.Context, *RequestData, in
 			e := &openrtb.BidRequest{}
 			tmp, err := ioutil.ReadAll(ctx.Request().Body)
 			assert.Nil(err)
+			defer ctx.Request().Body.Close()
 			buf := bytes.NewBuffer(tmp)
 			logrus.Debug(string(tmp))
 			dec := json.NewDecoder(buf)
-			defer ctx.Request().Body.Close()
 			err = dec.Decode(e)
 			assert.Nil(err)
+
+			err = e.Validate()
+			if err != nil {
+				return ctx.JSON(http.StatusBadRequest, nil)
+			}
+
 			ctx.Set(rtbDataToken, e)
 			rde := &RequestData{}
 			rde.IP = net.ParseIP(e.Device.IP)
