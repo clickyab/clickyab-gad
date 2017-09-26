@@ -2,6 +2,7 @@ package routes
 
 import (
 	"assert"
+	"bytes"
 	"config"
 	"errors"
 	"fmt"
@@ -264,15 +265,75 @@ func (tc *selectController) selectRTBAd(c echo.Context) error {
 		Size:        sizeNumSlice,
 		Province:    province,
 	}
-	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	logrus.Debug(filteredAds)
-	//TODO continue from here `make show` stuff and other
-	// note :
-	// 1- http or https per imp
-	// 2- bid floor per imp
-	// 3- page track id like exchange
-	// good luck :)
-	return nil
+
+	var sel selector.FilterFunc
+	lockSession := "DRD_SESS_" + e.ID
+	lock := redlock.NewRedisDistributedLock(lockSession, time.Second)
+	lock.Lock()
+	defer lock.Unlock()
+	var sessionAds []int64
+	// This is when the supplier is not support grouping
+	if e.ID != "" {
+		e.ID = "EXC_SESS_" + e.ID
+		sessionAds = aredis.SMembersInt(e.ID)
+		if len(sessionAds) > 0 {
+			sel = selector.Mix(webSelector, func(_ *selector.Context, a mr.AdData) bool {
+				for _, i := range sessionAds {
+					if i == a.AdID {
+						return false
+					}
+				}
+				return true
+			})
+		}
+	}
+
+	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
+	_, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web)
+
+	seatBids := []openrtb.SeatBid{}
+	for i := range ads {
+		ad := ads[i]
+		wString, hString := config.GetSizeByNum(ad.AdSize)
+		w, err := strconv.Atoi(wString)
+		assert.Nil(err)
+		h, err := strconv.Atoi(hString)
+		assert.Nil(err)
+
+		src := ad.AdImg.String
+		if rd.Scheme != "http" {
+			src = strings.Replace(src, "http://", "https://", -1)
+		}
+
+		buf := &bytes.Buffer{}
+		res := SingleAd{
+			Width:  wString,
+			Height: hString,
+			Src:    src,
+			Link:   ad.AdURL.String,
+		}
+		println(fmt.Sprintf("%+v", res))
+		assert.Nil(singleAdTemplate.Execute(buf, res))
+
+		seatBids = append(seatBids, openrtb.SeatBid{
+			Bid: []openrtb.Bid{{
+				ID:       i,
+				ImpID:    e.ID,
+				Price:    float64(ad.CampaignMaxBid),
+				W:        w,
+				H:        h,
+				AdMarkup: buf.String(),
+			}},
+		})
+	}
+
+	response := openrtb.BidResponse{
+		ID:       e.ID,
+		SeatBid:  seatBids,
+		Currency: "IRR",
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 // getSupplierFromKey get supplier from api - key
@@ -343,6 +404,10 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middle
 
 func (tc *selectController) getRTBDataFromCtx(c echo.Context, e *openrtb.BidRequest) (*openrtb.BidRequest, *mr.Website, int64, error) {
 	apiKey := c.Param("key")
+	if apiKey == "" {
+		return nil, nil, 0, errors.New("no key param in request")
+	}
+
 	supplier, err, userID := getSupplierFromKey(apiKey)
 	if err != nil {
 		return nil, nil, 0, errors.New("cant find supplier")
