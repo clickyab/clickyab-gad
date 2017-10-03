@@ -489,7 +489,7 @@ if(typeof cy_event_page === 'undefined') var cy_event_page = '{{.Rand}}';
 var hostofpage = '{{.Host}}';
 {{if .NotMobile}}var nativead = 1;{{else}}var nativead = 0;{{end}}
 {{if .Mobile}}var ismob = 1;{{else}}var ismob = 0;{{end}}
-{{if .Alexa}}{{if .Random}}window.setTimeout(function(){ location.href = "{{.RURL}}" }, 2000000 );{{end}}{{end}}
+{{if .Alexa}}{{if .Random}}window.setTimeout(function(){ location.href = "//{{.RURL}}" }, 2000000 );{{end}}{{end}}
 var activenative = 0;
 function addtoq(pram, val) {
     if (val) {
@@ -554,7 +554,7 @@ if (typeof clickyab_ad['responsive'] === 'undefined') clickyab_ad['responsive'] 
 if(adcount <= 30){
 
     a.write('<style> .adhere iframe {  max-width:100%; display: block;margin: 0 auto; }</style><div class="adhere" id="spot_'+adcount+'"></div>');
-    clickyab_ad['ad_url'] = "/ads/?a="+clickyab_ad['id'];
+    clickyab_ad['ad_url'] = "//{{.CHost}}/ads/?a="+clickyab_ad['id'];
     addtoq("width",clickyab_ad['width']);
     addtoq("height",clickyab_ad['height']);
     addtoq("slot",clickyab_ad['slot']);
@@ -609,7 +609,7 @@ if(adcount <= 30){
 	{{if .Mobile}}
 	{{if .Mobad}}
 		if(adcount <= 1 && window.top == window.self && fixmob == 0){
-    clickyab_ad['ad_url_m'] = "/ads/?a="+clickyab_ad['id'];
+    clickyab_ad['ad_url_m'] = "//{{.CHost}}/ads/?a="+clickyab_ad['id'];
     addtoq2("width",320);
     addtoq2("height",50);
     addtoq2("slot",clickyab_ad['slot']+"1");
@@ -636,6 +636,7 @@ type data struct {
 	Random    bool
 	NotMobile bool
 	RURL      string
+	CHost     string
 }
 
 func (tc *selectController) showjs(c echo.Context) error {
@@ -664,12 +665,13 @@ func (tc *selectController) showjs(c echo.Context) error {
 		Mobile:    rd.Mobile,
 		Mobad:     wmobad,
 		Scheme:    rd.Scheme + "://",
+		CHost:     c.Request().Host,
 		Host:      domain,
 		Alexa:     alexa,
 		Rand:      random(999999, 999999999),
 		NotMobile: !rd.Mobile,
 		Random:    random(1, 2) == 1,
-		RURL:      "/datacollection?b=" + base64.StdEncoding.EncodeToString([]byte(rd.Referrer)),
+		RURL:      c.Request().Host + "/datacollection?b=" + base64.StdEncoding.EncodeToString([]byte(rd.Referrer)),
 	}
 	c.Response().Header().Set("Content-Type", "application/javascript")
 	c.Response().Header().Set("Pragma", "no-cache")
