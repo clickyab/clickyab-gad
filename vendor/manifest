@@ -14,12 +14,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/Sirupsen/logrus",
-			"repository": "https://github.com/Sirupsen/logrus",
-			"revision": "881bee4e20a5d11a6a88a5667c6f292072ac1963",
-			"branch": "master"
-		},
-		{
 			"importpath": "github.com/daaku/go.zipexe",
 			"repository": "https://github.com/daaku/go.zipexe",
 			"revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",
@@ -30,6 +24,19 @@
 			"repository": "https://github.com/dgrijalva/jwt-go",
 			"revision": "9ed569b5d1ac936e6494082958d63a6aa4fff99a",
 			"branch": "master"
+		},
+		{
+			"importpath": "github.com/evalphobia/logrus_fluent",
+			"repository": "https://github.com/evalphobia/logrus_fluent",
+			"revision": "76779e73f35d90f5a873e7feaf6691999b2c5db4",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/fluent/fluent-logger-golang/fluent",
+			"repository": "https://github.com/fluent/fluent-logger-golang",
+			"revision": "a8dfe4adfeaf7b985acb486f6b060ff2f6a17e91",
+			"branch": "master",
+			"path": "/fluent"
 		},
 		{
 			"importpath": "github.com/fzerorubigd/expand",
@@ -167,9 +174,21 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/philhofer/fwd",
+			"repository": "https://github.com/philhofer/fwd",
+			"revision": "bb6d471dc95d4fe11e432687f8b70ff496cf3136",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/pkg/profile",
 			"repository": "https://github.com/pkg/profile",
 			"revision": "030571e6da0f040a04e94a9af0dd8b6dd0cce0eb",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/sirupsen/logrus",
+			"repository": "https://github.com/sirupsen/logrus",
+			"revision": "881bee4e20a5d11a6a88a5667c6f292072ac1963",
 			"branch": "master"
 		},
 		{
@@ -177,6 +196,13 @@
 			"repository": "https://github.com/streadway/amqp",
 			"revision": "cb4fb930736ebd61a54da180a6aa4e92b206ff13",
 			"branch": "master"
+		},
+		{
+			"importpath": "github.com/tinylib/msgp/msgp",
+			"repository": "https://github.com/tinylib/msgp",
+			"revision": "a011d4dea24f46fcd895ddefb67037dce9d41742",
+			"branch": "master",
+			"path": "/msgp"
 		},
 		{
 			"importpath": "github.com/tylerb/graceful",
@@ -205,6 +231,13 @@
 			"path": "/acme/autocert"
 		},
 		{
+			"importpath": "golang.org/x/crypto/ssh/terminal",
+			"repository": "https://go.googlesource.com/crypto",
+			"revision": "9419663f5a44be8b34ca85f08abc5fe1be11f8a3",
+			"branch": "master",
+			"path": "/ssh/terminal"
+		},
+		{
 			"importpath": "golang.org/x/net/context",
 			"repository": "https://go.googlesource.com/net",
 			"revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
@@ -224,6 +257,13 @@
 			"revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
 			"branch": "master",
 			"path": "/websocket"
+		},
+		{
+			"importpath": "golang.org/x/sys/unix",
+			"repository": "https://go.googlesource.com/sys",
+			"revision": "ebfc5b4631820b793c9010c87fd8fef0f39eb082",
+			"branch": "master",
+			"path": "/unix"
 		},
 		{
 			"importpath": "gopkg.in/bsm/ratelimit.v1",

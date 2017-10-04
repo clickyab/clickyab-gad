@@ -6,7 +6,7 @@ import (
 
 	echo "gopkg.in/labstack/echo.v3"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Logger is the middleware for log system

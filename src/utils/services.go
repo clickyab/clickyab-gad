@@ -10,7 +10,7 @@ import (
 
 	"version"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/fzerorubigd/go-redmine"
 )
 

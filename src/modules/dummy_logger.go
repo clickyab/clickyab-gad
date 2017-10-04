@@ -5,7 +5,7 @@ import (
 
 	echo "gopkg.in/labstack/echo.v3"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/labstack/gommon/log"
 )
 

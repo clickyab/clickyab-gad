@@ -16,7 +16,7 @@ import (
 	"bytes"
 	"io/ioutil"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/mssola/user_agent"
 	"gopkg.in/labstack/echo.v3"
 )

@@ -14,7 +14,7 @@ import (
 
 	"fmt"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	onion "gopkg.in/fzerorubigd/onion.v2"
 	"gopkg.in/fzerorubigd/onion.v2/extraenv"
 )

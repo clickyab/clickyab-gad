@@ -6,7 +6,7 @@ import (
 	"redis"
 	"utils"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 const unlockScript = `
