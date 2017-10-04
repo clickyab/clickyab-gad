@@ -4,7 +4,7 @@ package main
 import (
 	"transport"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // error means Ack/Nack the boolean maens only when error is not nil, and means re-queue

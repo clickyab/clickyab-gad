@@ -8,7 +8,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // metaData

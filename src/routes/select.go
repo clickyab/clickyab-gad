@@ -28,7 +28,7 @@ import (
 
 	"ip2location"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
 
