@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // The following variables, are for compile time set, do not edit

@@ -15,7 +15,7 @@ import (
 	"errors"
 	"math/rand"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
 	"gopkg.in/gorp.v2"
 )

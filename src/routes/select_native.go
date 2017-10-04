@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
 

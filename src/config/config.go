@@ -142,6 +142,14 @@ type AppConfig struct {
 		} `onion:"floor_div"`
 	}
 
+	Fluentd struct {
+		Host       string
+		Port       int64
+		Enable     bool
+		Tag        string
+		All_levels bool
+	}
+
 	PHPCode struct {
 		Root string
 		FPM  string
@@ -255,6 +263,12 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("clickyab.floor_div.native", 3))
 	assert.Nil(d.SetDefault("clickyab.floor_div.app", 1))
 	assert.Nil(d.SetDefault("clickyab.floor_div.vast", 3))
+
+	assert.Nil(d.SetDefault("services.fluentd.host", "fluentd.monitoring"))
+	assert.Nil(d.SetDefault("services.fluentd.port", 24224))
+	assert.Nil(d.SetDefault("services.fluentd.enable", false))
+	assert.Nil(d.SetDefault("services.fluentd.tag", "change.me"))
+	assert.Nil(d.SetDefault("services.fluentd.all_levels", false))
 
 	p, err = expand.Path("$HOME/gad/clickyab-server/a")
 	assert.Nil(err)

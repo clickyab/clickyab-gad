@@ -9,7 +9,7 @@ import (
 	"time"
 	"transport"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 func getCappingKey(copID int64) string {

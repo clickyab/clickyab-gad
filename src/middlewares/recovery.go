@@ -9,7 +9,7 @@ import (
 
 	"net/http/httputil"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
 
