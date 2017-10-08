@@ -133,8 +133,8 @@ blockquote, q {
   quotes: "" "";
 }
         body{ margin: 0; padding: 0; text-align: center; }
-        .o{ position:absolute; top:0; left:0; border:0; height:<?php echo get("height") ?>px; width:<?php echo get("width"); ?>px; z-index: 99; }
-        #showb{ position:absolute; top:0; left:0; border:0; line-height: <?php echo get("height")?>px; height:<?php echo get("height")?>px; width:<?php echo get("width"); ?>px; z-index: 100; background: rgba(0, 0, 0, 0.60); text-align: center; }
+        .o{ position:absolute; top:0; left:0; border:0; height:{{ .Height }}px; width:{{ .Width }}px; z-index: 99; }
+        #showb{ position:absolute; top:0; left:0; border:0; line-height:{{ .Height }}px; height:{{ .Height }}px; width:{{ .Width }}px; z-index: 100; background: rgba(0, 0, 0, 0.60); text-align: center; }
         .tiny2{ height: 18px; width: 19px; position: absolute; bottom: 0px; right: 0; z-index: 100; background: url("//static.clickyab.com/img/clickyab-tiny.png") right top no-repeat; border-top-left-radius:4px; -moz-border-radius-topleft:4px  }
         .tiny2:hover{ width: 66px;  }
         .tiny{ height: 18px; width: 19px; position: absolute; top: 0px; right: 0; z-index: 100; background: url("//static.clickyab.com/img/clickyab-tiny.png") right top no-repeat; border-bottom-left-radius:4px; -moz-border-radius-bottomleft:4px  }
