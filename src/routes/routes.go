@@ -43,6 +43,9 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/ads/json-inapp.php", tc.inAppJson, middlewares.Header)
 	e.GET("/healthz", tc.healthz, middlewares.Header)
 	e.GET("/show.js", tc.showjs, middlewares.RequestCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.GET("/js/jwvast.js", tc.vastJS)
+	e.GET("/js/videovast.js", tc.videoJS)
+	e.GET("/js/native.js", tc.nativeJS)
 
 	postfix := "-min.js"
 	if config.Config.DevelMode {

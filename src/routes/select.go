@@ -28,6 +28,8 @@ import (
 
 	"ip2location"
 
+	"js"
+
 	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -668,6 +670,24 @@ func (tc *selectController) makeShow(
 	//t, _ := json.MarshalIndent(dum, "\t", "\t")
 	//fmt.Println(string(t))
 	return show, allAds
+}
+
+func (tc *selectController) vastJS(c echo.Context) error {
+	c.Response().Header().Set("Content-Type", "application/javascript")
+	_, err := c.Response().Write([]byte(js.Vastjs))
+	return err
+}
+
+func (tc *selectController) videoJS(c echo.Context) error {
+	c.Response().Header().Set("Content-Type", "application/javascript")
+	_, err := c.Response().Write([]byte(js.Videojs))
+	return err
+}
+
+func (tc *selectController) nativeJS(c echo.Context) error {
+	c.Response().Header().Set("Content-Type", "application/javascript")
+	_, err := c.Response().Write([]byte(js.Nativejs))
+	return err
 }
 
 func init() {
