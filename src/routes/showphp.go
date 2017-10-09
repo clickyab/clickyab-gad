@@ -86,6 +86,10 @@ func (tc *selectController) showphp(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
+	ad.RawSlotSize = &mr.RawSlotDimensions{
+		Width:  width,
+		Height: height,
+	}
 	var rnd string
 	for i := range pubsAds {
 		sessionAds = append(sessionAds, pubsAds[i].AdID)
