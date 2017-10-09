@@ -230,6 +230,10 @@ func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string, https bool) V
 	if https {
 		src = strings.Replace(src, "http://", "https://", -1)
 	}
+	if ad.RawSlotSize != nil {
+		w = ad.RawSlotSize.Width
+		h = ad.RawSlotSize.Height
+	}
 	sa := VideoAd{
 		Link:   url,
 		Height: h,
