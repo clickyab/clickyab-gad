@@ -1,311 +1,311 @@
 {
-	"version": 0,
-	"dependencies": [
-		{
-			"importpath": "github.com/BurntSushi/toml",
-			"repository": "https://github.com/BurntSushi/toml",
-			"revision": "99064174e013895bbd9b025c31100bd1d9b590ca",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/GeertJohan/go.rice",
-			"repository": "https://github.com/GeertJohan/go.rice",
-			"revision": "9fdfd46f9806a9228aae341d65ab75c5235c383c",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/daaku/go.zipexe",
-			"repository": "https://github.com/daaku/go.zipexe",
-			"revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/dgrijalva/jwt-go",
-			"repository": "https://github.com/dgrijalva/jwt-go",
-			"revision": "9ed569b5d1ac936e6494082958d63a6aa4fff99a",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/evalphobia/logrus_fluent",
-			"repository": "https://github.com/evalphobia/logrus_fluent",
-			"revision": "76779e73f35d90f5a873e7feaf6691999b2c5db4",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/fluent/fluent-logger-golang/fluent",
-			"repository": "https://github.com/fluent/fluent-logger-golang",
-			"revision": "a8dfe4adfeaf7b985acb486f6b060ff2f6a17e91",
-			"branch": "master",
-			"path": "/fluent"
-		},
-		{
-			"importpath": "github.com/fzerorubigd/expand",
-			"repository": "https://github.com/fzerorubigd/expand",
-			"revision": "fd359294116f3987dc04c5987782f845e99e9f42",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/fzerorubigd/go-redmine",
-			"repository": "https://github.com/fzerorubigd/go-redmine",
-			"revision": "05bb0a08b5c20b45765553ca33aea5a2aea9f3a8",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/go-sql-driver/mysql",
-			"repository": "https://github.com/go-sql-driver/mysql",
-			"revision": "a0583e0143b1624142adab07e0e97fe106d99561",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/golang/groupcache",
-			"repository": "https://github.com/golang/groupcache",
-			"revision": "d092608c065831f1984ac9d332ca5b2c95a11f57",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/golang/protobuf/proto",
-			"repository": "https://github.com/golang/protobuf",
-			"revision": "8ee79997227bf9b34611aee7946ae64735e6fd93",
-			"branch": "master",
-			"path": "/proto"
-		},
-		{
-			"importpath": "github.com/gorilla/websocket",
-			"repository": "https://github.com/gorilla/websocket",
-			"revision": "3ab3a8b8831546bd18fd182c20687ca853b2bb13",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/hashicorp/go.net/internal/iana",
-			"repository": "https://github.com/hashicorp/go.net",
-			"revision": "104dcad90073cd8d1e6828b2af19185b60cf3e29",
-			"branch": "master",
-			"path": "/internal/iana"
-		},
-		{
-			"importpath": "github.com/hashicorp/go.net/ipv4",
-			"repository": "https://github.com/hashicorp/go.net",
-			"revision": "104dcad90073cd8d1e6828b2af19185b60cf3e29",
-			"branch": "master",
-			"path": "/ipv4"
-		},
-		{
-			"importpath": "github.com/hashicorp/go.net/ipv6",
-			"repository": "https://github.com/hashicorp/go.net",
-			"revision": "104dcad90073cd8d1e6828b2af19185b60cf3e29",
-			"branch": "master",
-			"path": "/ipv6"
-		},
-		{
-			"importpath": "github.com/hashicorp/mdns",
-			"repository": "https://github.com/hashicorp/mdns",
-			"revision": "9d85cf22f9f8d53cb5c81c1b2749f438b2ee333f",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/jteeuwen/go-bindata",
-			"repository": "https://github.com/jteeuwen/go-bindata",
-			"revision": "a0ff2567cfb70903282db057e799fd826784d41d",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/jteeuwen/go-bindata/go-bindata",
-			"repository": "https://github.com/jteeuwen/go-bindata",
-			"revision": "a0ff2567cfb70903282db057e799fd826784d41d",
-			"branch": "master",
-			"path": "/go-bindata"
-		},
-		{
-			"importpath": "github.com/kardianos/osext",
-			"repository": "https://github.com/kardianos/osext",
-			"revision": "c2c54e542fb797ad986b31721e1baedf214ca413",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/labstack/gommon/bytes",
-			"repository": "https://github.com/labstack/gommon",
-			"revision": "447fe7433567c785af957e549aadae2bf2000071",
-			"branch": "master",
-			"path": "/bytes"
-		},
-		{
-			"importpath": "github.com/labstack/gommon/color",
-			"repository": "https://github.com/labstack/gommon",
-			"revision": "447fe7433567c785af957e549aadae2bf2000071",
-			"branch": "master",
-			"path": "/color"
-		},
-		{
-			"importpath": "github.com/labstack/gommon/log",
-			"repository": "https://github.com/labstack/gommon",
-			"revision": "447fe7433567c785af957e549aadae2bf2000071",
-			"branch": "master",
-			"path": "/log"
-		},
-		{
-			"importpath": "github.com/labstack/gommon/random",
-			"repository": "https://github.com/labstack/gommon",
-			"revision": "447fe7433567c785af957e549aadae2bf2000071",
-			"branch": "master",
-			"path": "/random"
-		},
-		{
-			"importpath": "github.com/mattn/go-colorable",
-			"repository": "https://github.com/mattn/go-colorable",
-			"revision": "d228849504861217f796da67fae4f6e347643f15",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/mattn/go-isatty",
-			"repository": "https://github.com/mattn/go-isatty",
-			"revision": "30a891c33c7cde7b02a981314b4228ec99380cca",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/miekg/dns",
-			"repository": "https://github.com/miekg/dns",
-			"revision": "4f8d08ab3c3f260afc934e9baf564bede5795458",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/mssola/user_agent",
-			"repository": "https://github.com/mssola/user_agent",
-			"revision": "6ef8cd49fcd9eb0ca7c76a581419c966ed2cb26e",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/philhofer/fwd",
-			"repository": "https://github.com/philhofer/fwd",
-			"revision": "bb6d471dc95d4fe11e432687f8b70ff496cf3136",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/pkg/profile",
-			"repository": "https://github.com/pkg/profile",
-			"revision": "030571e6da0f040a04e94a9af0dd8b6dd0cce0eb",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/sirupsen/logrus",
-			"repository": "https://github.com/sirupsen/logrus",
-			"revision": "881bee4e20a5d11a6a88a5667c6f292072ac1963",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/streadway/amqp",
-			"repository": "https://github.com/streadway/amqp",
-			"revision": "cb4fb930736ebd61a54da180a6aa4e92b206ff13",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/tinylib/msgp/msgp",
-			"repository": "https://github.com/tinylib/msgp",
-			"revision": "a011d4dea24f46fcd895ddefb67037dce9d41742",
-			"branch": "master",
-			"path": "/msgp"
-		},
-		{
-			"importpath": "github.com/tylerb/graceful",
-			"repository": "https://github.com/tylerb/graceful",
-			"revision": "4df1190835320af7076dfcf27b3d071fd3612caf",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/valyala/fasttemplate",
-			"repository": "https://github.com/valyala/fasttemplate",
-			"revision": "3b874956e03f1636d171bda64b130f9135f42cff",
-			"branch": "master"
-		},
-		{
-			"importpath": "golang.org/x/crypto/acme",
-			"repository": "https://go.googlesource.com/crypto",
-			"revision": "abc3c1b02083efdbef727c8631a865ad7d8d8b19",
-			"branch": "master",
-			"path": "/acme"
-		},
-		{
-			"importpath": "golang.org/x/crypto/acme/autocert",
-			"repository": "https://go.googlesource.com/crypto",
-			"revision": "abc3c1b02083efdbef727c8631a865ad7d8d8b19",
-			"branch": "master",
-			"path": "/acme/autocert"
-		},
-		{
-			"importpath": "golang.org/x/crypto/ssh/terminal",
-			"repository": "https://go.googlesource.com/crypto",
-			"revision": "9419663f5a44be8b34ca85f08abc5fe1be11f8a3",
-			"branch": "master",
-			"path": "/ssh/terminal"
-		},
-		{
-			"importpath": "golang.org/x/net/context",
-			"repository": "https://go.googlesource.com/net",
-			"revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
-			"branch": "master",
-			"path": "/context"
-		},
-		{
-			"importpath": "golang.org/x/net/http2/hpack",
-			"repository": "https://go.googlesource.com/net",
-			"revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
-			"branch": "master",
-			"path": "/http2/hpack"
-		},
-		{
-			"importpath": "golang.org/x/net/websocket",
-			"repository": "https://go.googlesource.com/net",
-			"revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
-			"branch": "master",
-			"path": "/websocket"
-		},
-		{
-			"importpath": "golang.org/x/sys/unix",
-			"repository": "https://go.googlesource.com/sys",
-			"revision": "ebfc5b4631820b793c9010c87fd8fef0f39eb082",
-			"branch": "master",
-			"path": "/unix"
-		},
-		{
-			"importpath": "gopkg.in/bsm/ratelimit.v1",
-			"repository": "https://gopkg.in/bsm/ratelimit.v1",
-			"revision": "db14e161995a5177acef654cb0dd785e8ee8bc22",
-			"branch": "v1"
-		},
-		{
-			"importpath": "gopkg.in/fzerorubigd/onion.v2",
-			"repository": "https://gopkg.in/fzerorubigd/onion.v2",
-			"revision": "078930955df67fe99807c7099902a5282796521f",
-			"branch": "v2"
-		},
-		{
-			"importpath": "gopkg.in/gemnasium/logrus-airbrake-hook.v2",
-			"repository": "https://gopkg.in/gemnasium/logrus-airbrake-hook.v2",
-			"revision": "bfee1239d796830ca346767650cce5ba90d58c57",
-			"branch": "master"
-		},
-		{
-			"importpath": "gopkg.in/gorp.v2",
-			"repository": "https://gopkg.in/gorp.v2",
-			"revision": "4deece61034873cb5b5416e81abe4cea7bd0da72",
-			"branch": "master"
-		},
-		{
-			"importpath": "gopkg.in/labstack/echo.v3",
-			"repository": "https://gopkg.in/labstack/echo.v3",
-			"revision": "8d504c1b699c757b267255c53b3e5219f9974abc",
-			"branch": "master"
-		},
-		{
-			"importpath": "gopkg.in/redis.v5",
-			"repository": "https://gopkg.in/redis.v5",
-			"revision": "c6acf2ed159b22defbd9f077686cff03eba1e9b3",
-			"branch": "master"
-		},
-		{
-			"importpath": "gopkg.in/yaml.v2",
-			"repository": "https://gopkg.in/yaml.v2",
-			"revision": "a5b47d31c556af34a302ce5d659e6fea44d90de0",
-			"branch": "v2"
-		}
-	]
+    "version": 0,
+    "dependencies": [
+        {
+            "importpath": "github.com/BurntSushi/toml",
+            "repository": "https://github.com/BurntSushi/toml",
+            "revision": "99064174e013895bbd9b025c31100bd1d9b590ca",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/GeertJohan/go.rice",
+            "repository": "https://github.com/GeertJohan/go.rice",
+            "revision": "9fdfd46f9806a9228aae341d65ab75c5235c383c",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/daaku/go.zipexe",
+            "repository": "https://github.com/daaku/go.zipexe",
+            "revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/dgrijalva/jwt-go",
+            "repository": "https://github.com/dgrijalva/jwt-go",
+            "revision": "9ed569b5d1ac936e6494082958d63a6aa4fff99a",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/evalphobia/logrus_fluent",
+            "repository": "https://github.com/evalphobia/logrus_fluent",
+            "revision": "76779e73f35d90f5a873e7feaf6691999b2c5db4",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/fluent/fluent-logger-golang/fluent",
+            "repository": "https://github.com/fluent/fluent-logger-golang",
+            "revision": "a8dfe4adfeaf7b985acb486f6b060ff2f6a17e91",
+            "branch": "master",
+            "path": "/fluent"
+        },
+        {
+            "importpath": "github.com/fzerorubigd/expand",
+            "repository": "https://github.com/fzerorubigd/expand",
+            "revision": "fd359294116f3987dc04c5987782f845e99e9f42",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/fzerorubigd/go-redmine",
+            "repository": "https://github.com/fzerorubigd/go-redmine",
+            "revision": "05bb0a08b5c20b45765553ca33aea5a2aea9f3a8",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/go-sql-driver/mysql",
+            "repository": "https://github.com/go-sql-driver/mysql",
+            "revision": "a0583e0143b1624142adab07e0e97fe106d99561",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/golang/groupcache",
+            "repository": "https://github.com/golang/groupcache",
+            "revision": "d092608c065831f1984ac9d332ca5b2c95a11f57",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/golang/protobuf/proto",
+            "repository": "https://github.com/golang/protobuf",
+            "revision": "8ee79997227bf9b34611aee7946ae64735e6fd93",
+            "branch": "master",
+            "path": "/proto"
+        },
+        {
+            "importpath": "github.com/gorilla/websocket",
+            "repository": "https://github.com/gorilla/websocket",
+            "revision": "3ab3a8b8831546bd18fd182c20687ca853b2bb13",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/hashicorp/go.net/internal/iana",
+            "repository": "https://github.com/hashicorp/go.net",
+            "revision": "104dcad90073cd8d1e6828b2af19185b60cf3e29",
+            "branch": "master",
+            "path": "/internal/iana"
+        },
+        {
+            "importpath": "github.com/hashicorp/go.net/ipv4",
+            "repository": "https://github.com/hashicorp/go.net",
+            "revision": "104dcad90073cd8d1e6828b2af19185b60cf3e29",
+            "branch": "master",
+            "path": "/ipv4"
+        },
+        {
+            "importpath": "github.com/hashicorp/go.net/ipv6",
+            "repository": "https://github.com/hashicorp/go.net",
+            "revision": "104dcad90073cd8d1e6828b2af19185b60cf3e29",
+            "branch": "master",
+            "path": "/ipv6"
+        },
+        {
+            "importpath": "github.com/hashicorp/mdns",
+            "repository": "https://github.com/hashicorp/mdns",
+            "revision": "9d85cf22f9f8d53cb5c81c1b2749f438b2ee333f",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/jteeuwen/go-bindata",
+            "repository": "https://github.com/jteeuwen/go-bindata",
+            "revision": "a0ff2567cfb70903282db057e799fd826784d41d",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/jteeuwen/go-bindata/go-bindata",
+            "repository": "https://github.com/jteeuwen/go-bindata",
+            "revision": "a0ff2567cfb70903282db057e799fd826784d41d",
+            "branch": "master",
+            "path": "/go-bindata"
+        },
+        {
+            "importpath": "github.com/kardianos/osext",
+            "repository": "https://github.com/kardianos/osext",
+            "revision": "c2c54e542fb797ad986b31721e1baedf214ca413",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/labstack/gommon/bytes",
+            "repository": "https://github.com/labstack/gommon",
+            "revision": "447fe7433567c785af957e549aadae2bf2000071",
+            "branch": "master",
+            "path": "/bytes"
+        },
+        {
+            "importpath": "github.com/labstack/gommon/color",
+            "repository": "https://github.com/labstack/gommon",
+            "revision": "447fe7433567c785af957e549aadae2bf2000071",
+            "branch": "master",
+            "path": "/color"
+        },
+        {
+            "importpath": "github.com/labstack/gommon/log",
+            "repository": "https://github.com/labstack/gommon",
+            "revision": "447fe7433567c785af957e549aadae2bf2000071",
+            "branch": "master",
+            "path": "/log"
+        },
+        {
+            "importpath": "github.com/labstack/gommon/random",
+            "repository": "https://github.com/labstack/gommon",
+            "revision": "447fe7433567c785af957e549aadae2bf2000071",
+            "branch": "master",
+            "path": "/random"
+        },
+        {
+            "importpath": "github.com/mattn/go-colorable",
+            "repository": "https://github.com/mattn/go-colorable",
+            "revision": "d228849504861217f796da67fae4f6e347643f15",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/mattn/go-isatty",
+            "repository": "https://github.com/mattn/go-isatty",
+            "revision": "30a891c33c7cde7b02a981314b4228ec99380cca",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/miekg/dns",
+            "repository": "https://github.com/miekg/dns",
+            "revision": "4f8d08ab3c3f260afc934e9baf564bede5795458",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/mssola/user_agent",
+            "repository": "https://github.com/mssola/user_agent",
+            "revision": "6ef8cd49fcd9eb0ca7c76a581419c966ed2cb26e",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/philhofer/fwd",
+            "repository": "https://github.com/philhofer/fwd",
+            "revision": "bb6d471dc95d4fe11e432687f8b70ff496cf3136",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/pkg/profile",
+            "repository": "https://github.com/pkg/profile",
+            "revision": "030571e6da0f040a04e94a9af0dd8b6dd0cce0eb",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/sirupsen/logrus",
+            "repository": "https://github.com/sirupsen/logrus",
+            "revision": "881bee4e20a5d11a6a88a5667c6f292072ac1963",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/streadway/amqp",
+            "repository": "https://github.com/streadway/amqp",
+            "revision": "cb4fb930736ebd61a54da180a6aa4e92b206ff13",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/tinylib/msgp/msgp",
+            "repository": "https://github.com/tinylib/msgp",
+            "revision": "a011d4dea24f46fcd895ddefb67037dce9d41742",
+            "branch": "master",
+            "path": "/msgp"
+        },
+        {
+            "importpath": "github.com/tylerb/graceful",
+            "repository": "https://github.com/tylerb/graceful",
+            "revision": "4df1190835320af7076dfcf27b3d071fd3612caf",
+            "branch": "master"
+        },
+        {
+            "importpath": "github.com/valyala/fasttemplate",
+            "repository": "https://github.com/valyala/fasttemplate",
+            "revision": "3b874956e03f1636d171bda64b130f9135f42cff",
+            "branch": "master"
+        },
+        {
+            "importpath": "golang.org/x/crypto/acme",
+            "repository": "https://go.googlesource.com/crypto",
+            "revision": "abc3c1b02083efdbef727c8631a865ad7d8d8b19",
+            "branch": "master",
+            "path": "/acme"
+        },
+        {
+            "importpath": "golang.org/x/crypto/acme/autocert",
+            "repository": "https://go.googlesource.com/crypto",
+            "revision": "abc3c1b02083efdbef727c8631a865ad7d8d8b19",
+            "branch": "master",
+            "path": "/acme/autocert"
+        },
+        {
+            "importpath": "golang.org/x/crypto/ssh/terminal",
+            "repository": "https://go.googlesource.com/crypto",
+            "revision": "9419663f5a44be8b34ca85f08abc5fe1be11f8a3",
+            "branch": "master",
+            "path": "/ssh/terminal"
+        },
+        {
+            "importpath": "golang.org/x/net/context",
+            "repository": "https://go.googlesource.com/net",
+            "revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
+            "branch": "master",
+            "path": "/context"
+        },
+        {
+            "importpath": "golang.org/x/net/http2/hpack",
+            "repository": "https://go.googlesource.com/net",
+            "revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
+            "branch": "master",
+            "path": "/http2/hpack"
+        },
+        {
+            "importpath": "golang.org/x/net/websocket",
+            "repository": "https://go.googlesource.com/net",
+            "revision": "45e771701b814666a7eb299e6c7a57d0b1799e91",
+            "branch": "master",
+            "path": "/websocket"
+        },
+        {
+            "importpath": "golang.org/x/sys/unix",
+            "repository": "https://go.googlesource.com/sys",
+            "revision": "ebfc5b4631820b793c9010c87fd8fef0f39eb082",
+            "branch": "master",
+            "path": "/unix"
+        },
+        {
+            "importpath": "gopkg.in/bsm/ratelimit.v1",
+            "repository": "https://gopkg.in/bsm/ratelimit.v1",
+            "revision": "db14e161995a5177acef654cb0dd785e8ee8bc22",
+            "branch": "v1"
+        },
+        {
+            "importpath": "gopkg.in/fzerorubigd/onion.v2",
+            "repository": "https://gopkg.in/fzerorubigd/onion.v2",
+            "revision": "078930955df67fe99807c7099902a5282796521f",
+            "branch": "v2"
+        },
+        {
+            "importpath": "gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+            "repository": "https://gopkg.in/gemnasium/logrus-airbrake-hook.v2",
+            "revision": "bfee1239d796830ca346767650cce5ba90d58c57",
+            "branch": "master"
+        },
+        {
+            "importpath": "gopkg.in/gorp.v2",
+            "repository": "https://gopkg.in/gorp.v2",
+            "revision": "4deece61034873cb5b5416e81abe4cea7bd0da72",
+            "branch": "master"
+        },
+        {
+            "importpath": "gopkg.in/labstack/echo.v3",
+            "repository": "https://gopkg.in/labstack/echo.v3",
+            "revision": "8d504c1b699c757b267255c53b3e5219f9974abc",
+            "branch": "master"
+        },
+        {
+            "importpath": "gopkg.in/redis.v5",
+            "repository": "https://gopkg.in/redis.v5",
+            "revision": "c6acf2ed159b22defbd9f077686cff03eba1e9b3",
+            "branch": "master"
+        },
+        {
+            "importpath": "gopkg.in/yaml.v2",
+            "repository": "https://gopkg.in/yaml.v2",
+            "revision": "a5b47d31c556af34a302ce5d659e6fea44d90de0",
+            "branch": "v2"
+        }
+    ]
 }

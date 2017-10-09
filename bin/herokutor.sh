@@ -84,11 +84,13 @@ echo "${BUILD_PACKS_DIR}" >> /tmp/kill-me
 
 [ -z ${CHANGE_AUTHOR} ] || exit_message "Build OK" 0
 
-if [[ ( "${BRANCH}" == "master" ) || ( "${BRANCH}" == "deploy" ) ]]; then
+if [[  "${BRANCH}" == "master"  ]]; then
 
 for WRKTYP in webserver impression click warn
 do
     kubectl -n ${APP} set image deployment  ${APP}-${WRKTYP} ${APP}-${BRANCH}=registry.clickyab.ae/clickyab/${APP}:${BRANCH}.${COMMITCOUNT} --record
 done
 
+elif [[  "${BRANCH}" == "dev"  ]]; then
+    kubectl -n ${APP} set image deployment  ${APP}-webserver-${BRANCH} ${APP}-${BRANCH}=registry.clickyab.ae/clickyab/${APP}:${BRANCH}.${COMMITCOUNT} --record
 fi
