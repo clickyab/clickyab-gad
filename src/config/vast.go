@@ -15,7 +15,7 @@ var vastConfig = map[string]map[string][]string{
 	},
 	"default": {
 		"start":    {"linear", "11", "00:00:07", "00:00:03"},
-		"00:00:10": {"non-linear", "22", "00:00:06"},
+		"00:00:40": {"non-linear", "22", "00:00:06"},
 		"end":      {"linear", "13", "00:00:10", "00:00:03"},
 	},
 	"long": {
