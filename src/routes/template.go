@@ -149,7 +149,11 @@ blockquote, q {
 	<div id="video_advertise">
 	    <video width="{{ .Width }}" height="{{ .Height }}" autoplay controls muted>
 		<source src="{{ .Src }}" type="video/mp4">
-	    </video></div>
+	    </video>
+	    <div class="call-to-action-holder" style="position: absolute;height: 62px;background: rgba(0, 0, 0,0.6);bottom: 0;width: {{ .Width }}px;">
+        <a href="{{ .Link }}" target="_blank" style="background-color: rgb(226, 62, 67);width: 100px;text-decoration: none;display: block;text-align: center;padding: 5px;margin: 16px auto 0;color: #fff;font-size: 12px;font-family: tahoma;">مشاهده آگهی</a>
+    </div>
+	</div>
 	<script>
 	    function unwrap(wrapper) {
 		// place childNodes in document fragment
