@@ -86,7 +86,7 @@ echo "${BUILD_PACKS_DIR}" >> /tmp/kill-me
 
 if [[  "${BRANCH}" == "master"  ]]; then
 
-for WRKTYP in webserver impression click warn
+for WRKTYP in webserver impression click
 do
     kubectl -n ${APP} set image deployment  ${APP}-${WRKTYP} ${APP}-${BRANCH}=registry.clickyab.ae/clickyab/${APP}:${BRANCH}.${COMMITCOUNT} --record
 done
