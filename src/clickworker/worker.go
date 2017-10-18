@@ -22,10 +22,7 @@ package main
 
 import (
 	"assert"
-	"config"
-	"fmt"
 	"mr"
-	"redis"
 	"strconv"
 	"transport"
 	"utils"
@@ -34,79 +31,15 @@ import (
 // error means Ack/Nack the boolean maens only when error is not nil, and means re-queue
 func clickWorker(in *transport.Click) (bool, error) {
 
-	//Validation Click TODO : should be changed using redis
-
-	// increment click to user
 	prefix := ""
 	if in.FraudReason != 0 {
 		prefix = transport.FRAUD_PREFIX
 	}
 	var err error
-	_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.USER, fmt.Sprintf("%d", in.CopID)), prefix+transport.SUBKEY_Cl, 1)
-	assert.Nil(err)
-
-	// increment click to campaign
-	_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.CAMPAIGN, strconv.FormatInt(in.CampaignID, 10)), prefix+transport.SUBKEY_Cl, 1)
-	assert.Nil(err)
-
-	// increment click to ad
-	_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(in.AdID, 10)), prefix+transport.SUBKEY_Cl, 1)
-	assert.Nil(err)
-
 	// increment click to slot
 	_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(in.SlotID, 10)), prefix+transport.SUBKEY_Cl, 1)
 	assert.Nil(err)
-
-	if in.Web != nil {
-		// increment click to website
-		_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.WEBSITE, strconv.FormatInt(in.Web.WebsiteID, 10)), prefix+transport.SUBKEY_Cl, 1)
-		assert.Nil(err)
-
-		// increment the campaign-website
-		_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.CAMPAIGN_WEBSITE, fmt.Sprintf("%d%s%d", in.CampaignID, transport.DELIMITER, in.Web.WebsiteID)), prefix+transport.SUBKEY_Cl, 1)
-		assert.Nil(err)
-
-		// increment the ad-website
-		_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.AD_WEBSITE, fmt.Sprintf("%d%s%d", in.AdID, transport.DELIMITER, in.Web.WebsiteID)), prefix+transport.SUBKEY_Cl, 1)
-		assert.Nil(err)
-
-		// increment the user website kry in redis
-		_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.USER_WEBSITE, fmt.Sprintf("%d%s%d", in.CopID, transport.DELIMITER, in.Web.WebsiteID)), prefix+transport.SUBKEY_Cl, 1)
-		assert.Nil(err)
-
-	} else if in.App != nil {
-		// increment click to website
-		_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.APP, strconv.FormatInt(in.App.AppID, 10)), prefix+transport.SUBKEY_Cl, 1)
-		assert.Nil(err)
-
-		// increment the campaign-website
-		_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.CAMPAIGN_APP, fmt.Sprintf("%d%s%d", in.CampaignID, transport.DELIMITER, in.App.AppID)), prefix+transport.SUBKEY_Cl, 1)
-		assert.Nil(err)
-
-		// increment the ad-website
-		_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.AD_APP, fmt.Sprintf("%d%s%d", in.AdID, transport.DELIMITER, in.App.AppID)), prefix+transport.SUBKEY_Cl, 1)
-		assert.Nil(err)
-
-		// increment the user website kry in redis
-		_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.USER_APP, fmt.Sprintf("%d%s%d", in.CopID, transport.DELIMITER, in.App.AppID)), prefix+transport.SUBKEY_Cl, 1)
-		assert.Nil(err)
-	}
-	// increment the campaign-slot
-	_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.CAMPAIGN_SLOT, fmt.Sprintf("%d%s%d", in.CampaignID, transport.DELIMITER, in.SlotID)), prefix+transport.SUBKEY_Cl, 1)
-	assert.Nil(err)
-
-	// increment the ad-slot
-	_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.AD_SLOT, fmt.Sprintf("%d%s%d", in.AdID, transport.DELIMITER, in.SlotID)), prefix+transport.SUBKEY_Cl, 1)
-	assert.Nil(err)
-
 	//insert click in db
 	err = mr.NewManager().InsertClick(in)
-	if err != nil {
-		return false, err
-	}
-	tmp := map[string]string{
-		"CLICK": strconv.FormatInt(in.ID, 10),
-	}
-	err = aredis.HMSet(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, in.Rand), config.Config.Clickyab.DailyClickExpire, tmp)
 	return false, err
 }

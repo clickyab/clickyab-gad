@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"rabbit"
 	aredis "redis"
 	"regexp"
 	"selector"
@@ -577,32 +576,21 @@ func (tc *selectController) makeShow(
 				extra += " From Under, FirstBID "
 			}
 			if len(ef.Ads) == 0 {
-				logrus.Debug("No ad????")
-				middlewares.SafeGO(c, false, false, func() {
-					w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
-					warn := transport.Warning{
-						Level: "warning",
-						When:  time.Now(),
-						Where: publisher.GetName(),
-						Message: fmt.Sprintf(
-							"no ad pass the bid \nsize was %sx%s \nthe floor was %d \nall add count in this size %d \n"+
-								"pass the floor %d \nunder floor is allowd? %v \nunder floor count %d \n"+
-								"currently %d item of %d in this request is filled",
-							w, h,
-							publisher.FloorCPM(),
-							len(filteredAds[slotSize[slotID].SlotSize]),
-							len(exceedFloor),
-							allowUnderFloor,
-							len(underFloor),
-							selected[slotSize[slotID].SlotSize], total[slotSize[slotID].SlotSize],
-						),
-					}
-					warn.Request, _ = httputil.DumpRequest(c.Request(), false)
-					err := rabbit.Publish(warn)
-					if err != nil {
-						logrus.Error(err)
-					}
-				})
+				w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
+				req, _ := httputil.DumpRequest(c.Request(), false)
+				logrus.WithFields(logrus.Fields{
+					"publisher":     publisher.GetName(),
+					"width":         w,
+					"height":        h,
+					"floor":         publisher.FloorCPM(),
+					"filtered":      len(filteredAds[slotSize[slotID].SlotSize]),
+					"exceed":        len(exceedFloor),
+					"allowed_under": allowUnderFloor,
+					"under":         len(underFloor),
+					"selected":      selected[slotSize[slotID].SlotSize],
+					"total":         total[slotSize[slotID].SlotSize],
+					"request":       string(req),
+				}).Warn("no ad")
 				ads[slotID] = nil
 				store.Set(reserve[slotID], "no add")
 				continue
