@@ -37,6 +37,7 @@ var (
 		filter.CheckAppBlackList,
 		filter.CheckAppWhiteList,
 		filter.CheckAppCategory,
+		filter.CheckAppCarrier,
 		filter.CheckProvince,
 		filter.CheckAppBrand,
 		filter.CheckProvder,
@@ -211,7 +212,7 @@ func (tc *selectController) getAppDataFromCtx(c echo.Context) (*middlewares.Requ
 
 	province, isp := ip2location.GetProvinceISPByIP(rd.IP)
 
-	phone := m.GetPhoneData(c.Request().URL.Query().Get("brand"), c.Request().URL.Query().Get("carrier"), c.Request().URL.Query().Get("network"))
+	phone := m.GetPhoneData(c.Request().URL.Query().Get("brand"), strings.Trim(c.Request().URL.Query().Get("carrier"), "# \n\t"), c.Request().URL.Query().Get("network"))
 	mcc, _ := strconv.ParseInt(c.Request().URL.Query().Get("mcc"), 10, 0)
 	mnc, _ := strconv.ParseInt(c.Request().URL.Query().Get("mnc"), 10, 0)
 	cid, _ := strconv.ParseFloat(c.Request().URL.Query().Get("cid"), 64)
