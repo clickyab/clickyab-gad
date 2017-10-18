@@ -107,7 +107,7 @@ func (w *App) GetType() string {
 
 func (m *Manager) doCacheQuery(q string, p string) (*tmpData, error) {
 	res := tmpData{}
-	key := utils.Sha1(fmt.Sprintf("caca_%s", p))
+	key := utils.Hash(fmt.Sprintf("caca_%s", p))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
@@ -155,7 +155,7 @@ func (m *Manager) GetPhoneData(brand, carrier, network string) *PhoneData {
 // GetApp try to get application from the system
 func (m *Manager) GetApp(token string) (*App, error) {
 	res := App{}
-	key := utils.Sha1(fmt.Sprintf("app_%s", token))
+	key := utils.Hash(fmt.Sprintf("app_%s", token))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
@@ -174,7 +174,7 @@ func (m *Manager) GetApp(token string) (*App, error) {
 // GetAppByID try to get application from the system
 func (m *Manager) GetAppByID(id int64) (*App, error) {
 	res := App{}
-	key := utils.Sha1(fmt.Sprintf("app_%d", id))
+	key := utils.Hash(fmt.Sprintf("app_%d", id))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
@@ -192,7 +192,7 @@ func (m *Manager) GetAppByID(id int64) (*App, error) {
 
 // IsUserActive return if the user is active
 func (m *Manager) IsUserActive(u int64) bool {
-	key := utils.Sha1(fmt.Sprintf("user_active_%d", u))
+	key := utils.Hash(fmt.Sprintf("user_active_%d", u))
 	var act bool
 	err := fetch(key, &act)
 	if err == nil {
@@ -225,7 +225,7 @@ func (m *Manager) findCell(lat, lon float64) (int64, int64, error) {
 // GetCellLocation try to get cell location from mmap database
 func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int64, carrier string) (*CellLocation, error) {
 	res := CellLocation{}
-	key := utils.Sha1(fmt.Sprintf("loc_%d%d%d%d", mcc, mnc, lac, cid))
+	key := utils.Hash(fmt.Sprintf("loc_%d%d%d%d", mcc, mnc, lac, cid))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
@@ -275,7 +275,7 @@ func (m *Manager) GetCellLocation(mcc, mnc, lac, cid int64, carrier string) (*Ce
 // FetchAppByPack fetch app by package and supplier name
 func (m *Manager) FetchAppByPack(pack, supplier string) (*App, error) {
 	res := App{}
-	key := utils.Sha1(fmt.Sprintf("AppPackageSupplier_%s_%s", pack, supplier))
+	key := utils.Hash(fmt.Sprintf("AppPackageSupplier_%s_%s", pack, supplier))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
@@ -292,7 +292,7 @@ func (m *Manager) FetchAppByPack(pack, supplier string) (*App, error) {
 // FetchValidAppByID find app by ID
 func (m *Manager) FetchValidAppByID(ID int64) (*App, error) {
 	res := App{}
-	key := utils.Sha1(fmt.Sprintf("App_%d", ID))
+	key := utils.Hash(fmt.Sprintf("App_%d", ID))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil

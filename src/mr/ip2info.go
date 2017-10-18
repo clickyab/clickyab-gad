@@ -26,7 +26,7 @@ func (m *Manager) ConvertCountry2Info(name string) (CountryInfo, error) {
 		return country, errors.New("invalid country name")
 	}
 
-	key := utils.Sha1("Country_" + name)
+	key := utils.Hash("Country_" + name)
 	err := fetch(key, &country)
 	if err == nil {
 		return country, nil

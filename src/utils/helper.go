@@ -2,7 +2,7 @@ package utils
 
 import (
 	"config"
-	"crypto/sha1"
+	"crypto/md5"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -133,9 +133,9 @@ func InSlice(a interface{}, list []interface{}) bool {
 	return false
 }
 
-// Sha1 is the sha1 generation func
-func Sha1(k string) string {
-	h := sha1.New()
+// Hash is the hash generation func for keys, md5 normally
+func Hash(k string) string {
+	h := md5.New()
 	_, _ = h.Write([]byte(k))
 	return fmt.Sprintf("%x", h.Sum(nil))
 }

@@ -413,7 +413,7 @@ func (tc selectController) slotSizeAppExchangeNormal(slotPublic []string, appID 
 	}
 	if len(newSlots) > 0 {
 		// Expire the cache for the select
-		key := utils.Sha1(fmt.Sprintf("slot_%s_%d", slotPublicString, appID))
+		key := utils.Hash(fmt.Sprintf("slot_%s_%d", slotPublicString, appID))
 		aredis.RemoveKey(key)
 	}
 	insertedSlots := tc.insertNewAppSlots(appID, newSlots, newSize)

@@ -12,11 +12,11 @@ func store(key string, in interface{}, d time.Duration) error {
 		return err
 	}
 
-	return aredis.StoreKey("CACHE_"+key, string(t), d)
+	return aredis.StoreKey("C_"+key, string(t), d)
 }
 
 func fetch(key string, in interface{}) error {
-	s, err := aredis.GetKey("CACHE_"+key, false, 0)
+	s, err := aredis.GetKey("C_"+key, false, 0)
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func fetch(key string, in interface{}) error {
 }
 
 func fetchTouch(key string, in interface{}, expire time.Duration) error {
-	s, err := aredis.GetKey("CACHE_"+key, true, expire)
+	s, err := aredis.GetKey("C_"+key, true, expire)
 	if err != nil {
 		return err
 	}

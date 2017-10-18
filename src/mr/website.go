@@ -73,7 +73,7 @@ func (w *Website) GetType() string {
 // FetchWebsiteByPublicID function @todo
 func (m *Manager) FetchWebsiteByPublicID(publicID int64) (*Website, error) {
 	var res = Website{}
-	key := utils.Sha1(fmt.Sprintf("Website_%d", publicID))
+	key := utils.Hash(fmt.Sprintf("Website_%d", publicID))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
@@ -96,7 +96,7 @@ func (m *Manager) FetchWebsiteByPublicID(publicID int64) (*Website, error) {
 // FetchWebsite function @todo
 func (m *Manager) FetchWebsite(ID int64) (*Website, error) {
 	var res = Website{}
-	key := utils.Sha1(fmt.Sprintf("WebsiteID_%d", ID))
+	key := utils.Hash(fmt.Sprintf("WebsiteID_%d", ID))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
@@ -118,7 +118,7 @@ func (m *Manager) FetchWebsite(ID int64) (*Website, error) {
 // FetchWebsiteByDomain return a function based on its domain
 func (m *Manager) FetchWebsiteByDomain(domain, supplier string) (*Website, error) {
 	var res = Website{}
-	key := utils.Sha1(fmt.Sprintf("WebsiteDomainSupplier_%s_%s", domain, supplier))
+	key := utils.Hash(fmt.Sprintf("WebsiteDomainSupplier_%s_%s", domain, supplier))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
