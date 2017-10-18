@@ -22,7 +22,7 @@ func (m *Manager) ConvertProvince2Info(name string) (Province, error) {
 	if len(name) < 2 {
 		return province, errors.New("invalid province name")
 	}
-	key := utils.Sha1("Province_" + name)
+	key := utils.Hash("Province_" + name)
 	err := fetch(key, &province)
 	if err == nil {
 		return province, nil
@@ -48,7 +48,7 @@ func (m *Manager) ConvertProvinceID2Info(id int64) (Province, error) {
 	if id < 1 {
 		return province, errors.New("invalid province name")
 	}
-	key := utils.Sha1(fmt.Sprintf("Province_%d", id))
+	key := utils.Hash(fmt.Sprintf("Province_%d", id))
 	err := fetch(key, &province)
 	if err == nil {
 		return province, nil

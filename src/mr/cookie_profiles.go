@@ -36,7 +36,7 @@ func randInt64() int64 {
 // fetchCookieProfile get data from table cookie
 func (m *Manager) fetchCookieProfile(key string) (*CookieProfile, error) {
 	var res = CookieProfile{}
-	hash := utils.Sha1(fmt.Sprintf("a_new_cookie_%s", key))
+	hash := utils.Hash(fmt.Sprintf("a_new_cookie_%s", key))
 	err := fetchTouch(hash, &res, 3*24*time.Hour)
 	if err == nil {
 		return &res, nil
@@ -46,7 +46,7 @@ func (m *Manager) fetchCookieProfile(key string) (*CookieProfile, error) {
 
 // insertCookieProfile create a new cookie profile and return it
 func (m *Manager) insertCookieProfile(key string, ip net.IP) (*CookieProfile, error) {
-	hash := utils.Sha1(fmt.Sprintf("a_new_cookie_%s", key))
+	hash := utils.Hash(fmt.Sprintf("a_new_cookie_%s", key))
 	ipNullString := toNullString(ip.String())
 	date := toNullInt64(time.Now().Unix())
 	co := &CookieProfile{

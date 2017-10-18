@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"compress/zlib"
 	"encoding/gob"
 )
 
@@ -9,12 +10,15 @@ import (
 func InterfaceToByte(in interface{}) ([]byte, error) {
 	buf := &bytes.Buffer{}
 
-	enc := gob.NewEncoder(buf)
+	comp := zlib.NewWriter(buf)
+	enc := gob.NewEncoder(comp)
 	err := enc.Encode(in)
 	if err != nil {
 		return nil, err
 	}
-
+	if err := comp.Close(); err != nil {
+		return nil, err
+	}
 	return buf.Bytes(), nil
 }
 
@@ -22,6 +26,11 @@ func InterfaceToByte(in interface{}) ([]byte, error) {
 func ByteToInterface(b []byte, out interface{}) error {
 	buf := bytes.NewBuffer(b)
 
-	dnc := gob.NewDecoder(buf)
+	decomp, err := zlib.NewReader(buf)
+	if err != nil {
+		return err
+	}
+	defer decomp.Close()
+	dnc := gob.NewDecoder(decomp)
 	return dnc.Decode(out)
 }

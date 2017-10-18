@@ -25,7 +25,7 @@ func (m *Manager) GetLocation(ip net.IP) (*IP2Location, error) {
 	if err != nil {
 		return nil, err
 	}
-	key := utils.Sha1(fmt.Sprintf("IP_%d", long))
+	key := utils.Hash(fmt.Sprintf("IP_%d", long))
 	err = fetch(key, &res)
 	if err == nil {
 		return &res, nil

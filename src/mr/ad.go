@@ -105,7 +105,7 @@ type RawSlotDimensions struct {
 //GetAd get data ad from id
 func (m *Manager) GetAd(id int64, withCPName bool) (*Ad, error) {
 	var ad Ad
-	key := utils.Sha1(fmt.Sprintf("adData_%d", id))
+	key := utils.Hash(fmt.Sprintf("adData_%d", id))
 	err := fetch(key, &ad)
 	if err == nil {
 		return &ad, nil

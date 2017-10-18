@@ -35,7 +35,7 @@ type Slot struct {
 func (m *Manager) FetchWebSlots(publicID string, wID int64) ([]Slot, error) {
 	var res []Slot
 	// TODO : this is dangerous to cache this one
-	//key := utils.Sha1(fmt.Sprintf("slot_%s_%d", publicID, wID))
+	//key := utils.Hash(fmt.Sprintf("slot_%s_%d", publicID, wID))
 	//err := fetch(key, &res)
 	//if err == nil {
 	//	return res, nil
@@ -60,7 +60,7 @@ func (m *Manager) FetchWebSlots(publicID string, wID int64) ([]Slot, error) {
 func (m *Manager) FetchAppSlots(publicID string, appID int64) ([]Slot, error) {
 	var res []Slot
 	// TODO : this is dangerous to cache this one
-	//key := utils.Sha1(fmt.Sprintf("slot_%s_%d", publicID, wID))
+	//key := utils.Hash(fmt.Sprintf("slot_%s_%d", publicID, wID))
 	//err := fetch(key, &res)
 	//if err == nil {
 	//	return res, nil
@@ -138,7 +138,7 @@ func (m *Manager) InsertSlots(wID int64, appID int64, slotsPublic int64, size in
 func (m *Manager) FetchAppSlot(appID int64, slotID int64) (*Slot, error) {
 	var res Slot
 
-	key := utils.Sha1(fmt.Sprintf("slotapp_%d_%d", slotID, appID))
+	key := utils.Hash(fmt.Sprintf("slotapp_%d_%d", slotID, appID))
 	err := fetch(key, &res)
 	if err == nil {
 		return &res, nil
