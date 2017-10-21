@@ -9,8 +9,8 @@ import (
 	"strings"
 	"utils"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/mssola/user_agent"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
 
