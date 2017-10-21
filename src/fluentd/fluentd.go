@@ -33,9 +33,10 @@ func Initialize(ctx context.Context) {
 		logrus.ErrorLevel,
 		logrus.FatalLevel,
 		logrus.WarnLevel,
+		logrus.InfoLevel,
 	}
 	if allLevels {
-		l = append(l, logrus.InfoLevel, logrus.DebugLevel)
+		l = append(l, logrus.DebugLevel)
 	}
 	hook.SetLevels(l)
 
