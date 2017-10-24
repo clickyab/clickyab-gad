@@ -19,6 +19,7 @@ type Context struct {
 	PhoneData    *mr.PhoneData
 	CellLocation *mr.CellLocation
 	Campaign     int64
+	SlotPins     []mr.SlotPinData
 }
 
 // FilterFunc is the type use to filter the

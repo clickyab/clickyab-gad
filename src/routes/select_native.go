@@ -3,12 +3,16 @@ package routes
 import (
 	"config"
 	"net/http"
+	selector2 "pin"
 	"selector"
 	"strings"
 	"utils"
 
 	"fmt"
 	"net/url"
+
+	"mr"
+	"store"
 
 	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
@@ -22,8 +26,10 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
+	var slotFixFound bool
+	slotPins := selector2.GetPinAdData()
 	slotSize, sizeNumSlice, order := tc.slotSizeNative(c, *website)
-
+	slotFixFound, slotSize, sizeNumSlice, slotPins, _, _ = checkForFixSlot(slotPins, slotSize, sizeNumSlice, "native")
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -31,10 +37,40 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		Size:        sizeNumSlice,
 		Province:    province,
 		ISP:         isp,
+		SlotPins:    slotPins,
 	}
+	// remove fucking order
+	var resOrder = []string{}
+	for i := range order {
+		var appending bool = true
+		for _, v := range slotPins {
+			if v.SlotPublicID == order[i] {
+				appending = false
+			}
+		}
+		if appending {
+			resOrder = append(resOrder, order[i])
+		}
+	}
+	var h = make(map[string]*mr.AdData)
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
 	// TODO : Currently underfloor is always true
-	_, h := tc.makeShow(c, "sync", rd, filteredAds, order, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCNative, true, true, config.Config.Clickyab.FloorDiv.Native)
+	_, h = tc.makeShow(c, "sync", rd, filteredAds, resOrder, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCNative, true, true, config.Config.Clickyab.FloorDiv.Native)
+
+	if slotFixFound {
+		for _, val := range slotPins {
+			res := &val.AdData
+			res.WinnerBid = val.Bid
+			res.SlotID = val.SlotID
+			h[val.SlotPublicID] = res
+			reserve := make(map[string]string)
+			tc.updateMegaKey(rd, val.AdID, val.Bid, val.SlotID, "", "", "")
+			tmp := config.Config.MachineName + <-utils.ID
+			reserve[val.SlotPublicID] = tmp
+			store.Set(reserve[val.SlotPublicID], fmt.Sprintf("%d", val.AdID))
+		}
+	}
+
 	ads := make([]nativeAd, 0)
 	var p protocol = httpScheme
 	if rd.Scheme == httpsScheme {
@@ -71,7 +107,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 			j.AdImg.String = strings.Replace(j.AdImg.String, "http://", "https://", -1)
 		}
 		fixTitle := utils.LimitCharacter(j.AdName.String, 50)
-		ads = append(ads, nativeAd{
+		nAd := nativeAd{
 			Image:   j.AdImg.String,
 			URL:     u.String(),
 			Lead:    j.AdAttribute["banner_description_text_type"].(string),
@@ -80,7 +116,21 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 			Corners: params.Get("corners"),
 			Site:    j.AdURL.String,
 			Extra:   fmt.Sprintf("CTR=%f, CPM=%d, Winner=%d == %s", j.CTR, j.CPM, j.WinnerBid, j.Extra),
-		})
+		}
+		var fixSlot bool
+		var direct bool
+		for n := range slotPins {
+			if slotPins[n].SlotID == j.SlotID {
+				fixSlot = true
+				direct = slotPins[n].Direct
+				break
+			}
+		}
+
+		if fixSlot && direct {
+			nAd.URL = j.AdURL.String
+		}
+		ads = append(ads, nAd)
 
 	}
 	// TODO : handle this in select

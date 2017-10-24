@@ -44,6 +44,7 @@ var (
 		filter.CheckWebBlackList,
 		filter.CheckWebCategory,
 		filter.CheckProvince,
+		filter.RemoveSlotPins,
 		filter.CheckVastOtherNetwork,
 		filter.CheckISP,
 	)
@@ -54,6 +55,7 @@ var (
 		filter.IsWebMobile,
 		filter.CheckDesktopNetwork,
 		filter.CheckWebSize,
+		filter.RemoveSlotPins,
 		filter.CheckOS,
 		filter.CheckWhiteList,
 		filter.CheckWebBlackList,

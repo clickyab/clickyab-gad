@@ -18,6 +18,7 @@ func (m *Manager) Initialize() {
 	m.AddTableWithName(CookieProfile{}, "cookie_profiles").SetKeys(true, "ID")
 	m.AddTableWithName(App{}, "apps").SetKeys(true, "ID")
 	m.AddTableWithName(Website{}, "websites").SetKeys(true, "WID")
+	m.AddTableWithName(SlotPin{}, "slot_pin").SetKeys(true, "ID")
 }
 
 func init() {

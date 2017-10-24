@@ -1,4 +1,7 @@
 package main
 
-import _ "routes"
-import _ "selector"
+import (
+	_ "pin"
+	_ "routes"
+	_ "selector"
+)

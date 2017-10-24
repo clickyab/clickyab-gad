@@ -11,6 +11,7 @@ import (
 	"middlewares"
 	"mr"
 	"net/http"
+	selector2 "pin"
 	aredis "redis"
 	"selector"
 	"strconv"
@@ -20,6 +21,8 @@ import (
 	echo "gopkg.in/labstack/echo.v3"
 
 	"ip2location"
+	"net/url"
+	"store"
 )
 
 var (
@@ -28,6 +31,7 @@ var (
 		filter.IsWebMobile,
 		filter.CheckDesktopNetwork,
 		filter.CheckVastSize,
+		filter.RemoveSlotPins,
 		filter.CheckOS,
 		filter.CheckWhiteList,
 		filter.CheckWebBlackList,
@@ -55,6 +59,8 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	webPublicID := website.WPubID
+	var slotFixFound bool
+	slotPins := selector2.GetPinAdData()
 	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(rd.Mobile, webPublicID, length, *website)
 	// TODO : Move this to slotSizeVast func
 	for i := range slotSize {
@@ -64,6 +70,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 			"l":    lenType,
 		}
 	}
+	slotFixFound, slotSize, sizeNumSlice, slotPins, fixSlotSize, _ := checkForFixSlot(slotPins, slotSize, sizeNumSlice, "vast")
 	//call context
 	m := selector.Context{
 		RequestData: *rd,
@@ -71,13 +78,46 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		Size:        sizeNumSlice,
 		Province:    province,
 		ISP:         isp,
+		SlotPins:    slotPins,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
-	show, _ := tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, config.Config.Clickyab.MinCPCVast, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast)
+	var show = make(map[string]string)
+	show, _ = tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, config.Config.Clickyab.MinCPCVast, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast)
+	var vTemp = make([]vastAdTemplate, 0)
+	if slotFixFound {
+		for _, val := range slotPins {
+			reserve := make(map[string]string)
+			tc.updateMegaKey(rd, val.AdID, val.Bid, val.SlotID, "", "", "")
+			tmp := config.Config.MachineName + <-utils.ID
+			reserve[val.SlotPublicID] = tmp
+			store.Set(reserve[val.SlotPublicID], fmt.Sprintf("%d", val.AdID))
+			u := url.URL{
+				Scheme: rd.Scheme,
+				Host:   rd.Host,
+				Path:   fmt.Sprintf("/show/%s/%s/%d/%s", typ, rd.MegaImp, website.GetID(), tmp),
+			}
+			v := url.Values{}
+			v.Set("tid", rd.TID)
+			v.Set("ref", rd.Referrer)
+			v.Set("parent", rd.Parent)
+			v.Set("s", fmt.Sprintf("%d", val.SlotID))
+			for i, j := range fixSlotSize[val.SlotPublicID].ExtraParam {
+				v.Set(i, j)
+			}
+			u.RawQuery = v.Encode()
+			show[val.SlotPublicID] = u.String()
 
-	var v = make([]vastAdTemplate, 0)
+			vTemp = append(vTemp, vastAdTemplate{
+				Link:   template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", show[val.SlotPublicID])),
+				Offset: vastSlotData[val.SlotPublicID].Offset,
+				Type:   vastSlotData[val.SlotPublicID].Type,
+				Repeat: vastSlotData[val.SlotPublicID].Repeat,
+			})
+		}
+	}
+
 	for i := range sizeNumSlice {
-		v = append(v, vastAdTemplate{
+		vTemp = append(vTemp, vastAdTemplate{
 			Link:   template.HTML(fmt.Sprintf("<![CDATA[\n%s\n]]>", show[i])),
 			Offset: vastSlotData[i].Offset,
 			Type:   vastSlotData[i].Type,
@@ -86,7 +126,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	}
 	result := &bytes.Buffer{}
 
-	assert.Nil(vastIndex.Execute(result, v))
+	assert.Nil(vastIndex.Execute(result, vTemp))
 	return c.XMLBlob(http.StatusOK, result.Bytes())
 }
 

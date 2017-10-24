@@ -27,6 +27,12 @@ import (
 
 	"redlock"
 
+	selector2 "pin"
+
+	"math/rand"
+
+	"store"
+
 	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -60,24 +66,61 @@ func (tc *selectController) showphp(c echo.Context) error {
 	}
 
 	slotSize, sizeNumSlice := tc.slotSizeNormal([]string{slotReq}, website.WID, map[string]int{slotReq: size})
-	m := selector.Context{
-		RequestData: *rd,
-		Website:     website,
-		Size:        sizeNumSlice,
-		Province:    provinceID,
-		ISP:         ispID,
-	}
+
 	lockSession := "DMDS_SESS_" + eventpage
 	t := redlock.NewRedisDistributedLock(lockSession, 3000*time.Millisecond)
 	t.Lock()
 	defer t.Unlock()
 	var sel selector.FilterFunc
 	var sessionAds []int64
-	sel = webSelector
 
-	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
+	sel = webSelector
+	var slotFixFound bool
+	slotPins := selector2.GetPinAdData()
+
+	slotFixFound, slotSize, sizeNumSlice, slotPins, _, _ = checkForFixSlot(slotPins, slotSize, sizeNumSlice, "banner")
+	m := selector.Context{
+		RequestData: *rd,
+		Website:     website,
+		Size:        sizeNumSlice,
+		Province:    provinceID,
+		ISP:         ispID,
+		SlotPins:    slotPins,
+	}
+	// TODO remove slot fix ads from normal pool
+
 	c.Set("EVENT_PAGE", eventpage)
-	_, pubsAds := tc.makeShow(c, typ, rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web)
+	var pubsAds = make(map[string]*mr.AdData)
+	if !slotFixFound {
+		filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
+		_, pubsAds = tc.makeShow(c,
+			typ,
+			rd,
+			filteredAds,
+			nil,
+			sizeNumSlice,
+			slotSize,
+			nil,
+			website,
+			false,
+			config.Config.Clickyab.MinCPCWeb,
+			config.Config.Clickyab.UnderFloor,
+			true,
+			config.Config.Clickyab.FloorDiv.Web,
+		)
+	} else {
+		res := &slotPins[0].AdData
+		res.WinnerBid = slotPins[0].Bid
+		res.SlotID = slotPins[0].SlotID
+		pubsAds[slotReq] = res
+		tc.updateMegaKey(rd, slotPins[0].AdID, slotPins[0].Bid, slotPins[0].SlotID, "", "", "")
+		reserve := make(map[string]string)
+		slotPubID := slotReq
+		tmp := config.Config.MachineName + <-utils.ID
+		reserve[slotPubID] = tmp
+		store.Set(reserve[slotPubID], fmt.Sprintf("%d", slotPins[0].AdID))
+	}
+
 	targetedAd := pubsAds[slotReq]
 	if targetedAd == nil {
 		return c.String(http.StatusNotFound, "not found")
@@ -105,6 +148,10 @@ func (tc *selectController) showphp(c echo.Context) error {
 	}
 
 	adURL := makeAdURL(rd, website.WID, ad.AdID, m.RequestData.MegaImp, rnd)
+	if slotFixFound && slotPins[0].Direct {
+		adURL = ad.AdURL.String
+	}
+
 	res, err := tc.makeWebTemplate(c, "", ad, adURL, "", "", loc[:5] == "https")
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
@@ -139,4 +186,66 @@ func locationStatus(tc *selectController, wpid string, ip net.IP) (*mr.Website, 
 	provinceID, ispID := ip2location.GetProvinceISPByIP(ip)
 
 	return website, provinceID, ispID, nil
+}
+
+func checkForFixSlot(pins []mr.SlotPinData, a map[string]*slotData, b map[string]int, typ string) (bool, map[string]*slotData, map[string]int, []mr.SlotPinData, map[string]*slotData, map[string]int) {
+	var fix []mr.SlotPinData
+	var fixSizeNumSlice = make(map[string]int)
+	var fixSlotSize = make(map[string]*slotData)
+	var found bool
+	for i := range pins {
+		for j := range a {
+			if pins[i].SlotID == a[j].ID {
+				//check chance
+				ok1 := checkFixChance(pins[i].Chance)
+				//check size
+				ok2 := checkFixSlotSize(pins[i], typ)
+				if ok1 && ok2 {
+					pins[i].SlotPublicID = j
+					fix = append(fix, pins[i])
+					found = true
+					fixSlotSize[j] = a[j]
+					fixSizeNumSlice[j] = a[j].SlotSize
+					delete(a, j)
+					delete(b, j)
+				}
+			}
+		}
+	}
+	return found, a, b, fix, fixSlotSize, fixSizeNumSlice
+}
+
+func checkFixChance(a int) bool {
+
+	return a >= rand.Intn(100)
+}
+
+func checkFixSlotSize(a mr.SlotPinData, typ string) bool {
+	if typ == "vast" {
+		if a.CampaignNetwork != 2 && a.AdType == 3 {
+			return false
+		}
+		if a.AdType == config.AdTypeDynamic {
+			return false
+		}
+		if a.CampaignNetwork != 0 && a.CampaignNetwork != 2 {
+			return false
+		}
+		return a.AdType == config.AdTypeVideo || config.InVastSize(a.AdSize)
+	} else if typ == "banner" {
+		if a.CampaignNetwork != 0 {
+			return false
+		}
+		if a.AdType == config.AdTypeVideo {
+			if config.InVideoSize(a.AdSize) {
+				return true
+			}
+			return false
+		}
+		return a.SlotSize == a.AdSize
+	} else if typ == "native" {
+		return a.AdSize == 20 && a.CampaignNetwork == 3
+	} else {
+		panic("[BUG] unsupported type")
+	}
 }
