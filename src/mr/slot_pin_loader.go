@@ -9,11 +9,12 @@ import (
 func (m *Manager) LoadSlotPin() (res []SlotPinData, err error) {
 	t := time.Now()
 	r := t.Format(time.RFC3339)
+	//TODO u_balance to 0
 	q := fmt.Sprintf(`SELECT SP.bid,SP.chance,SP.start,SP.end,SP.direct,SP.slot_id,S.slot_size,
 		A.ad_id, C.u_id, A.ad_name, A.ad_url,A.ad_code, A.ad_title, A.ad_body, A.ad_img, A.ad_status,A.ad_size,
 	 A.ad_reject_reason, CA.ca_ctr , A.ad_conv, A.ad_time, A.ad_type, A.ad_mainText, A.ad_defineText,
 	 A.ad_textColor, A.ad_target, A.ad_attribute, A.ad_hash_attribute, A.created_at, A.updated_at,
-	 U.u_email, U.u_balance, C.cp_id, cp_type, cp_billing_type, cp_name, cp_network, cp_placement,
+	 U.u_email,0 AS u_balance, C.cp_id, cp_type, cp_billing_type, cp_name, cp_network, cp_placement,
 	 cp_wfilter, cp_retargeting, cp_frequency, cp_segment_id, cp_app_brand, cp_net_provider,
 	 cp_app_lang, cp_app_market, cp_web_mobile, cp_web, cp_application, cp_video, cp_apps_carriers,
 	 cp_longmap, cp_latmap, cp_radius, cp_opt_ctr, cp_opt_conv, cp_opt_br, cp_gender, cp_alexa,
