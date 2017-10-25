@@ -40,8 +40,6 @@ import (
 // example request
 // a.clickyab.com/ads/show.php?a=1941478513606&width=300&height=250&slot=48812001338&eventpage=995681655&ck=true&loc=http://myreal.ir/dara&ref=false&tid=2188781033
 
-const typ = "sync"
-
 func (tc *selectController) showphp(c echo.Context) error {
 
 	wpidReq := c.Request().URL.Query().Get("a")
@@ -94,7 +92,7 @@ func (tc *selectController) showphp(c echo.Context) error {
 	if !slotFixFound {
 		filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
 		_, pubsAds = tc.makeShow(c,
-			typ,
+			"sync",
 			rd,
 			filteredAds,
 			nil,

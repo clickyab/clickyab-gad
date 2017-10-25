@@ -94,7 +94,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 			u := url.URL{
 				Scheme: rd.Scheme,
 				Host:   rd.Host,
-				Path:   fmt.Sprintf("/show/%s/%s/%d/%s", typ, rd.MegaImp, website.GetID(), tmp),
+				Path:   fmt.Sprintf("/show/%s/%s/%d/%s", "vast", rd.MegaImp, website.GetID(), tmp),
 			}
 			v := url.Values{}
 			v.Set("tid", rd.TID)
