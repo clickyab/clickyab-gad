@@ -29,7 +29,7 @@ func (m *Manager) LoadSlotPin() (res []SlotPinData, err error) {
 	 	INNER JOIN ads AS A ON A.ad_id=SP.ad_id
 	 	INNER JOIN campaigns_ads AS CA ON A.ad_id=CA.ad_id
 	 	INNER JOIN campaigns AS C ON C.cp_id=CA.cp_id
-	 	INNER JOIN users AS U ON C.u_id=U.u_id WHERE SP.start <= ? AND SP.end >=?`)
+	 	INNER JOIN users AS U ON C.u_id=U.u_id WHERE SP.start <= ? AND SP.end >=? AND S.slot_size IS NOT NULL`)
 
 	_, err = m.GetRDbMap().Select(&res, q, r, r)
 	if err != nil {
