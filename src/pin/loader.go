@@ -37,7 +37,7 @@ func interval() {
 				assert.Nil(err, fmt.Sprintf("more than %s time failed to load data", fail))
 			}
 			fail++
-			break
+			continue
 		}
 		fail = 0
 		lock.Lock()
