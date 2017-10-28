@@ -55,6 +55,7 @@ type VideoAd struct {
 	Tiny   bool
 	Width  string
 	Height string
+	Rand   int
 }
 
 func (tc *selectController) show(c echo.Context) error {
@@ -240,6 +241,7 @@ func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string, https bool) V
 		Width:  w,
 		Src:    src,
 		Tiny:   true,
+		Rand:   rand.Intn(100),
 	}
 	return sa
 }
