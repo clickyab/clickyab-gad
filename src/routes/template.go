@@ -146,8 +146,8 @@ blockquote, q {
     </style>
 </head>
 <body>
-	<div id="video_advertise">
-	    <video width="{{ .Width }}" height="{{ .Height }}" autoplay controls muted>
+	<div id="video_advertise_{{ .Rand }}">
+	    <video id="e_video_{{ .Rand }}" width="{{ .Width }}" height="{{ .Height }}" autoplay muted loop>
 		<source src="{{ .Src }}" type="video/mp4">
 	    </video>
 	    <div class="call-to-action-holder" style="position: absolute;height: 62px;background: rgba(0, 0, 0,0.6);bottom: 0;width: {{ .Width }}px;">
@@ -155,6 +155,16 @@ blockquote, q {
     </div>
 	</div>
 	<script>
+
+	var clickyab_video = document.getElementById('e_video_{{ .Rand }}');
+
+   document.getElementById("video_advertise_{{ .Rand }}").addEventListener("mouseover", function(t) {
+        t.target.muted = false;
+    });
+    document.getElementById("video_advertise_{{ .Rand }}").addEventListener("mouseout", function(t) {
+        t.target.muted = true;
+    });
+
 	    function unwrap(wrapper) {
 		// place childNodes in document fragment
 		var docFrag = document.createDocumentFragment();
@@ -167,10 +177,10 @@ blockquote, q {
 		wrapper.parentNode.replaceChild(docFrag, wrapper);
 	    }
 	    var link = "{{ .Link }}";
-	    org_html = document.getElementById("video_advertise").innerHTML;
+	    org_html = document.getElementById('video_advertise_{{ .Rand }}').innerHTML;
 	    appendHtmlLink = "<a id='a_advertise' target='_blank' href='"+ link +"'>" + org_html + "</a>";
-	    var FinalElementHtml = document.getElementById("video_advertise").innerHTML = appendHtmlLink;
-	    document.getElementById("video_advertise").addEventListener("click", function () {
+	    var FinalElementHtml = document.getElementById('video_advertise_{{ .Rand }}').innerHTML = appendHtmlLink;
+	    document.getElementById('video_advertise_{{ .Rand }}').addEventListener("click", function () {
 		var linkElement = document.getElementById('a_advertise');
 		if (typeof(linkElement) != 'undefined' && linkElement != null)
 		{
