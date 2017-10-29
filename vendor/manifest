@@ -51,6 +51,13 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/go-redis/redis/internal",
+			"repository": "https://github.com/go-redis/redis",
+			"revision": "35248155a505a84811be81a2aab1c423317447be",
+			"branch": "master",
+			"path": "/internal"
+		},
+		{
 			"importpath": "github.com/go-sql-driver/mysql",
 			"repository": "https://github.com/go-sql-driver/mysql",
 			"revision": "a0583e0143b1624142adab07e0e97fe106d99561",
@@ -299,6 +306,12 @@
 			"importpath": "gopkg.in/redis.v5",
 			"repository": "https://gopkg.in/redis.v5",
 			"revision": "c6acf2ed159b22defbd9f077686cff03eba1e9b3",
+			"branch": "master"
+		},
+		{
+			"importpath": "gopkg.in/redis.v6",
+			"repository": "https://gopkg.in/redis.v6",
+			"revision": "35248155a505a84811be81a2aab1c423317447be",
 			"branch": "master"
 		},
 		{

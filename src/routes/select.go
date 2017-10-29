@@ -144,7 +144,7 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.AdDat
 }
 
 func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website Publisher) error {
-	tmp := map[string]string{
+	tmp := map[string]interface{}{
 		"IP": rd.IP.String(),
 		"UA": rd.UserAgent,
 		"WS": fmt.Sprintf("%d", website.GetID()),

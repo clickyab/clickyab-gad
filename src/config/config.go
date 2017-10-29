@@ -2,7 +2,6 @@ package config
 
 import (
 	"assert"
-	"fmt"
 	"runtime"
 	"time"
 
@@ -50,8 +49,10 @@ type AppConfig struct {
 		Size     int
 		Network  string
 		Address  string
+		Port string
 		Password string
 		Databse  int
+		Cluster bool
 		Days     int //Daily Statistic TimeOut Expiration TODO : the worst position for this
 	}
 
@@ -178,6 +179,8 @@ func defaultLayer() onion.Layer {
 	p, err := expand.Path("$HOME/gad/statics")
 	assert.Nil(err)
 	assert.Nil(d.SetDefault("static_root", p))
+
+
 	var (
 		rport = "6379"
 		rhost = "127.0.0.1"
@@ -193,8 +196,10 @@ func defaultLayer() onion.Layer {
 
 	assert.Nil(d.SetDefault("redis.size", 200))
 	assert.Nil(d.SetDefault("redis.network", "tcp"))
-	assert.Nil(d.SetDefault("redis.address", fmt.Sprintf("%s:%s", rhost, rport)))
+	assert.Nil(d.SetDefault("redis.address", rhost))
+	assert.Nil(d.SetDefault("redis.port", rport))
 	assert.Nil(d.SetDefault("redis.password", rpass))
+	assert.Nil(d.SetDefault("redis.cluster", false))
 
 	// TODO : move it to clickyab section
 	assert.Nil(d.SetDefault("redis.days", 2))

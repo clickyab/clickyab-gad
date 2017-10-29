@@ -3,7 +3,6 @@ package aredis
 
 import (
 	"assert"
-	"config"
 	"sync"
 	"time"
 
@@ -12,27 +11,58 @@ import (
 	"strconv"
 
 	"github.com/sirupsen/logrus"
-	"gopkg.in/redis.v5"
+	"gopkg.in/redis.v6"
+	"config"
+	"net"
 )
 
 var (
 	// Pool the actual pool to use with redis
-	Client *redis.Client
+	Client RedisClient
 	once   = &sync.Once{}
 )
 
+func lookup(svcName string) ([]string, error) {
+	endpoints := []string{}
+	_, srvRecords, err := net.LookupSRV("", "", svcName)
+	if err != nil {
+		return endpoints, err
+	}
+	for _, srvRecord := range srvRecords {
+		// The SRV records ends in a "." for the root domain
+		ep := fmt.Sprintf("%v", srvRecord.Target[:len(srvRecord.Target)-1])
+		endpoints = append(endpoints, ep)
+	}
+	fmt.Print(endpoints)
+	return endpoints, nil
+}
 // Initialize try to create a redis pool
 func Initialize() {
 	once.Do(func() {
-		Client = redis.NewClient(
-			&redis.Options{
-				Network:  config.Config.Redis.Network,
-				Addr:     config.Config.Redis.Address,
-				Password: config.Config.Redis.Password,
-				PoolSize: config.Config.Redis.Size,
-				DB:       config.Config.Redis.Databse,
-			},
-		)
+		if config.Config.Redis.Cluster {
+			endpoints, err  := lookup(config.Config.Redis.Address)
+			assert.Nil(err)
+			for i := range endpoints {
+				endpoints[i] = endpoints[i]+":"+config.Config.Redis.Port
+			}
+			Client = redis.NewClusterClient(
+				&redis.ClusterOptions{
+					Addrs:endpoints,
+					Password: config.Config.Redis.Password,
+					PoolSize: config.Config.Redis.Size,
+				},
+			)
+		} else {
+			Client = redis.NewClient(
+				&redis.Options{
+					Network:  config.Config.Redis.Network,
+					Addr:     config.Config.Redis.Address + ":" + config.Config.Redis.Port,
+					Password: config.Config.Redis.Password,
+					PoolSize: config.Config.Redis.Size,
+					DB:       config.Config.Redis.Databse,
+				},
+			)
+		}
 		// PING the server to make sure every thing is fine
 		assert.Nil(Client.Ping().Err())
 		logrus.Debug("redis is ready.")
@@ -137,7 +167,7 @@ func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, 
 	return final, nil
 }
 
-func HMSet(key string, expire time.Duration, fields map[string]string) error {
+func HMSet(key string, expire time.Duration, fields map[string]interface{}) error {
 
 	cmd := Client.HMSet(key, fields)
 	if err := cmd.Err(); err != nil {

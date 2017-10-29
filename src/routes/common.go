@@ -113,7 +113,7 @@ func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, m
 
 	// TODO : Use constant not strings
 	//set mega ip in redis
-	tmp := map[string]string{
+	tmp := map[string]interface{}{
 		"IP":     rd.IP.String(),
 		"UA":     rd.UserAgent,
 		"AID":    rd.AndroidID,     //android id
