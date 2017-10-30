@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	onion "gopkg.in/fzerorubigd/onion.v2"
 	"gopkg.in/fzerorubigd/onion.v2/extraenv"
+	"io/ioutil"
 )
 
 var (
@@ -97,11 +98,8 @@ func SetConfigParameter() {
 	if Config.DevelMode {
 		// In development mode I need colors :) candy mode is GREAT!
 		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true, DisableColors: false})
-		logrus.SetLevel(logrus.DebugLevel)
-
 	} else {
-		logrus.SetFormatter(&logrus.TextFormatter{ForceColors: false, DisableColors: true})
-		logrus.SetLevel(logrus.ErrorLevel)
+		logrus.SetOutput(ioutil.Discard)
 	}
 
 	numcpu := Config.MaxCPUAvailable
