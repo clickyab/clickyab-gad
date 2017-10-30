@@ -19,12 +19,13 @@ func Initialize(ctx context.Context) {
 	)
 
 	if !active {
-		return
+		//return
 	}
 
 	hook, err := logrus_fluent.New(host, int(port))
 	if err != nil {
-		logrus.Error("fluentd logger failed, if this is in production check for the problem")
+		logrus.Errorf("fluentd logger failed, if this is in production check for the problem: %s",err)
+		return
 	}
 
 	// set custom fire level
@@ -39,6 +40,7 @@ func Initialize(ctx context.Context) {
 		l = append(l, logrus.DebugLevel)
 	}
 	hook.SetLevels(l)
+	hook.Fluent.Post("initialize.dummy", l)
 
 	// set static tag
 	hook.SetTag(defaultTag)

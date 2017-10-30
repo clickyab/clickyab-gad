@@ -19,6 +19,7 @@ import (
 	"fluentd"
 
 	"github.com/pkg/profile"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -34,6 +35,7 @@ func main() {
 	rabbit.Initialize()
 	models.Initialize()
 
+	fmt.Println(logrus.StandardLogger().Hooks)
 	server := modules.Initialize(config.Config.MountPoint)
 	go func() {
 		_ = server.Start(fmt.Sprintf(":%d", config.Config.Port))
