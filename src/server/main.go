@@ -19,7 +19,6 @@ import (
 	"fluentd"
 
 	"github.com/pkg/profile"
-	"github.com/sirupsen/logrus"
 )
 
 func main() {
