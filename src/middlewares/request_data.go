@@ -10,7 +10,6 @@ import (
 	"utils"
 
 	"github.com/mssola/user_agent"
-	"github.com/sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
 
@@ -60,43 +59,41 @@ const requestDataToken = "__request_data__"
 func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) string, tag string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
-			ll := logrus.Fields{
-				"tag": tag,
-			}
+			SetData(ctx, "type", tag)
 			e := &RequestData{}
 			e.IP = net.ParseIP(ctx.RealIP())
-			ll["ip"] = e.IP.String()
+			SetData(ctx, "ip", e.IP)
 			e.UserAgent = ctx.Request().UserAgent()
 			ua := user_agent.New(ctx.Request().UserAgent())
-			ll["ua"] = ctx.Request().UserAgent()
+			SetData(ctx, "ua", ctx.Request().UserAgent())
 			e.Host = ctx.Request().Host
-			ll["host"] = e.Host
+			SetData(ctx, "host", e.Host)
 			e.Scheme = ctx.Scheme()
 			if xh := strings.ToLower(ctx.Request().Header.Get("X-Forwarded-Proto")); xh == "https" {
 				e.Scheme = "https"
 			}
-			ll["https"] = e.Scheme == "https"
+			SetData(ctx, "https", e.Scheme == "https")
 			name, version := ua.Browser()
 			e.Browser = name
-			ll["browser"] = name
+			SetData(ctx, "browser", name)
 			e.BrowserVersion = version
-			ll["version"] = version
+			SetData(ctx, "version", version)
 			e.OS = ua.OS()
-			ll["os"] = e.OS
+			SetData(ctx, "os", e.OS)
 			e.Mobile = ua.Mobile()
-			ll["mobile"] = e.Mobile
+			SetData(ctx, "mobile", e.Mobile)
 			e.Platform = ua.Platform()
-			ll["platform"] = e.Platform
+			SetData(ctx, "platform", e.Platform)
 			e.PlatformID = config.FindOsID(ua.Platform())
 			e.Referrer = ctx.Request().URL.Query().Get("ref")
 			e.Method = ctx.Request().Method
 			e.MegaImp = <-utils.ID
 			e.Parent = ctx.Request().URL.Query().Get("parent")
-			ll["parent"] = e.Parent
+			SetData(ctx, "parent", e.Parent)
 			if e.Referrer == "" {
 				e.Referrer = ctx.Request().Referer()
 			}
-			ll["ref"] = e.Referrer
+			SetData(ctx, "ref", e.Referrer)
 
 			if e.TID = ctx.Request().URL.Query().Get("tid"); len(e.TID) < config.Config.Clickyab.CopLen {
 				e.TID = copKey(ctx, e, config.Config.Clickyab.CopLen)
@@ -109,9 +106,7 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 			e.AndroidDevice = ctx.Request().URL.Query().Get("deviceid")
 
 			ctx.Set(requestDataToken, e)
-			ctx.Set("LOG", &ll)
 			err := next(ctx)
-			logrus.WithFields(ll).Info("RequestCompleted")
 			return err
 		}
 	}

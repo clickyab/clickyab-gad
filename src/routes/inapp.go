@@ -76,7 +76,16 @@ func (tc *selectController) inApp(c echo.Context) error {
 		CellLocation: cell,
 		ISP:          isp,
 	}
+
+	middlewares.SetData(c, "app", app.ID)
+	middlewares.SetData(c, "province", province)
+	middlewares.SetData(c, "isp", isp)
+	middlewares.SetData(c, "brand", phone.Brand)
+	middlewares.SetData(c, "carrier", phone.Carrier)
+	middlewares.SetData(c, "network", phone.Network)
+
 	filteredAds := selector.Apply(&m, selector.GetAdData(), appSelector)
+
 	_, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.App)
 	assert.True(len(ads) == 1, "[BUG] why select no ad?")
 
@@ -160,6 +169,7 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 		bs = 17
 		full = "landscape"
 	}
+	middlewares.SetData(ctx, "size", bs)
 	slotString := fmt.Sprintf("%d0%d0%d", app.ID, app.UserID, bs)
 	slot, _ := strconv.ParseInt(slotString, 10, 0)
 	s, err := mr.NewManager().FetchAppSlot(app.ID, slot)
