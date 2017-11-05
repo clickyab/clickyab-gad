@@ -59,17 +59,13 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	webPublicID := website.WPubID
-
-	middlewares.SetData(c, "site_id", website.WID)
-	middlewares.SetData(c, "site_domain", website.WDomain.String)
-
 	var slotFixFound bool
 	slotPins := selector2.GetPinAdData()
 	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(rd.Mobile, webPublicID, length, *website)
-
-	middlewares.SetData(c, "video_len", length)
-	middlewares.SetData(c, "ad_count", len(sizeNumSlice))
-
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = config.Config.Clickyab.MinCPCVast
+	}
 	// TODO : Move this to slotSizeVast func
 	for i := range slotSize {
 		slotSize[i].ExtraParam = map[string]string{
@@ -90,7 +86,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
 	var show = make(map[string]string)
-	show, _ = tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, config.Config.Clickyab.MinCPCVast, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast)
+	show, _ = tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, floorBids, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast, false)
 	var vTemp = make([]vastAdTemplate, 0)
 	if slotFixFound {
 		for _, val := range slotPins {

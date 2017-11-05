@@ -69,6 +69,10 @@ func (tc *selectController) showphp(c echo.Context) error {
 	middlewares.SetData(c, "ad_size", size)
 
 	slotSize, sizeNumSlice := tc.slotSizeNormal([]string{slotReq}, website.WID, map[string]int{slotReq: size})
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = config.Config.Clickyab.MinCPCWeb
+	}
 
 	lockSession := "DMDS_SESS_" + eventpage
 	t := redlock.NewRedisDistributedLock(lockSession, 3000*time.Millisecond)
@@ -106,10 +110,11 @@ func (tc *selectController) showphp(c echo.Context) error {
 			nil,
 			website,
 			false,
-			config.Config.Clickyab.MinCPCWeb,
+			floorBids,
 			config.Config.Clickyab.UnderFloor,
 			true,
 			config.Config.Clickyab.FloorDiv.Web,
+			false,
 		)
 	} else {
 		res := &slotPins[0].AdData

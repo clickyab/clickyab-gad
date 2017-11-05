@@ -29,7 +29,7 @@ func appCopCreateor(ctx echo.Context, e *middlewares.RequestData, len int) strin
 func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.Use(middlewares.ServerID)
 	e.GET("/native", tc.selectNativeAd, middlewares.RequestCollectorGenerator(webCopCreateor, "native"), middlewares.Header)
-	e.POST("/demand", tc.selectDemandAd, middlewares.RequestExchangeCollectorGenerator(webCopCreateor), middlewares.Header)
+	e.POST("/demand/:key", tc.selectDemandAd, middlewares.RequestExchangeCollectorGenerator(webCopCreateor), middlewares.Header)
 	e.GET("/ads/", tc.showphp, middlewares.RequestCollectorGenerator(webCopCreateor, "show"), middlewares.Header)
 	e.GET("/click/:typ/:wid/:mega/:ad/:rand", tc.click, middlewares.RequestCollectorGenerator(webCopCreateor, "click"), middlewares.Header)
 	e.GET("/conversion/", tc.conversion, middlewares.RequestCollectorGenerator(webCopCreateor, "conv"), middlewares.Header)

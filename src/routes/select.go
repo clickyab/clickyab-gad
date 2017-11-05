@@ -104,7 +104,11 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		ISP:         isp,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, _ := tc.makeShow(c, "web", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web)
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = config.Config.Clickyab.MinCPCWeb
+	}
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, floorBids, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web, false)
 
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
@@ -120,7 +124,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData, floorDiv int64) bool {
+func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData, floorDiv int64, floorbids map[string]int64, exchange bool) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
@@ -131,6 +135,9 @@ func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *sl
 		floorDiv = 1
 	}
 	//logrus.Debugf("%d / %f ==> %d >= %d", adData.CampaignMaxBid, adData.CTR, adData.CPM, website.FloorCPM()/floorDiv)
+	if exchange {
+		return adData.CPM >= floorbids[slot.PublicID]/floorDiv
+	}
 	return adData.CPM >= website.FloorCPM()/floorDiv
 }
 
@@ -469,10 +476,11 @@ func (tc *selectController) makeShow(
 	attr map[string]map[string]string,
 	publisher Publisher,
 	multipleVideo bool,
-	minCPC int64,
+	minCPC map[string]int64,
 	allowUnderFloor bool,
 	capping bool,
 	floorDiv int64, // I hate add parameter to this function :/ TODO : implement the function option pattern
+	exchange bool,
 ) (map[string]string, map[string]*mr.AdData) {
 	//var dum []*mr.AdData
 	var (
@@ -549,7 +557,7 @@ func (tc *selectController) makeShow(
 				if adData.AdType == config.AdTypeVideo && noVideo {
 					continue
 				}
-				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv) {
+				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv, minCPC, exchange) {
 					exceedFloor = append(exceedFloor, adData)
 				} else if adData.WinnerBid == 0 {
 					underFloor = append(underFloor, adData)
@@ -607,7 +615,12 @@ func (tc *selectController) makeShow(
 
 			// Do not do second biding pricing on this ads, they can not pass CPMFloor
 			if secBid {
-				secondCPM := tc.getSecondCPM(publisher.FloorCPM(), sorted)
+				var secondCPM int64
+				if exchange {
+					secondCPM = tc.getSecondCPM(minCPC[order[o]], sorted)
+				} else {
+					secondCPM = tc.getSecondCPM(publisher.FloorCPM(), sorted)
+				}
 				sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
 				extra += fmt.Sprintf(" WinnerCPM = %d, SecCPM = %d , CTR = %f, WinnerBID: %d", sorted[0].CPM, secondCPM, sorted[0].CTR, sorted[0].WinnerBid)
 				//if len(sorted) > 1 {
@@ -627,9 +640,8 @@ func (tc *selectController) makeShow(
 				sorted[0].WinnerBid = sorted[0].CampaignMaxBid
 				extra += " WTF? the winner bid is greater than max bid? fixing. "
 			}
-
-			if sorted[0].WinnerBid < minCPC {
-				sorted[0].WinnerBid = minCPC
+			if sorted[0].WinnerBid < minCPC[order[o]] {
+				sorted[0].WinnerBid = minCPC[order[o]]
 				extra += " Winner bid is less than min CPC? fixing. "
 			}
 

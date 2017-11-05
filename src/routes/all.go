@@ -252,7 +252,11 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
-	_, allAds := tc.makeShow(ctx, "sync", rd, filteredAds, nil, sizeNumSlice, SlotData, nil, website, false, config.Config.Clickyab.MinCPCVast, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast)
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = config.Config.Clickyab.MinCPCVast
+	}
+	_, allAds := tc.makeShow(ctx, "sync", rd, filteredAds, nil, sizeNumSlice, SlotData, nil, website, false, floorBids, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast, false)
 
 	response := map[string][]allAdsResponse{}
 	for i := range allAds {
