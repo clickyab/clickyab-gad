@@ -243,7 +243,11 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 	if !mr.NewManager().IsUserActive(website.UserID) {
 		return nil, nil, 0, 0, errors.New("user is banned")
 	}
-	province, isp := ip2location.GetProvinceISPByIP(rd.IP)
+	province, isp, ll := ip2location.GetProvinceISPByIP(rd.IP)
+	middlewares.SetData(c, "province", ll.Province)
+	middlewares.SetData(c, "country", ll.Country)
+	middlewares.SetData(c, "city", ll.City)
+	middlewares.SetData(c, "isp", ll.ISP)
 	//check if the website domain is valid
 	if website.WDomain.Valid && website.WDomain.String != domain[0] {
 		return nil, nil, 0, 0, errors.New("domain and public id mismatch")

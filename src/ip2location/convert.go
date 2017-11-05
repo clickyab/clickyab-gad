@@ -46,20 +46,20 @@ var m map[string]int64 = map[string]int64{
 	//"Hamadan":37,
 }
 
-// GetProvinceIDByIP get province id by ip
-func GetProvinceIDByIP(ip net.IP) int64 {
-	rec := IP2Location(ip.String())
-	if i, ok := m[rec.Region]; ok {
-		return i
-	}
-	return 0
+type LocationData struct {
+	Country, Province, City, ISP string
 }
 
 // GetProvinceIDByIP get province id by ip
-func GetProvinceISPByIP(ip net.IP) (int64, int64) {
+func GetProvinceISPByIP(ip net.IP) (int64, int64, LocationData) {
 	var province int64
 	var uISP int64
+	l := LocationData{}
 	rec := IP2Location(ip.String())
+	l.Country = rec.CountryShort
+	l.Province = rec.Region
+	l.City = rec.City
+	l.ISP = rec.ISP
 	if i, ok := m[rec.Region]; ok {
 		province = i
 	}
@@ -73,7 +73,7 @@ func GetProvinceISPByIP(ip net.IP) (int64, int64) {
 		}
 	}
 
-	return province, uISP
+	return province, uISP, l
 }
 
 // GetProvinceIDByName get province id by name

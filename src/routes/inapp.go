@@ -80,11 +80,10 @@ func (tc *selectController) inApp(c echo.Context) error {
 	middlewares.SetData(c, "app_name", app.AppName)
 	middlewares.SetData(c, "app_pkg", app.AppPackage)
 	middlewares.SetData(c, "app_id", app.ID)
-	middlewares.SetData(c, "province", province)
-	middlewares.SetData(c, "isp", isp)
 	middlewares.SetData(c, "brand", phone.Brand)
 	middlewares.SetData(c, "carrier", phone.Carrier)
 	middlewares.SetData(c, "network", phone.Network)
+	middlewares.SetData(c, "ad_count", 1) // Ad in app is always one
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), appSelector)
 
@@ -171,7 +170,7 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 		bs = 17
 		full = "landscape"
 	}
-	middlewares.SetData(ctx, "size", bs)
+	middlewares.SetData(ctx, "ad_size", bs)
 	slotString := fmt.Sprintf("%d0%d0%d", app.ID, app.UserID, bs)
 	slot, _ := strconv.ParseInt(slotString, 10, 0)
 	s, err := mr.NewManager().FetchAppSlot(app.ID, slot)
@@ -222,7 +221,11 @@ func (tc *selectController) getAppDataFromCtx(c echo.Context) (*middlewares.Requ
 		return nil, nil, 0, 0, nil, nil, errors.New("user is banned")
 	}
 
-	province, isp := ip2location.GetProvinceISPByIP(rd.IP)
+	province, isp, ll := ip2location.GetProvinceISPByIP(rd.IP)
+	middlewares.SetData(c, "province", ll.Province)
+	middlewares.SetData(c, "country", ll.Country)
+	middlewares.SetData(c, "city", ll.City)
+	middlewares.SetData(c, "isp", ll.ISP)
 
 	phone := m.GetPhoneData(c.Request().URL.Query().Get("brand"), strings.Trim(c.Request().URL.Query().Get("carrier"), "# \n\t"), c.Request().URL.Query().Get("network"))
 	mcc, _ := strconv.ParseInt(c.Request().URL.Query().Get("mcc"), 10, 0)
