@@ -61,7 +61,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	webPublicID := website.WPubID
 
 	middlewares.SetData(c, "site_id", website.WID)
-	middlewares.SetData(c, "site_domain", website.WDomain)
+	middlewares.SetData(c, "site_domain", website.WDomain.String)
 
 	var slotFixFound bool
 	slotPins := selector2.GetPinAdData()

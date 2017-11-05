@@ -64,7 +64,7 @@ func (tc *selectController) showphp(c echo.Context) error {
 	}
 
 	middlewares.SetData(c, "site_id", website.WID)
-	middlewares.SetData(c, "site_domain", website.WDomain)
+	middlewares.SetData(c, "site_domain", website.WDomain.String)
 	middlewares.SetData(c, "ad_count", 1)
 	middlewares.SetData(c, "ad_size", size)
 
