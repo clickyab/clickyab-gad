@@ -77,7 +77,9 @@ func (tc *selectController) inApp(c echo.Context) error {
 		ISP:          isp,
 	}
 
-	middlewares.SetData(c, "app", app.ID)
+	middlewares.SetData(c, "app_name", app.AppName)
+	middlewares.SetData(c, "app_pkg", app.AppPackage)
+	middlewares.SetData(c, "app_id", app.ID)
 	middlewares.SetData(c, "province", province)
 	middlewares.SetData(c, "isp", isp)
 	middlewares.SetData(c, "brand", phone.Brand)

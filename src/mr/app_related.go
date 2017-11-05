@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"gmaps"
 	"math/rand"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -121,8 +122,21 @@ func (m *Manager) doCacheQuery(q string, p string) (*tmpData, error) {
 	return &res, nil
 }
 
+var (
+	irmci   = regexp.MustCompile("(?i)^(IR)?(-)?(MCI|TCI|43270|Mobile Communications Company of Iran)$")
+	irancel = regexp.MustCompile("(?i)^(MTN)?(-)?irancell$")
+	rightel = regexp.MustCompile("(?i)^(rightel|IRN 20)$")
+)
+
 // GetPhoneData try to insert/retrieve brand for phone
 func (m *Manager) GetPhoneData(brand, carrier, network string) *PhoneData {
+	if irancel.MatchString(carrier) {
+		carrier = "Irancell"
+	} else if irmci.MatchString(carrier) {
+		carrier = "IR-MCI"
+	} else if rightel.MatchString(carrier) {
+		carrier = "RighTel"
+	}
 	result := PhoneData{
 		Brand: brand,
 		// Model:   model,
