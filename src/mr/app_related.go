@@ -124,7 +124,7 @@ func (m *Manager) doCacheQuery(q string, p string) (*tmpData, error) {
 
 var (
 	irmci   = regexp.MustCompile("(?i)(IR)?(-)?(MCI|TCI|43270|Mobile Communications Company of Iran)$")
-	irancel = regexp.MustCompile("(?i)(MTN)?(-)?(irancell|mtn|Irancell Telecommunications Services Company)$")
+	irancel = regexp.MustCompile("(?i)(MTN)?(-)?(irancell|mtn|Iran( )?cell Telecommunications Services Company)$")
 	rightel = regexp.MustCompile("(?i)(righ( )?tel(@)?|IRN 20)$") // Some case are like "Rightle | rightel"
 )
 
