@@ -65,7 +65,7 @@ func (tc *selectController) showphp(c echo.Context) error {
 
 	middlewares.SetData(c, "site_id", website.WID)
 	middlewares.SetData(c, "site_domain", website.WDomain)
-
+	middlewares.SetData(c, "ad_count", 1)
 	middlewares.SetData(c, "ad_size", size)
 
 	slotSize, sizeNumSlice := tc.slotSizeNormal([]string{slotReq}, website.WID, map[string]int{slotReq: size})
