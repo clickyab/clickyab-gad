@@ -14,6 +14,8 @@ import (
 	"mr"
 	"store"
 
+	"middlewares"
+
 	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -26,10 +28,16 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
+
+	middlewares.SetData(c, "site_id", website.WID)
+	middlewares.SetData(c, "site_domain", website.WDomain)
+
 	var slotFixFound bool
 	slotPins := selector2.GetPinAdData()
 	slotSize, sizeNumSlice, order := tc.slotSizeNative(c, *website)
 	slotFixFound, slotSize, sizeNumSlice, slotPins, _, _ = checkForFixSlot(slotPins, slotSize, sizeNumSlice, "native")
+
+	middlewares.SetData(c, "ad_count", len(sizeNumSlice))
 	//call context
 	m := selector.Context{
 		RequestData: *rd,

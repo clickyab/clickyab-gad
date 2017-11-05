@@ -58,10 +58,15 @@ func (tc *selectController) showphp(c echo.Context) error {
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, "wrong slot size")
 	}
-	website, provinceID, ispID, err := locationStatus(tc, wpidReq, rd.IP)
+	website, provinceID, ispID, err := locationStatus(c, tc, wpidReq, rd.IP)
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
+
+	middlewares.SetData(c, "site_id", website.WID)
+	middlewares.SetData(c, "site_domain", website.WDomain)
+
+	middlewares.SetData(c, "ad_size", size)
 
 	slotSize, sizeNumSlice := tc.slotSizeNormal([]string{slotReq}, website.WID, map[string]int{slotReq: size})
 
@@ -173,7 +178,7 @@ func makeAdURL(rd *middlewares.RequestData, wID, adID int64, mega string, rnd st
 	return u.String()
 }
 
-func locationStatus(tc *selectController, wpid string, ip net.IP) (*mr.Website, int64, int64, error) {
+func locationStatus(c echo.Context, tc *selectController, wpid string, ip net.IP) (*mr.Website, int64, int64, error) {
 	wpID, err := strconv.ParseInt(wpid, 10, 0)
 
 	website, err := tc.fetchWebsite(wpID)
@@ -181,7 +186,11 @@ func locationStatus(tc *selectController, wpid string, ip net.IP) (*mr.Website, 
 		return nil, 0, 0, errors.New("wrong website")
 	}
 
-	provinceID, ispID := ip2location.GetProvinceISPByIP(ip)
+	provinceID, ispID, ll := ip2location.GetProvinceISPByIP(ip)
+	middlewares.SetData(c, "province", ll.Province)
+	middlewares.SetData(c, "country", ll.Country)
+	middlewares.SetData(c, "city", ll.City)
+	middlewares.SetData(c, "isp", ll.ISP)
 
 	return website, provinceID, ispID, nil
 }

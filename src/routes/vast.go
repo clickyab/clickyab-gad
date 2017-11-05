@@ -59,9 +59,17 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	webPublicID := website.WPubID
+
+	middlewares.SetData(c, "site_id", website.WID)
+	middlewares.SetData(c, "site_domain", website.WDomain)
+
 	var slotFixFound bool
 	slotPins := selector2.GetPinAdData()
 	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(rd.Mobile, webPublicID, length, *website)
+
+	middlewares.SetData(c, "video_len", length)
+	middlewares.SetData(c, "ad_count", len(sizeNumSlice))
+
 	// TODO : Move this to slotSizeVast func
 	for i := range slotSize {
 		slotSize[i].ExtraParam = map[string]string{
@@ -186,7 +194,11 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 		return nil, nil, 0, 0, "", nil, errors.New("user is banned")
 	}
 
-	province, isp := ip2location.GetProvinceISPByIP(rd.IP)
+	province, isp, ll := ip2location.GetProvinceISPByIP(rd.IP)
+	middlewares.SetData(c, "province", ll.Province)
+	middlewares.SetData(c, "country", ll.Country)
+	middlewares.SetData(c, "city", ll.City)
+	middlewares.SetData(c, "isp", ll.ISP)
 	lenVast, vastCon := config.MakeVastLen(c.QueryParam("l"), start, mid, end)
 	return rd, website, province, isp, lenVast, vastCon, nil
 }

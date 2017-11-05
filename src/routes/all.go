@@ -135,7 +135,7 @@ func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestDat
 	rd.CopID = payload.TID
 	slotSize, sizeNumSlice := tc.slotSizeWeb(c, *website, rd.Mobile, true)
 
-	provinceID, _ := ip2location.GetProvinceISPByIP(payload.IP)
+	provinceID, _ , _:= ip2location.GetProvinceISPByIP(payload.IP)
 
 	m := selector.Context{
 		RequestData: *rd,
@@ -190,7 +190,7 @@ func (tc *selectController) allNativeAds(ctx echo.Context, rd *middlewares.Reque
 	ctx.Set("payload", payload)
 
 	rd.CopID = payload.TID
-	provinceID, _ := ip2location.GetProvinceISPByIP(payload.IP)
+	provinceID, _ , _:= ip2location.GetProvinceISPByIP(payload.IP)
 
 	slotSize, sizeNumSlice, _ := tc.slotSizeNative(ctx, *website, true)
 	m := selector.Context{
@@ -229,7 +229,7 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 	assert.Nil(err)
 	ctx.Set("payload", payload)
 
-	provinceID, _ := ip2location.GetProvinceISPByIP(payload.IP)
+	provinceID, _ , _:= ip2location.GetProvinceISPByIP(payload.IP)
 
 	lenVast, vastCon := config.MakeVastLen(ctx.QueryParam("l"), payload.Start, payload.Mid, payload.End)
 	vastSlot, pubs, pubSize := makeVastSlot(vastCon, website)

@@ -83,17 +83,24 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 			e.Mobile = ua.Mobile()
 			SetData(ctx, "mobile", e.Mobile)
 			e.Platform = ua.Platform()
+			if e.Platform == "" && ctx.Request().UserAgent() == "CLICKYAB" {
+				e.Platform = "ClickyabSDK"
+			}
 			SetData(ctx, "platform", e.Platform)
 			e.PlatformID = config.FindOsID(ua.Platform())
 			e.Referrer = ctx.Request().URL.Query().Get("ref")
 			e.Method = ctx.Request().Method
 			e.MegaImp = <-utils.ID
 			e.Parent = ctx.Request().URL.Query().Get("parent")
-			SetData(ctx, "parent", e.Parent)
+			if e.Parent != "" {
+				SetData(ctx, "parent", e.Parent)
+			}
 			if e.Referrer == "" {
 				e.Referrer = ctx.Request().Referer()
 			}
-			SetData(ctx, "ref", e.Referrer)
+			if e.Referrer != "" {
+				SetData(ctx, "ref", e.Referrer)
+			}
 
 			if e.TID = ctx.Request().URL.Query().Get("tid"); len(e.TID) < config.Config.Clickyab.CopLen {
 				e.TID = copKey(ctx, e, config.Config.Clickyab.CopLen)
