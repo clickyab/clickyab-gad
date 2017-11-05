@@ -75,18 +75,22 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 			SetData(ctx, "https", e.Scheme == "https")
 			name, version := ua.Browser()
 			e.Browser = name
-			SetData(ctx, "browser", name)
 			e.BrowserVersion = version
 			SetData(ctx, "version", version)
 			e.OS = ua.OS()
-			SetData(ctx, "os", e.OS)
 			e.Mobile = ua.Mobile()
-			SetData(ctx, "mobile", e.Mobile)
 			e.Platform = ua.Platform()
 			if e.Platform == "" && ctx.Request().UserAgent() == "CLICKYAB" {
 				e.Platform = "ClickyabSDK"
+				e.OS = "Android"
+				e.Mobile = true
+				e.Browser = "AndroidSDK"
 			}
 			SetData(ctx, "platform", e.Platform)
+			SetData(ctx, "os", e.OS)
+			SetData(ctx, "mobile", e.Mobile)
+			SetData(ctx, "browser", name)
+
 			e.PlatformID = config.FindOsID(ua.Platform())
 			e.Referrer = ctx.Request().URL.Query().Get("ref")
 			e.Method = ctx.Request().Method
