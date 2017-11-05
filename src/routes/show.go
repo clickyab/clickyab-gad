@@ -174,27 +174,27 @@ func (tc *selectController) show(c echo.Context) error {
 	return c.HTML(http.StatusOK, res)
 }
 
-func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool) (string, error) {
+func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ad *mr.Ad, url string, long string, pos string, https bool) (string, error) {
 	buf := &bytes.Buffer{}
-	switch ads.AdType {
+	switch ad.AdType {
 	case mr.SingleAdType:
-		res := tc.makeSingleAdData(ads, url, https)
+		res := tc.makeSingleAdData(ad, url, https)
 		if err := singleAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
 	case mr.VideoAdType:
-		res := tc.makeVideoAdData(ads, url, https)
+		res := tc.makeVideoAdData(ad, url, https)
 		if err := videoAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
 	case mr.DynamicAdType:
 		if https {
-			ads.AdAttribute.Product = strings.Replace(ads.AdAttribute.Product, "http://", "https://", -1)
-			ads.AdAttribute.Logo = strings.Replace(ads.AdAttribute.Logo, "http://", "https://", -1)
+			ad.AdAttribute.Product = strings.Replace(ad.AdAttribute.Product, "http://", "https://", -1)
+			ad.AdAttribute.Logo = strings.Replace(ad.AdAttribute.Logo, "http://", "https://", -1)
 		}
-		res := getTemplate("", ads.AdSize)
-		ads.AdAttribute.Link = url
-		if err := res.Execute(buf, ads.AdAttribute); err != nil {
+		res := getTemplate("", ad.AdSize)
+		ad.AdAttribute.Link = url
+		if err := res.Execute(buf, ad.AdAttribute); err != nil {
 			return "", err
 		}
 

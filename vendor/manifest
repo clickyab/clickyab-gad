@@ -14,6 +14,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/bsm/openrtb",
+			"repository": "https://github.com/bsm/openrtb",
+			"revision": "197918635afa32b6e0d971921926f61671cfc092",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/daaku/go.zipexe",
 			"repository": "https://github.com/daaku/go.zipexe",
 			"revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",
