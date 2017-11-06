@@ -2022,7 +2022,7 @@ fill: {{.IconCtaBannerPickerSelector}};
 }
 var r = &sync.RWMutex{}
 
-func getTemplate(source string, size int) *template.Template {
+func getTemplate(size int) *template.Template {
 	r.RLock()
 	defer r.RUnlock()
 	res, ok := templates[size]

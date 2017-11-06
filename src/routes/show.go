@@ -29,6 +29,8 @@ type SingleAd struct {
 	Height string
 	Src    string
 	Tiny   bool
+
+	ShowT bool
 }
 
 type vastTemplate struct {
@@ -174,11 +176,11 @@ func (tc *selectController) show(c echo.Context) error {
 	return c.HTML(http.StatusOK, res)
 }
 
-func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool) (string, error) {
+func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool, showT bool) (string, error) {
 	buf := &bytes.Buffer{}
 	switch ads.AdType {
 	case mr.SingleAdType:
-		res := tc.makeSingleAdData(ads, url, https)
+		res := tc.makeSingleAdData(ads, url, https, showT)
 		if err := singleAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
@@ -192,7 +194,7 @@ func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.
 			ads.AdAttribute.Product = strings.Replace(ads.AdAttribute.Product, "http://", "https://", -1)
 			ads.AdAttribute.Logo = strings.Replace(ads.AdAttribute.Logo, "http://", "https://", -1)
 		}
-		res := getTemplate("", ads.AdSize)
+		res := getTemplate(ads.AdSize)
 		ads.AdAttribute.Link = url
 		if err := res.Execute(buf, ads.AdAttribute); err != nil {
 			return "", err
@@ -205,7 +207,7 @@ func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.
 // makeAdData
 func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool) (string, error) {
 	if typ == "web" || typ == "app" {
-		return tc.makeWebTemplate(c, typ, ads, url, long, pos, https)
+		return tc.makeWebTemplate(c, typ, ads, url, long, pos, https, false)
 	}
 
 	buf := &bytes.Buffer{}
@@ -246,7 +248,7 @@ func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string, https bool) V
 	return sa
 }
 
-func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string, https bool) SingleAd {
+func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string, https, showT bool) SingleAd {
 	w, h := config.GetSizeByNum(ad.AdSize)
 	src := ad.AdImg.String
 	if https {
@@ -258,6 +260,7 @@ func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string, https bool) 
 		Width:  w,
 		Src:    src,
 		Tiny:   true,
+		ShowT:  showT,
 	}
 	return sa
 }
