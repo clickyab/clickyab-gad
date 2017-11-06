@@ -19,7 +19,7 @@ type RequestData struct {
 	UserAgent      string
 	IP2Location    *mr.IP2Location
 	Browser        string
-	SuppliersName  string
+	SupplierKey    string
 	OS             string
 	Platform       string
 	PlatformID     int64

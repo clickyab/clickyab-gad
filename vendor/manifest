@@ -14,6 +14,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/clickyab/simple-rtb",
+			"repository": "https://github.com/clickyab/simple-rtb",
+			"revision": "257d3cd6798c4fa4f61041b2866ac89a883fa842",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/daaku/go.zipexe",
 			"repository": "https://github.com/daaku/go.zipexe",
 			"revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",

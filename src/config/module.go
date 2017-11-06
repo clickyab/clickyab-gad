@@ -14,10 +14,11 @@ import (
 
 	"fmt"
 
+	"io/ioutil"
+
 	"github.com/sirupsen/logrus"
 	onion "gopkg.in/fzerorubigd/onion.v2"
 	"gopkg.in/fzerorubigd/onion.v2/extraenv"
-	"io/ioutil"
 )
 
 var (
@@ -76,6 +77,7 @@ func Initialize() {
 	)
 
 	allSuppliers := o.GetStringSlice("clickyab.accepted_demands")
+	//TODO allSuppliers = []string{"randomsupkey:clickyab:1000"}
 	for i := range allSuppliers {
 		sp := strings.Split(allSuppliers[i], ":")
 		if len(sp) == 3 {

@@ -20,6 +20,9 @@ type Context struct {
 	CellLocation *mr.CellLocation
 	Campaign     int64
 	SlotPins     []mr.SlotPinData
+
+	//only for exchange
+	BidFloors map[string]int64 //string->slot-pub-id ,int64 - > bid_floor
 }
 
 // FilterFunc is the type use to filter the

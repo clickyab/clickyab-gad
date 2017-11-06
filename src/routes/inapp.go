@@ -65,6 +65,10 @@ func (tc *selectController) inApp(c echo.Context) error {
 		return c.HTML(http.StatusBadRequest, err.Error())
 	}
 	slotSize, sizeNumSlice, slotString, full := tc.slotSizeApp(c, app)
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = config.Config.Clickyab.MinCPCApp
+	}
 	//call context
 	m := selector.Context{
 		RequestData:  *rd,
@@ -87,7 +91,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), appSelector)
 
-	_, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.App)
+	_, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, app, false, floorBids, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.App, false)
 	assert.True(len(ads) == 1, "[BUG] why select no ad?")
 
 	var (
