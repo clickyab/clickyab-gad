@@ -34,6 +34,7 @@ type RequestData struct {
 	TID            string
 	Parent         string
 	ISP            string
+	Alexa          bool
 
 	//App part
 	Network    string
@@ -62,10 +63,11 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 			SetData(ctx, "type", tag)
 			e := &RequestData{}
 			e.IP = net.ParseIP(ctx.RealIP())
+			uaStr := ctx.Request().UserAgent()
 			SetData(ctx, "ip", e.IP)
 			e.UserAgent = ctx.Request().UserAgent()
-			ua := user_agent.New(ctx.Request().UserAgent())
-			SetData(ctx, "ua", ctx.Request().UserAgent())
+			ua := user_agent.New(uaStr)
+			SetData(ctx, "ua", uaStr)
 			e.Host = ctx.Request().Host
 			SetData(ctx, "host", e.Host)
 			e.Scheme = ctx.Scheme()
@@ -80,7 +82,7 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 			e.OS = ua.OS()
 			e.Mobile = ua.Mobile()
 			e.Platform = ua.Platform()
-			if e.Platform == "" && ctx.Request().UserAgent() == "CLICKYAB" {
+			if e.Platform == "" && uaStr == "CLICKYAB" {
 				e.Platform = "ClickyabSDK"
 				e.OS = "Android"
 				e.Mobile = true
@@ -115,6 +117,12 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 			e.GoogleID = ctx.Request().URL.Query().Get("GoogleAdvertisingId")
 			e.AndroidID = ctx.Request().URL.Query().Get("androidid")
 			e.AndroidDevice = ctx.Request().URL.Query().Get("deviceid")
+
+			// In go headers are not case sensitive and ok with _ and -
+			if strings.Contains(uaStr, "Alexa") || ctx.Request().Header.Get("ALEXATOOLBAR-ALX_NS_PH") != "" {
+				e.Alexa = true
+				SetData(ctx, "alexa", 1)
+			}
 
 			ctx.Set(requestDataToken, e)
 			err := next(ctx)
