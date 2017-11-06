@@ -37,6 +37,7 @@ var (
 		filter.CheckWebBlackList,
 		filter.CheckWebCategory,
 		filter.CheckProvince,
+		filter.CheckMinBid,
 		filter.CheckVastNetwork,
 		filter.CheckISP,
 	)
@@ -81,12 +82,13 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	slotFixFound, slotSize, sizeNumSlice, slotPins, fixSlotSize, _ := checkForFixSlot(slotPins, slotSize, sizeNumSlice, "vast")
 	//call context
 	m := selector.Context{
-		RequestData: *rd,
-		Website:     website,
-		Size:        sizeNumSlice,
-		Province:    province,
-		ISP:         isp,
-		SlotPins:    slotPins,
+		RequestData:      *rd,
+		Website:          website,
+		Size:             sizeNumSlice,
+		Province:         province,
+		ISP:              isp,
+		SlotPins:         slotPins,
+		MinBidPercentage: 1, // TODO : Hard coded shit.
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
 	var show = make(map[string]string)

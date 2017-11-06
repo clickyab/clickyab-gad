@@ -2,43 +2,27 @@ package routes
 
 import (
 	"config"
-	"mr"
-	"net/http"
-	"selector"
-	"utils"
-
-	"fmt"
-
-	"strconv"
-
-	"time"
-
-	"net/url"
-
-	"middlewares"
-
-	"net"
-
 	"errors"
-
+	"fmt"
 	"ip2location"
-
-	"redis"
-
-	"redlock"
-
-	selector2 "pin"
-
 	"math/rand"
-
+	"middlewares"
+	"mr"
+	"net"
+	"net/http"
+	"net/url"
+	selector2 "pin"
+	"redis"
+	"redlock"
+	"selector"
 	"store"
+	"strconv"
+	"time"
+	"utils"
 
 	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
-
-// example request
-// a.clickyab.com/ads/show.php?a=1941478513606&width=300&height=250&slot=48812001338&eventpage=995681655&ck=true&loc=http://myreal.ir/dara&ref=false&tid=2188781033
 
 func (tc *selectController) showphp(c echo.Context) error {
 
@@ -83,12 +67,13 @@ func (tc *selectController) showphp(c echo.Context) error {
 
 	slotFixFound, slotSize, sizeNumSlice, slotPins, _, _ = checkForFixSlot(slotPins, slotSize, sizeNumSlice, "banner")
 	m := selector.Context{
-		RequestData: *rd,
-		Website:     website,
-		Size:        sizeNumSlice,
-		Province:    provinceID,
-		ISP:         ispID,
-		SlotPins:    slotPins,
+		RequestData:      *rd,
+		Website:          website,
+		Size:             sizeNumSlice,
+		Province:         provinceID,
+		ISP:              ispID,
+		SlotPins:         slotPins,
+		MinBidPercentage: 1, // TODO : hard coded shit
 	}
 	// TODO remove slot fix ads from normal pool
 
