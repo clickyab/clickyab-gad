@@ -49,10 +49,10 @@ type AppConfig struct {
 		Size     int
 		Network  string
 		Address  string
-		Port string
+		Port     string
 		Password string
 		Databse  int
-		Cluster bool
+		Cluster  bool
 		Days     int //Daily Statistic TimeOut Expiration TODO : the worst position for this
 	}
 
@@ -141,6 +141,8 @@ type AppConfig struct {
 			Vast   int64 `onion:"vast"`
 			Demand int64 `onion:"demand"`
 		} `onion:"floor_div"`
+
+		ChanceShowT int
 	}
 
 	Fluentd struct {
@@ -179,7 +181,6 @@ func defaultLayer() onion.Layer {
 	p, err := expand.Path("$HOME/gad/statics")
 	assert.Nil(err)
 	assert.Nil(d.SetDefault("static_root", p))
-
 
 	var (
 		rport = "6379"
@@ -229,6 +230,7 @@ func defaultLayer() onion.Layer {
 	assert.Nil(d.SetDefault("select.balance", 50000))
 
 	assert.Nil(d.SetDefault("clickyab.default_ctr", 0.1))
+	assert.Nil(d.SetDefault("clickyab.chanceshowt", 80))
 	//assert.Nil(d.SetDefault(
 	//	"clickyab.ctr_const",
 	//	[]string{

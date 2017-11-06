@@ -154,8 +154,12 @@ func (tc *selectController) showphp(c echo.Context) error {
 	if slotFixFound && slotPins[0].Direct {
 		adURL = ad.AdURL.String
 	}
-
-	res, err := tc.makeWebTemplate(c, "", ad, adURL, "", "", loc[:5] == "https")
+	showT := false
+	if rd.Mobile && provinceID > 0 && rand.Intn(config.Config.Clickyab.ChanceShowT) == 1 {
+		showT = true
+		middlewares.SetData(c, "show_t", 1)
+	}
+	res, err := tc.makeWebTemplate(c, "", ad, adURL, "", "", loc[:5] == "https", showT)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
