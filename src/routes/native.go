@@ -40,12 +40,13 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	middlewares.SetData(c, "ad_count", len(sizeNumSlice))
 	//call context
 	m := selector.Context{
-		RequestData: *rd,
-		Website:     website,
-		Size:        sizeNumSlice,
-		Province:    province,
-		ISP:         isp,
-		SlotPins:    slotPins,
+		RequestData:      *rd,
+		Website:          website,
+		Size:             sizeNumSlice,
+		Province:         province,
+		ISP:              isp,
+		SlotPins:         slotPins,
+		MinBidPercentage: 150 / 200, // TODO : Hard coded :) make it some how calculated
 	}
 	// remove fucking order
 	var resOrder = []string{}

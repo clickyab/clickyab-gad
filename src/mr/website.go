@@ -18,7 +18,7 @@ type Website struct {
 	WSupplier          string         `json:"w_supplier" db:"w_supplier"`
 	WName              sql.NullString `json:"w_name" db:"w_name"`
 	WCategories        SharpArray     `json:"w_categories" db:"w_categories"`
-	WMinBid            sql.NullInt64  `json:"w_minbid" db:"w_minbid"`
+	WMinBid            int64          `json:"w_minbid" db:"w_minbid"`
 	WFloorCpm          sql.NullInt64  `json:"w_floor_cpm" db:"w_floor_cpm"`
 	WProfileType       sql.NullInt64  `json:"w_profile_type" db:"w_profile_type"`
 	WStatus            int            `json:"w_status" db:"w_status"`

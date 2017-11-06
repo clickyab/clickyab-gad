@@ -20,6 +20,8 @@ type Context struct {
 	CellLocation *mr.CellLocation
 	Campaign     int64
 	SlotPins     []mr.SlotPinData
+
+	MinBidPercentage float64
 }
 
 // FilterFunc is the type use to filter the
