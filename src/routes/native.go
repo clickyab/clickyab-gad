@@ -46,7 +46,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		Province:         province,
 		ISP:              isp,
 		SlotPins:         slotPins,
-		MinBidPercentage: 150 / 200, // TODO : Hard coded :) make it some how calculated
+		MinBidPercentage: 0.5, // TODO : Hard coded :) make it some how calculated
 	}
 	// remove fucking order
 	var resOrder = []string{}
