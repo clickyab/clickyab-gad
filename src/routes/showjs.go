@@ -8,8 +8,6 @@ import (
 	"assert"
 	"net/url"
 
-	"strings"
-
 	"math/rand"
 
 	"mr"
@@ -652,22 +650,14 @@ func (tc *selectController) showjs(c echo.Context) error {
 	}
 	t, err := template.New("show").Parse(showTemplate)
 	assert.Nil(err)
-	var alexa bool
 
-	if strings.Contains(rd.UserAgent, "Alexa") {
-		alexa = true
-	} else if strings.Contains(c.Request().Header.Get("HTTP_ALEXATOOLBAR_ALX_NS_PH"), "Alexa") {
-		alexa = true
-	} else if strings.Contains(c.Request().Header.Get("AlexaToolbar-ALX_NS_PH"), "Alexa") {
-		alexa = true
-	}
 	g := data{
 		Mobile:    rd.Mobile,
 		Mobad:     wmobad,
 		Scheme:    rd.Scheme + "://",
 		CHost:     c.Request().Host,
 		Host:      domain,
-		Alexa:     alexa,
+		Alexa:     rd.Alexa,
 		Rand:      random(999999, 999999999),
 		NotMobile: !rd.Mobile,
 		Random:    random(1, 2) == 1,
