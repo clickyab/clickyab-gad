@@ -157,7 +157,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	if params.Get("minsize") != "" {
 		minInt, err := strconv.ParseInt(params.Get("minsize"), 10, 64)
 		if err != nil || minInt < 90 || minInt > 150 {
-			return c.HTML(http.StatusBadRequest, "<div class=\"no-ads\"></div>")
+			minInt = 141
 		}
 	}
 
