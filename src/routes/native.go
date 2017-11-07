@@ -16,6 +16,8 @@ import (
 
 	"middlewares"
 
+	"strconv"
+
 	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -151,12 +153,21 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		return c.HTML(http.StatusBadRequest, "<div class=\"no-ads\"></div>")
 	}
 
+	//check min size
+	if params.Get("minsize") != "" {
+		minInt, err := strconv.ParseInt(params.Get("minsize"), 10, 64)
+		if err != nil || minInt < 90 || minInt > 150 {
+			return c.HTML(http.StatusBadRequest, "<div class=\"no-ads\"></div>")
+		}
+	}
+
 	n := nativeContainer{
 		Ads:        ads,
 		Title:      params.Get("title"),
 		FontSize:   params.Get("fontSize"),
 		FontFamily: params.Get("fontFamily"),
 		Position:   params.Get("position"),
+		MinSize:    params.Get("minsize"),
 		IsVertical: params.Get("orientation") == "vertical",
 	}
 

@@ -3,6 +3,9 @@ package routes
 import (
 	"assert"
 	"bytes"
+	"fmt"
+	"strconv"
+	"strings"
 	"text/template"
 )
 
@@ -20,6 +23,7 @@ type nativeContainer struct {
 	FontSize   string
 	FontFamily string
 	Position   string
+	MinSize    string
 	IsVertical bool
 }
 
@@ -142,7 +146,7 @@ var addRenderer = func(ads []nativeAd) string {
 		}
 		if i%2 == 0 {
 			p += 2
-			b.WriteString(`<div class="cyb-pack cyb-custom-pack">`)
+			b.WriteString(`<div class="cyb-pack cyb-min-size cyb-custom-pack">`)
 		}
 		e := t.Lookup("ad").Execute(b, ad)
 		assert.Nil(e)
@@ -160,7 +164,16 @@ var native = template.New("native").Funcs(template.FuncMap{"renderAds": addRende
 
 func renderNative(imp nativeContainer) string {
 	buf := &bytes.Buffer{}
-	imp.Style = style
+	var resStyle = style
+	if imp.MinSize != "" {
+		num, err := strconv.ParseInt(imp.MinSize, 10, 64)
+		halfNum := num / 2
+		if err == nil {
+			rep := strings.NewReplacer("cyb-minSize", fmt.Sprintf("%dpx", halfNum), "cyb-doubleMinSize", fmt.Sprintf("%dpx", num))
+			resStyle = rep.Replace(style)
+		}
+	}
+	imp.Style = resStyle
 	e := native.Lookup("ads").Execute(buf, imp)
 	assert.Nil(e)
 	return string(buf.Bytes())
