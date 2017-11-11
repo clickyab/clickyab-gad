@@ -1,7 +1,7 @@
 package gmaps
 
 import (
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"bytes"
 	"errors"
 	"io/ioutil"

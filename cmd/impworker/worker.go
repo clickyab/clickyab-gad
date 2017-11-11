@@ -1,7 +1,7 @@
 package main
 
 import (
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"strconv"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"

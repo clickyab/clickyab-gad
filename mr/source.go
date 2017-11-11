@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"clickyab.com/gad/models/common"
+	"github.com/clickyab/services/mysql"
 )
 
 // SharpArray type is the hack to handle # splited text in our database
@@ -43,19 +43,19 @@ type AdData struct {
 	AdConversion      int            `json:"-" db:"ad_conv"`
 	AdTime            int            `json:"-" db:"ad_time"`
 
-	AdMainText      sql.NullString          `json:"-" db:"ad_mainText"`
-	AdDefineText    sql.NullString          `json:"-" db:"ad_defineText"`
-	AdTextColor     sql.NullString          `json:"-" db:"ad_textColor"`
-	AdTarget        sql.NullString          `json:"-" db:"ad_target"`
-	AdAttribute     common.GenericJSONField `json:"-" db:"ad_attribute"`
-	AdHashAttribute sql.NullString          `json:"-" db:"ad_hash_attribute"`
-	CreatedAt       sql.NullString          `json:"-" db:"created_at"`
-	UpdatedAt       sql.NullString          `json:"-" db:"updated_at"`
-	UserEmail       string                  `json:"-" db:"u_email"`
-	UserBalance     string                  `json:"-" db:"u_balance"`
-	IsCrm           int                     `json:"-" db:"is_crm"`
-	CpLock          int                     `json:"-" db:"cp_lock"`
-	CampaignAdID    int64                   `json:"-" db:"ca_id"`
+	AdMainText      sql.NullString         `json:"-" db:"ad_mainText"`
+	AdDefineText    sql.NullString         `json:"-" db:"ad_defineText"`
+	AdTextColor     sql.NullString         `json:"-" db:"ad_textColor"`
+	AdTarget        sql.NullString         `json:"-" db:"ad_target"`
+	AdAttribute     mysql.GenericJSONField `json:"-" db:"ad_attribute"`
+	AdHashAttribute sql.NullString         `json:"-" db:"ad_hash_attribute"`
+	CreatedAt       sql.NullString         `json:"-" db:"created_at"`
+	UpdatedAt       sql.NullString         `json:"-" db:"updated_at"`
+	UserEmail       string                 `json:"-" db:"u_email"`
+	UserBalance     string                 `json:"-" db:"u_balance"`
+	IsCrm           int                    `json:"-" db:"is_crm"`
+	CpLock          int                    `json:"-" db:"cp_lock"`
+	CampaignAdID    int64                  `json:"-" db:"ca_id"`
 
 	Extra string `db:"-"`
 }

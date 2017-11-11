@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 
 	"fmt"
 
@@ -13,7 +13,10 @@ import (
 
 	"net"
 
+	"context"
+
 	"clickyab.com/gad/config"
+	"github.com/clickyab/services/initializer"
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 )
@@ -39,8 +42,11 @@ func lookup(svcName string) ([]string, error) {
 	return endpoints, nil
 }
 
+type rInit struct {
+}
+
 // Initialize try to create a redis pool
-func Initialize() {
+func (r *rInit) Initialize(ctx context.Context) {
 	once.Do(func() {
 		if config.Config.Redis.Cluster {
 			endpoints, err := lookup(config.Config.Redis.Address)
@@ -70,6 +76,11 @@ func Initialize() {
 		assert.Nil(Client.Ping().Err())
 		logrus.Debug("redis is ready.")
 	})
+
+	go func() {
+		<-ctx.Done()
+		logrus.Debug("redis is finalized.")
+	}()
 }
 
 // StoreKey is a simple key value store with timeout
@@ -256,11 +267,6 @@ func SAddInt(key string, touch bool, expire time.Duration, members ...int64) err
 	return SAdd(key, touch, expire, r...)
 }
 
-// RedisHealth check redis health
-func RedisHealth() []error {
-	var res = []error{}
-	if err := Client.Ping().Err(); err != nil {
-		res = append(res, err)
-	}
-	return res
+func init() {
+	initializer.Register(&rInit{}, 0)
 }

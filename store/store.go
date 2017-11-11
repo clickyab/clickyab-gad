@@ -1,7 +1,7 @@
 package store
 
 import (
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"clickyab.com/gad/redis"
 	"time"
 )

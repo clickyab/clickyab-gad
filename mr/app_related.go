@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"clickyab.com/gad/config"
 	"clickyab.com/gad/gmaps"
 	"clickyab.com/gad/utils"

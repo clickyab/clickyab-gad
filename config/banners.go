@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 )
 
 var (

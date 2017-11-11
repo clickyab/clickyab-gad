@@ -1,29 +1,29 @@
 package routes
 
 import (
-	"clickyab.com/gad/assert"
-	"clickyab.com/gad/config"
 	"encoding/json"
 	"errors"
-	"clickyab.com/gad/filter"
 	"fmt"
 	"math/rand"
-	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/modules"
-	"clickyab.com/gad/mr"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	aredis "clickyab.com/gad/redis"
 	"regexp"
-	"clickyab.com/gad/selector"
 	"sort"
-	"clickyab.com/gad/store"
 	"strconv"
 	"time"
+
+	"clickyab.com/gad/config"
+	"clickyab.com/gad/filter"
+	"clickyab.com/gad/middlewares"
+	"clickyab.com/gad/modules"
+	"clickyab.com/gad/mr"
+	aredis "clickyab.com/gad/redis"
+	"clickyab.com/gad/selector"
+	"clickyab.com/gad/store"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 
 	"clickyab.com/gad/ip2location"
 
@@ -268,42 +268,6 @@ func (tc *selectController) fetchWebsite(publicID int64) (*mr.Website, error) {
 		website.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloorWeb
 	}
 	return website, err
-}
-
-//fetchIP2Location find ip
-func (tc *selectController) fetchIP2Location(c net.IP) (*mr.IP2Location, error) {
-	if config.Config.DevelMode {
-		// change the local ip to tehran ip
-		if c.String() == net.IPv4(172, 17, 0, 1).String() {
-			c = net.IPv4(5, 116, 150, 199) // An Irancell IP in iran
-		}
-	}
-	ip, err := mr.NewManager().GetLocation(c)
-	if err != nil {
-		return nil, errors.New("location not found")
-	}
-
-	return ip, nil
-
-}
-
-//fetchProvince find province and set context
-func (tc *selectController) fetchProvince(c net.IP, cfHeader string) (*mr.Province, error) {
-	// if strings.ToUpper(cfHeader) != "IR" {
-	// 	return nil, errors.New("not inside iran")
-	// }
-	var province mr.Province
-	ip, err := tc.fetchIP2Location(c)
-	if err != nil || !ip.RegionName.Valid {
-		return nil, errors.New("province not found")
-	}
-
-	province, err = mr.NewManager().ConvertProvince2Info(ip.RegionName.String)
-	if err != nil {
-		return nil, errors.New("province not found")
-	}
-	return &province, nil
-
 }
 
 //fetchProvince find province and set context

@@ -21,7 +21,7 @@
 package main
 
 import (
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"clickyab.com/gad/mr"
 	"strconv"
 	"clickyab.com/gad/transport"

@@ -9,7 +9,7 @@ import (
 
 	"time"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 
 	"github.com/go-sql-driver/mysql"
 )

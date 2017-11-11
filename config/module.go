@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"time"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 
 	"strings"
 
