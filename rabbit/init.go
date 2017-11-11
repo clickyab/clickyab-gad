@@ -4,11 +4,14 @@ import (
 	"container/ring"
 	"sync"
 
-	"clickyab.com/gad/assert"
 	"clickyab.com/gad/config"
+	"github.com/clickyab/services/assert"
 
 	"sync/atomic"
 
+	"context"
+
+	"github.com/clickyab/services/initializer"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
@@ -130,21 +133,16 @@ type Connection interface {
 	Channel() (Channel, error)
 }
 
-// Job interface
-type Job interface {
-	// GetTopic return the topic of the current message to publish
-	GetTopic() string
-	// GetQueue return the queue to publish in
-	GetQueue() string
-}
-
 var (
 	quit        = make(chan chan struct{})
 	hasConsumer int64
 )
 
+type rInit struct {
+}
+
 // Initialize the module at the beginning of the application to create a publish channel
-func Initialize() {
+func (r *rInit) Initialize(ctx context.Context) {
 
 	once.Do(func() {
 		var err error
@@ -169,29 +167,6 @@ func Initialize() {
 				amqp.Table{},
 			),
 		)
-		assert.Nil(
-			chn.ExchangeDeclare(
-				config.Config.AMQP.Exchange+retryPostfix,
-				"topic",
-				true,
-				false,
-				false,
-				false,
-				amqp.Table{},
-			),
-		)
-		q, err := chn.QueueDeclare(
-			"publish"+retryPostfix,
-			true,
-			false,
-			false,
-			true,
-			amqp.Table{
-				"x-dead-letter-exchange": config.Config.AMQP.Exchange,
-			},
-		)
-		assert.Nil(err)
-		assert.Nil(chn.QueueBind(q.Name, "#", config.Config.AMQP.Exchange+retryPostfix, true, amqp.Table{}))
 	})
 
 	if config.Config.AMQP.Publisher < 1 {
@@ -219,14 +194,17 @@ func Initialize() {
 	}
 
 	logrus.Debug("Rabbit initialized")
+	go func() {
+		<-ctx.Done()
+		if atomic.CompareAndSwapInt64(&hasConsumer, 1, 0) {
+			tmp := make(chan struct{})
+			quit <- tmp
+			<-tmp
+		}
+		logrus.Debug("Rabbit finalized")
+	}()
 }
 
-// Finalize try to close rabbitmq connection
-func Finalize() {
-	if atomic.CompareAndSwapInt64(&hasConsumer, 1, 0) {
-		tmp := make(chan struct{})
-		quit <- tmp
-		<-tmp
-	}
-	logrus.Debug("Rabbit finalized")
+func init() {
+	initializer.Register(&rInit{}, 0)
 }

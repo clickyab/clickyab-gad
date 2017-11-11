@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"sync"
 
-	"clickyab.com/gad/assert"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 
 	"clickyab.com/gad/config"
 
@@ -19,6 +19,14 @@ import (
 
 type validator interface {
 	Validate() bool
+}
+
+// Job interface
+type Job interface {
+	// GetTopic return the topic of the current message to publish
+	GetTopic() string
+	// GetQueue return the queue to publish in
+	GetQueue() string
 }
 
 // goodFunc verifies that the function satisfies the signature, represented as a slice of types.

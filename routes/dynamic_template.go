@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"sync"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"strings"
 )
 

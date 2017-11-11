@@ -5,7 +5,7 @@ import (
 	"net"
 	"strings"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"clickyab.com/gad/config"
 	"clickyab.com/gad/mr"
 	"clickyab.com/gad/utils"

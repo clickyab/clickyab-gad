@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"time"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 
 	"os"
 	"strconv"

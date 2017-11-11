@@ -1,10 +1,12 @@
 package mr
 
-import "clickyab.com/gad/models"
+import (
+	"github.com/clickyab/services/mysql"
+)
 
 // Manager is the model manager for aaa package
 type Manager struct {
-	models.Manager
+	mysql.Manager
 }
 
 // NewManager create and return a manager for this module
@@ -22,5 +24,5 @@ func (m *Manager) Initialize() {
 }
 
 func init() {
-	models.Register(NewManager())
+	mysql.Register(NewManager())
 }

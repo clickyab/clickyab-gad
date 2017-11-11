@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"clickyab.com/gad/config"
 
 	"github.com/sirupsen/logrus"

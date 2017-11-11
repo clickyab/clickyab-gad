@@ -5,11 +5,11 @@ import (
 	"sync"
 	"time"
 
-	"clickyab.com/gad/assert"
 	"clickyab.com/gad/config"
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/models"
 	"clickyab.com/gad/mr"
+	"github.com/clickyab/services/assert"
+	"github.com/clickyab/services/mysql"
 
 	"github.com/sirupsen/logrus"
 )
@@ -76,5 +76,5 @@ func (m *myModel) Initialize() {
 }
 
 func init() {
-	models.Register(&myModel{})
+	mysql.Register(&myModel{})
 }

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"clickyab.com/gad/utils"
 )
 

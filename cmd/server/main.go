@@ -6,12 +6,10 @@ import (
 	"syscall"
 
 	"clickyab.com/gad/config"
-	"clickyab.com/gad/models"
 	"clickyab.com/gad/modules"
-	"clickyab.com/gad/rabbit"
-	"clickyab.com/gad/redis"
 	"clickyab.com/gad/utils"
 	"clickyab.com/gad/version"
+	_ "github.com/clickyab/services/mysql/connection/mysql"
 	_ "github.com/go-sql-driver/mysql"
 
 	"fmt"
@@ -20,6 +18,7 @@ import (
 
 	"clickyab.com/gad/fluentd"
 
+	"github.com/clickyab/services/initializer"
 	"github.com/pkg/profile"
 )
 
@@ -32,9 +31,7 @@ func main() {
 
 	version.PrintVersion().Info("Application started")
 	fluentd.Initialize(ctx)
-	aredis.Initialize()
-	rabbit.Initialize()
-	models.Initialize()
+	defer initializer.Initialize()()
 
 	server := modules.Initialize(config.Config.MountPoint)
 	go func() {

@@ -5,7 +5,7 @@ import (
 	"clickyab.com/gad/middlewares"
 	"text/template"
 
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"net/url"
 
 	"math/rand"

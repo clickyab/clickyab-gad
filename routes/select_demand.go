@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"clickyab.com/gad/assert"
+	"github.com/clickyab/services/assert"
 	"clickyab.com/gad/config"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/mr"

@@ -1,17 +1,15 @@
 package main
 
 import (
-	"clickyab.com/gad/assert"
 	"clickyab.com/gad/config"
-	"clickyab.com/gad/models"
 	"clickyab.com/gad/rabbit"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
 	"clickyab.com/gad/version"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/clickyab/services/mysql/connection/mysql"
 
-	"clickyab.com/gad/redis"
-
+	"github.com/clickyab/services/assert"
+	"github.com/clickyab/services/initializer"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,10 +19,7 @@ func main() {
 	config.Config.AMQP.Publisher = 1 // Do not waste many publisher channel
 
 	version.PrintVersion().Info("Application started")
-	models.Initialize()
-	rabbit.Initialize()
-	defer rabbit.Finalize()
-	aredis.Initialize()
+	defer initializer.Initialize()()
 
 	go func() {
 		err := rabbit.RunWorker(
