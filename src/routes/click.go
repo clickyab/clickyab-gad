@@ -129,7 +129,7 @@ func (tc *selectController) click(c echo.Context) error {
 		}
 
 		clickRedis := fmt.Sprintf("%s%s%s%s%s", transport.CLICK, transport.DELIMITER, mega, transport.DELIMITER, transport.ADVERTISE)
-		count, err := aredis.IncHash(clickRedis, "CLICK", 1, config.Config.Clickyab.DailyImpExpire)
+		count, err := aredis.IncHash(clickRedis, fmt.Sprintf("CLICK_%d",adID), 1, config.Config.Clickyab.DailyImpExpire)
 		assert.Nil(err)
 
 		if count != 1 {
