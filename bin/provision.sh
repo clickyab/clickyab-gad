@@ -7,8 +7,9 @@ echo "export GOPATH=/home/develop/go" >> /home/develop/.zshrc
 echo "export GOPATH=/home/develop/go" >> /etc/environment
 echo "export PATH=$PATH:/usr/local/go/bin:/home/develop/go/bin" >> /home/develop/.zshrc
 
-cd /home/develop/gad
-make -f /home/develop/gad/Makefile mysql-setup
-make -f /home/develop/gad/Makefile rabbitmq-setup
+cd /home/develop/go/src/clickyab.com/gad
+make -f /home/develop/go/src/clickyab.com/gad/Makefile mysql-setup
+make -f /home/develop/go/src/clickyab.com/gad/Makefile rabbitmq-setup
 
-sudo -u develop /home/develop/gad/bin/provision_user.sh
+chown -R develop:develop . /home/develop
+sudo -u develop /home/develop/go/src/clickyab.com/gad/bin/provision_user.sh
