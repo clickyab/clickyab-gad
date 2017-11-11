@@ -5,20 +5,20 @@ export NODE=$(shell which nodejs)
 export GIT:=$(shell which git)
 export ROOT=$(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 export BIN=$(ROOT)/bin
-export GB=$(BIN)/gb
 export LINTER=$(BIN)/gometalinter.v1
-export GOPATH=$(ROOT):$(ROOT)/vendor
+export GOPATH=$(abspath $(ROOT)/../../..)
+export GOBIN=$(ROOT)/bin
 export DIFF=$(shell which diff)
 export WATCH?=hello
-export LONGHASH?=$(shell git log -n1 --pretty="format:%H" | cat)
-export SHORTHASH?=$(shell git log -n1 --pretty="format:%h"| cat)
-export COMMITDATE?=$(shell git log -n1 --date="format:%D-%H-%I-%S" --pretty="format:%cd"| sed -e "s/\//-/g")
+export LONG_HASH?=$(shell git log -n1 --pretty="format:%H" | cat)
+export SHORT_HASH?=$(shell git log -n1 --pretty="format:%h"| cat)
+export COMMIT_DATE?=$(shell git log -n1 --date="format:%D-%H-%I-%S" --pretty="format:%cd"| sed -e "s/\//-/g")
 export IMPDATE=$(shell date +%Y%m%d)
-export COMMITCOUNT?=$(shell git rev-list HEAD --count| cat)
-export BUILDDATE=$(shell date "+%D/%H/%I/%S"| sed -e "s/\//-/g")
-export FLAGS="-X version.hash=$(LONGHASH) -X version.short=$(SHORTHASH) -X version.date=$(COMMITDATE) -X version.count=$(COMMITCOUNT) -X version.build=$(BUILDDATE)"
-export LDARG=-ldflags $(FLAGS)
-export BUILD=$(BIN)/gb build $(LDARG)
+export COMMIT_COUNT?=$(shell git rev-list HEAD --count| cat)
+export BUILD_DATE=$(shell date "+%D/%H/%I/%S"| sed -e "s/\//-/g")
+export FLAGS="-X version.hash=$(LONG_HASH) -X version.short=$(SHORT_HASH) -X version.date=$(COMMIT_DATE) -X version.count=$(COMMIT_COUNT) -X version.build=$(BUILD_DATE)"
+export LD_ARGS=-ldflags $(FLAGS)
+export BUILD=cd $(ROOT) && $(GO) install -v $(LD_ARGS)
 export DBPASS?=$(DEFAULT_PASS)
 export DB_USER?=root
 export DB_NAME?=clickyab
@@ -28,48 +28,39 @@ export WORK_DIR=$(ROOT)/tmp
 export LINTERCMD=$(LINTER) --cyclo-over=15 --line-length=120 --deadline=100s --disable-all --enable=structcheck --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell
 export UGLIFYJS=$(ROOT)/node_modules/.bin/uglifyjs
 
-.PHONY: all gb clean
+.PHONY: all clean
 
-all: $(GB)
-	$(BUILD)
+all:
+	$(BUILD) clickyab.com/gad/cmd/...
 
 needroot :
 	@[ "$(shell id -u)" -eq "0" ] || exit 1
 
-gb:
-	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(GO) get -v github.com/constabulary/gb/...
-
 metalinter:
-	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(GO)  get -v gopkg.in/alecthomas/gometalinter.v1
-	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(LINTER) --install
+	GOPATH=$(ROOT)/tmp $(GO)  get -v gopkg.in/alecthomas/gometalinter.v1
+	GOPATH=$(ROOT)/tmp $(LINTER) --install
 
 clean:
 	rm -rf $(ROOT)/pkg $(ROOT)/vendor/pkg
 	cd $(ROOT) && git clean -fX ./bin
 
-$(GB):
-	@[ -f $(BIN)/gb ] || make gb
-
 $(LINTER):
 	@[ -f $(LINTER) ] || make metalinter
 
-fetch: $(GB)
-	PATH=$(PATH):$(BIN) $(GB) vendor fetch $(REPO)
+server: stylegen
+	$(BUILD) clickyab.com/gad/cmd/server
 
-server: $(GB) stylegen
-	$(BUILD) server
+impworker:
+	$(BUILD) clickyab.com/gad/cmd/impworker
 
-impworker: $(GB)
-	$(BUILD) impworker
+clickworker:
+	$(BUILD) clickyab.com/gad/cmd/clickworker
 
-clickworker: $(GB)
-	$(BUILD) clickworker
+convworker:
+	$(BUILD) clickyab.com/gad/cmd/convworker
 
-convworker: $(GB)
-	$(BUILD) convworker
-
-experiment: $(GB)
-	$(BUILD) experiment
+experiment:
+	$(BUILD) clickyab.com/gad/cmd/experiment
 
 run-server: server
 	sudo setcap cap_net_bind_service=+ep $(BIN)/server
@@ -111,22 +102,22 @@ rabbitmq-setup: needroot
 	rabbitmqadmin declare binding source="dlx-exchange" destination_type="queue" destination="dlx-queue" routing_key="#"
 
 lint: $(LINTER)
-	$(LINTERCMD) $(ROOT)/src/assert
-	$(LINTERCMD) $(ROOT)/src/config
-	$(LINTERCMD) $(ROOT)/src/filter
-	$(LINTERCMD) $(ROOT)/src/middlewares
-	$(LINTERCMD) $(ROOT)/src/models
-	$(LINTERCMD) $(ROOT)/src/modules
-	$(LINTERCMD) $(ROOT)/src/mr
-	$(LINTERCMD) $(ROOT)/src/selector
-	$(LINTERCMD) $(ROOT)/src/server
-	$(LINTERCMD) $(ROOT)/src/selectroute
-	$(LINTERCMD) $(ROOT)/src/utils
-	$(LINTERCMD) $(ROOT)/src/version
-	$(LINTERCMD) $(ROOT)/src/rabbit
-	$(LINTERCMD) $(ROOT)/src/impworker
-	$(LINTERCMD) $(ROOT)/src/clickworker
-	$(LINTERCMD) $(ROOT)/src/convworker
+	$(LINTERCMD) $(ROOT)/assert
+	$(LINTERCMD) $(ROOT)/config
+	$(LINTERCMD) $(ROOT)/filter
+	$(LINTERCMD) $(ROOT)/middlewares
+	$(LINTERCMD) $(ROOT)/models
+	$(LINTERCMD) $(ROOT)/modules
+	$(LINTERCMD) $(ROOT)/mr
+	$(LINTERCMD) $(ROOT)/selector
+	#$(LINTERCMD) $(ROOT)/selectroute
+	$(LINTERCMD) $(ROOT)/utils
+	$(LINTERCMD) $(ROOT)/version
+	$(LINTERCMD) $(ROOT)/rabbit
+	#$(LINTERCMD) $(BIN)/server
+	#$(LINTERCMD) $(BIN)/impworker
+	#$(LINTERCMD) $(BIN)/clickworker
+	#$(LINTERCMD) $(BIN)/convworker
 
 uglifyjs:
 	npm install uglifyjs
@@ -144,18 +135,14 @@ uglify: $(UGLIFYJS)
 	cp $(ROOT)/statics/vastAD.js $(ROOT)/tmp/embed/vastAD.js
 	$(NODE) $(UGLIFYJS) $(ROOT)/statics/vastAD.js -o $(ROOT)/tmp/embed/vastAD-min.js
 
-go-bindata: $(GB)
+go-bindata:
 	$(BUILD) github.com/jteeuwen/go-bindata/go-bindata
 
 embed: go-bindata uglify
-	cd $(ROOT)/tmp/embed/ && $(BIN)/go-bindata -o $(ROOT)/src/statics/static-no-lint.go -nomemcopy=true -pkg=statics ./...
+	cd $(ROOT)/tmp/embed/ && $(BIN)/go-bindata -o $(ROOT)/statics_src/static-no-lint.go -nomemcopy=true -pkg=statics ./...
 
 create-imp-table :
 	echo 'CREATE TABLE impressions$(IMPDATE)  LIKE impressions20161108; ' | mysql -u $(DB_USER) -p$(DBPASS) -c $(DB_NAME)
-
-restore: $(GB)
-	PATH=$(PATH):$(BIN) $(GB) vendor restore
-	cp $(ROOT)/vendor/manifest $(ROOT)/vendor/manifest.done
 
 conditional-restore:
 	$(DIFF) $(ROOT)/vendor/manifest $(ROOT)/vendor/manifest.done || make restore
@@ -166,12 +153,12 @@ ansible:
 	ansible-playbook -vvvv -i $(ROOT)/contrib/deploy/hosts.ini $(ROOT)/contrib/deploy/staging.yaml
 
 stylegen:
-	GOPATH=$(ROOT)/tmp GOBIN=$(ROOT)/bin $(GO) get -v github.com/kib357/less-go/...
-	$(BIN)/lessc -i $(ROOT)/src/routes/native_style.less -o $(ROOT)/src/routes/native_style.css
-	echo "// Code generated by lessc. DO NOT EDIT.\n// Source: /src/routes/native_style.less\n\npackage routes\n\nconst style=\`" > $(ROOT)/src/routes/native_style.gen.go
-	cat $(ROOT)/src/routes/native_style.css >>  $(ROOT)/src/routes/native_style.gen.go
-	echo "\`" >> $(ROOT)/src/routes/native_style.gen.go
-	rm $(ROOT)/src/routes/native_style.css
+	GOPATH=$(ROOT)/tmp $(GO) get -v github.com/kib357/less-go/...
+	$(BIN)/lessc -i $(ROOT)/routes/native_style.less -o $(ROOT)/routes/native_style.css
+	echo "// Code generated by lessc. DO NOT EDIT.\n// Source: /routes/native_style.less\n\npackage routes\n\nconst style=\`" > $(ROOT)/routes/native_style.gen.go
+	cat $(ROOT)/routes/native_style.css >>  $(ROOT)/routes/native_style.gen.go
+	echo "\`" >> $(ROOT)/routes/native_style.gen.go
+	rm $(ROOT)/routes/native_style.css
 
 $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN:
 	mkdir -p $(ROOT)/contrib
@@ -181,4 +168,5 @@ $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN:
 	cd $(ROOT)/contrib && md5sum -c IP-COUNTRY-REGION-CITY-ISP.BIN.md5
 
 ip2location: $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN
+	echo 'echo asd'
 	mv $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN $(BIN)
