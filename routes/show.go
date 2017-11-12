@@ -1,23 +1,23 @@
 package routes
 
 import (
-	"github.com/clickyab/services/assert"
 	"bytes"
-	"clickyab.com/gad/config"
 	"encoding/base64"
 	"fmt"
 	"html/template"
 	"math/rand"
-	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
 	"net/http"
 	"net/url"
-	"clickyab.com/gad/redis"
-	"clickyab.com/gad/store"
 	"strconv"
 	"strings"
+
+	"clickyab.com/gad/middlewares"
+	"clickyab.com/gad/mr"
+	"clickyab.com/gad/redis"
+	"clickyab.com/gad/store"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 
 	"gopkg.in/labstack/echo.v3"
 )
@@ -211,7 +211,7 @@ func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, u
 	}
 
 	buf := &bytes.Buffer{}
-	if !config.NonLinearVastSize(ads.AdSize) {
+	if !utils.NonLinearVastSize(ads.AdSize) {
 		res := tc.makeVastAdData(ads, url, long, pos, https)
 		if err := linear.Execute(buf, res); err != nil {
 			return "", err
@@ -228,7 +228,7 @@ func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, u
 }
 
 func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string, https bool) VideoAd {
-	w, h := config.GetSizeByNum(ad.AdSize)
+	w, h := utils.GetSizeByNum(ad.AdSize)
 	src := ad.AdImg.String
 	if https {
 		src = strings.Replace(src, "http://", "https://", -1)
@@ -249,7 +249,7 @@ func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string, https bool) V
 }
 
 func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string, https, showT bool) SingleAd {
-	w, h := config.GetSizeByNum(ad.AdSize)
+	w, h := utils.GetSizeByNum(ad.AdSize)
 	src := ad.AdImg.String
 	if https {
 		src = strings.Replace(src, "http://", "https://", -1)
@@ -265,11 +265,11 @@ func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string, https, showT
 	return sa
 }
 func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, pos string, https bool) vastTemplate {
-	w, h := config.GetSizeByNum(ad.AdSize)
-	_, ma := config.MakeVastLen(long, "", "", "")
+	w, h := utils.GetSizeByNum(ad.AdSize)
+	_, ma := utils.MakeVastLen(long, "", "", "")
 
-	skipOffset := config.Config.Clickyab.Vast.DefaultSkipOff
-	duration := config.Config.Clickyab.Vast.DefaultDuration
+	skipOffset := defaultySkipOff.String()
+	duration := defaultDuration.String()
 	if k, ok := ma[pos]; ok {
 		duration = k[2]
 		if len(k) == 4 {

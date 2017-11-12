@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"clickyab.com/gad/config"
-	"clickyab.com/gad/middlewares"
 	"net"
+
+	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/statics_src"
 	"clickyab.com/gad/utils"
 
@@ -46,7 +46,7 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/js/native.js", tc.nativeJS)
 
 	postfix := "-min.js"
-	if config.Config.DevelMode {
+	if develMode.Bool() {
 		postfix = ".js"
 	}
 	//e.GET("/show.js", tc.assetRoute("show"+postfix))

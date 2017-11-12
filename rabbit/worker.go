@@ -9,8 +9,6 @@ import (
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
 
-	"clickyab.com/gad/config"
-
 	"sync/atomic"
 
 	"github.com/sirupsen/logrus"
@@ -82,20 +80,20 @@ func RunWorker(
 		return err
 	}
 	err = c.ExchangeDeclare(
-		config.Config.AMQP.Exchange, // name
-		"topic",                     // type
-		true,                        // durable
-		false,                       // auto-deleted
-		false,                       // internal
-		false,                       // no-wait
-		nil,                         // arguments
+		exchange.String(), // name
+		"topic",           // type
+		true,              // durable
+		false,             // auto-deleted
+		false,             // internal
+		false,             // no-wait
+		nil,               // arguments
 	)
 
 	if err != nil {
 		return err
 	}
 	qu := jobPattern.GetQueue()
-	if config.Config.AMQP.Debug {
+	if debug.Bool() {
 		qu = "debug." + qu
 	}
 	q, err := c.QueueDeclare(qu, true, false, false, false, nil)
@@ -114,13 +112,13 @@ func RunWorker(
 	}
 
 	topic := jobPattern.GetTopic()
-	if config.Config.AMQP.Debug {
+	if debug.Bool() {
 		topic = "debug." + topic
 	}
 	err = c.QueueBind(
-		q.Name, // queue name
-		topic,  // routing key
-		config.Config.AMQP.Exchange, // exchange
+		q.Name,            // queue name
+		topic,             // routing key
+		exchange.String(), // exchange
 		false,
 		nil,
 	)

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"sort"
 
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/mr"
@@ -18,6 +17,7 @@ import (
 	"fmt"
 
 	"clickyab.com/gad/ip2location"
+	"clickyab.com/gad/utils"
 )
 
 // AllData return all data required to render the all routes
@@ -174,7 +174,7 @@ func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestDat
 			}
 
 			assert.Nil(storeCapping(rd.CopID, j.AdID))
-			resp[config.GetSizeByNumString(i)] = append(resp[config.GetSizeByNumString(i)], temp)
+			resp[utils.GetSizeByNumString(i)] = append(resp[utils.GetSizeByNumString(i)], temp)
 		}
 	}
 
@@ -233,7 +233,7 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 
 	provinceID, _, _ := ip2location.GetProvinceISPByIP(payload.IP)
 
-	lenVast, vastCon := config.MakeVastLen(ctx.QueryParam("l"), payload.Start, payload.Mid, payload.End)
+	lenVast, vastCon := utils.MakeVastLen(ctx.QueryParam("l"), payload.Start, payload.Mid, payload.End)
 	vastSlot, pubs, pubSize := makeVastSlot(vastCon, website)
 	SlotData, sizeNumSlice := tc.slotSizeNormal(pubs, website.WID, pubSize, true)
 
@@ -254,11 +254,11 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
-	_, allAds := tc.makeShow(ctx, "sync", rd, filteredAds, nil, sizeNumSlice, SlotData, nil, website, false, config.Config.Clickyab.MinCPCVast, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast)
+	_, allAds := tc.makeShow(ctx, "sync", rd, filteredAds, nil, sizeNumSlice, SlotData, nil, website, false, minCPCVast.Int64(), allowUnderFloor.Bool(), true, floorDivVast.Int64())
 
 	response := map[string][]allAdsResponse{}
 	for i := range allAds {
-		response[config.GetSizeByNumString(allAds[i].AdSize)] = append(response[config.GetSizeByNumString(allAds[i].AdSize)], allAdsResponse{
+		response[utils.GetSizeByNumString(allAds[i].AdSize)] = append(response[utils.GetSizeByNumString(allAds[i].AdSize)], allAdsResponse{
 			CTR:        .1,
 			AdImg:      allAds[i].AdImg.String,
 			AdType:     allAds[i].AdType,
@@ -311,9 +311,9 @@ func makeVastSlot(length map[string][]string, website *mr.Website) (map[string]v
 			continue
 		}
 		pub := fmt.Sprintf("%d%s", website.WPubID, length[m][1])
-		sizeNumSlice[pub] = config.VastNonLinearSize
+		sizeNumSlice[pub] = utils.VastNonLinearSize
 		if lenType == "linear" {
-			sizeNumSlice[pub] = config.VastLinearSize
+			sizeNumSlice[pub] = utils.VastLinearSize
 		}
 		slotPublic = append(slotPublic, pub)
 		vastSlot[pub] = vastSlotData{

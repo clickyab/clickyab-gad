@@ -1,20 +1,19 @@
 package routes
 
 import (
-	"github.com/clickyab/services/assert"
 	"errors"
-	"clickyab.com/gad/filter"
 	"fmt"
 	"math/rand"
-	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
 	"net/url"
-	"clickyab.com/gad/selector"
 	"strconv"
 	"strings"
-	"clickyab.com/gad/utils"
 
-	"clickyab.com/gad/config"
+	"clickyab.com/gad/filter"
+	"clickyab.com/gad/middlewares"
+	"clickyab.com/gad/mr"
+	"clickyab.com/gad/selector"
+	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 
 	"net/http"
 
@@ -87,7 +86,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), appSelector)
 
-	_, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.App)
+	_, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, app, false, minCPCApp.Int64(), allowUnderFloor.Bool(), true, floorDivApp.Int64())
 	assert.True(len(ads) == 1, "[BUG] why select no ad?")
 
 	var (
@@ -184,15 +183,15 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 			SlotSize: bs,
 			ID:       s.ID,
 			PublicID: slotString,
-			Ctr:      config.Config.Clickyab.DefaultCTR,
+			Ctr:      defaultCTR.Float64(),
 		},
 	}
 	sizes := map[string]int{slotString: bs}
 
 	for i := range data {
-		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(data[i].ID, 10)), config.Config.Redis.Days, "i", "c")
-		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
-			data[i].Ctr = config.Config.Clickyab.DefaultCTR
+		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(data[i].ID, 10)), dailyClickDays.Int(), "i", "c")
+		if err != nil || result["c"] == 0 || result["i"] < minImp.Int64() {
+			data[i].Ctr = defaultCTR.Float64()
 		} else {
 			data[i].Ctr = utils.Ctr(result["i"], result["c"])
 		}

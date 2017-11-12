@@ -1,20 +1,21 @@
 package routes
 
 import (
-	"github.com/clickyab/services/assert"
-	"clickyab.com/gad/config"
 	"fmt"
-	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
 	"net/http"
-	"clickyab.com/gad/rabbit"
-	"clickyab.com/gad/redis"
 	"strconv"
 	"strings"
 	"time"
+
+	"clickyab.com/gad/middlewares"
+	"clickyab.com/gad/mr"
+	"clickyab.com/gad/rabbit"
+	"clickyab.com/gad/redis"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 
+	"github.com/clickyab/services/safe"
 	"gopkg.in/labstack/echo.v3"
 )
 
@@ -72,7 +73,7 @@ func (tc *selectController) click(c echo.Context) error {
 		mega,
 		transport.DELIMITER,
 		adID,
-	), true, config.Config.Clickyab.DailyImpExpire)
+	), true, dailyImpExpire.Duration())
 	if err != nil {
 		status = changeStatus(status, suspSlowClick, true)
 		noRedisKey = true
@@ -92,7 +93,7 @@ func (tc *selectController) click(c echo.Context) error {
 	}
 	clickID := <-utils.ID
 
-	middlewares.SafeGO(c, false, false, func() {
+	safe.GoRoutine(func() {
 
 		winnerBid, err := strconv.ParseInt(result["WIN"], 10, 0)
 		assertNil(noRedisKey, err)
@@ -124,12 +125,12 @@ func (tc *selectController) click(c echo.Context) error {
 		assertNil(noRedisKey, err)
 
 		outTime := time.Now()
-		if noRedisKey || outTime.Unix()-inTime.Unix() < config.Config.Clickyab.FastClick {
+		if noRedisKey || outTime.Unix()-inTime.Unix() < fastClick.Int64() {
 			status = suspFastClick
 		}
 
 		clickRedis := fmt.Sprintf("%s%s%s%s%s", transport.CLICK, transport.DELIMITER, mega, transport.DELIMITER, transport.ADVERTISE)
-		count, err := aredis.IncHash(clickRedis, fmt.Sprintf("CLICK_%d",adID), 1, config.Config.Clickyab.DailyImpExpire)
+		count, err := aredis.IncHash(clickRedis, fmt.Sprintf("CLICK_%d", adID), 1, dailyImpExpire.Duration())
 		assert.Nil(err)
 
 		if count != 1 {
@@ -145,7 +146,7 @@ func (tc *selectController) click(c echo.Context) error {
 		return c.String(http.StatusNotFound, "Not found")
 	}
 	// TODO : better handling
-	_, _ = aredis.IncHash(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, clickID), "OK", 1, config.Config.Clickyab.DailyClickExpire)
+	_, _ = aredis.IncHash(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, clickID), "OK", 1, dailyClickExpire.Duration())
 	url := ""
 	cpName := ""
 	if ads != nil {

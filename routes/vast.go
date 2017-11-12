@@ -1,27 +1,28 @@
 package routes
 
 import (
-	"github.com/clickyab/services/assert"
 	"bytes"
-	"clickyab.com/gad/config"
 	"errors"
-	"clickyab.com/gad/filter"
 	"fmt"
 	"html/template"
+	"net/http"
+	"strconv"
+
+	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/mr"
-	"net/http"
 	selector2 "clickyab.com/gad/pin"
 	aredis "clickyab.com/gad/redis"
 	"clickyab.com/gad/selector"
-	"strconv"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 
 	echo "gopkg.in/labstack/echo.v3"
 
-	"clickyab.com/gad/ip2location"
 	"net/url"
+
+	"clickyab.com/gad/ip2location"
 	"clickyab.com/gad/store"
 )
 
@@ -92,13 +93,13 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
 	var show = make(map[string]string)
-	show, _ = tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, config.Config.Clickyab.MinCPCVast, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Vast)
+	show, _ = tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, minCPCVast.Int64(), allowUnderFloor.Bool(), true, floorDivVast.Int64())
 	var vTemp = make([]vastAdTemplate, 0)
 	if slotFixFound {
 		for _, val := range slotPins {
 			reserve := make(map[string]string)
 			tc.updateMegaKey(rd, val.AdID, val.Bid, val.SlotID, "", "", "")
-			tmp := config.Config.MachineName + <-utils.ID
+			tmp := <-utils.ID
 			reserve[val.SlotPublicID] = tmp
 			store.Set(reserve[val.SlotPublicID], fmt.Sprintf("%d", val.AdID))
 			u := url.URL{
@@ -153,9 +154,9 @@ func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, len
 			continue
 		}
 		pub := fmt.Sprintf("%d%s", websitePublicID, length[m][1])
-		sizeNumSlice[pub] = config.VastNonLinearSize
+		sizeNumSlice[pub] = utils.VastNonLinearSize
 		if lenType == "linear" {
-			sizeNumSlice[pub] = config.VastLinearSize
+			sizeNumSlice[pub] = utils.VastLinearSize
 		}
 		slotPublic = append(slotPublic, pub)
 		vastSlot[pub] = vastSlotData{
@@ -201,7 +202,7 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 	middlewares.SetData(c, "country", ll.Country)
 	middlewares.SetData(c, "city", ll.City)
 	middlewares.SetData(c, "isp", ll.ISP)
-	lenVast, vastCon := config.MakeVastLen(c.QueryParam("l"), start, mid, end)
+	lenVast, vastCon := utils.MakeVastLen(c.QueryParam("l"), start, mid, end)
 	return rd, website, province, isp, lenVast, vastCon, nil
 }
 
@@ -263,14 +264,14 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 			ID:       insertedSlots[i],
 			PublicID: i,
 			SlotSize: sizeNumSlice[i],
-			Ctr:      config.Config.Clickyab.DefaultCTR,
+			Ctr:      defaultCTR.Float64(),
 		}
 	}
 
 	for i := range answer {
-		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), config.Config.Redis.Days, "i", "c")
-		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
-			answer[i].Ctr = config.Config.Clickyab.DefaultCTR
+		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), dailyClickDays.Int(), "i", "c")
+		if err != nil || result["c"] == 0 || result["i"] < minImp.Int64() {
+			answer[i].Ctr = defaultCTR.Float64()
 		} else {
 			answer[i].Ctr = utils.Ctr(result["i"], result["c"])
 		}

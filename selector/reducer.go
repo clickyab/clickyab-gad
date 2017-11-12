@@ -3,8 +3,8 @@ package selector
 import (
 	"clickyab.com/gad/mr"
 
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/middlewares"
+	"clickyab.com/gad/utils"
 )
 
 // Context is the context used in reducer functions
@@ -48,8 +48,8 @@ func Apply(ctx *Context, in []mr.AdData, ff FilterFunc) map[int][]*mr.AdData {
 		if ff(ctx, in[i]) {
 			n := in[i]
 			n.WinnerBid = 0
-			if n.AdType == config.AdTypeVideo {
-				for _, j := range config.GetVideoSize() {
+			if n.AdType == utils.AdTypeVideo {
+				for _, j := range utils.GetVideoSize() {
 					m[j] = append(m[j], &n)
 				}
 			} else {
