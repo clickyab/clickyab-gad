@@ -45,6 +45,7 @@ func init() {
 		pass = all[2]
 		database = all[5]
 	}
+	fmt.Print(redisURL)
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=true", user, pass, host, port, database)
 	wdsn = config.RegisterString("services.mysql.wdsn", dsn, "write database dsn")
 	rdsnSlice = config.RegisterString("services.mysql.rdsn", dsn, "comma separated read database dsn")

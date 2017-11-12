@@ -1,25 +1,24 @@
 package routes
 
 import (
-	"github.com/clickyab/services/assert"
-	"clickyab.com/gad/config"
-	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
-	aredis "clickyab.com/gad/redis"
-	"clickyab.com/gad/selector"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"time"
 
+	"clickyab.com/gad/middlewares"
+	"clickyab.com/gad/mr"
+	aredis "clickyab.com/gad/redis"
+	"clickyab.com/gad/selector"
+	"github.com/clickyab/services/assert"
+
 	"clickyab.com/gad/redlock"
+
+	"strconv"
 
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
-	"strconv"
-
-	"strings"
 
 	"clickyab.com/gad/ip2location"
 
@@ -83,7 +82,7 @@ func (tc *selectController) selectDemandAppAd(c echo.Context, rd *middlewares.Re
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
-	show, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, attr, app, false, config.Config.Clickyab.MinCPCApp, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Demand)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, attr, app, false, minCPCWeb.Int64(), allowUnderFloor.Bool(), true, floorDivDemand.Int64())
 
 	//substitute the webMobile slot if exists
 	dm := []Demand{}
@@ -94,8 +93,8 @@ func (tc *selectController) selectDemandAppAd(c echo.Context, rd *middlewares.Re
 
 		d := Demand{
 			ID:          fmt.Sprint(ads[i].AdID),
-			Height:      config.GetSizeByNumStringHeight(ads[i].AdSize),
-			Width:       config.GetSizeByNumStringWith(ads[i].AdSize),
+			Height:      utils.GetSizeByNumStringHeight(ads[i].AdSize),
+			Width:       utils.GetSizeByNumStringWith(ads[i].AdSize),
 			URL:         show[i],
 			CPM:         int64(float64(ads[i].WinnerBid) * ads[i].CTR * 10),
 			Landing:     stripURLParts(ads[i].AdURL.String),
@@ -164,7 +163,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
-	show, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, attr, website, false, e.Source.FloorCPM, e.Underfloor, true, config.Config.Clickyab.FloorDiv.Demand)
+	show, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, attr, website, false, e.Source.FloorCPM, e.Underfloor, true, floorDivDemand.Int64())
 
 	//substitute the webMobile slot if exists
 	dm := []Demand{}
@@ -175,8 +174,8 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 
 		d := Demand{
 			ID:          fmt.Sprint(ads[i].AdID),
-			Height:      config.GetSizeByNumStringHeight(ads[i].AdSize),
-			Width:       config.GetSizeByNumStringWith(ads[i].AdSize),
+			Height:      utils.GetSizeByNumStringHeight(ads[i].AdSize),
+			Width:       utils.GetSizeByNumStringWith(ads[i].AdSize),
 			URL:         show[i],
 			CPM:         int64(float64(ads[i].WinnerBid) * ads[i].CTR * 10),
 			Landing:     stripURLParts(ads[i].AdURL.String),
@@ -200,37 +199,10 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 	return c.JSON(http.StatusOK, dm)
 }
 
-func isSupplierFake(sn string) bool {
-	fakeSuppliers := strings.Split(config.Config.Clickyab.FakeSupplier, ",")
-	for i := range fakeSuppliers {
-		if fakeSuppliers[i] == sn {
-			return true
-		}
-	}
-
-	return false
-}
-
 // selectDemandWebAd function is the route that the real biding happens
 func (tc *selectController) selectDemandAd(c echo.Context) error {
 	rd := middlewares.MustGetRequestData(c)
 	e := middlewares.MustExchangeGetRequestData(c)
-	if isSupplierFake(rd.SuppliersName) {
-		dm := []Demand{}
-		for i := range e.Slots {
-			dm = append(dm, Demand{
-				ID:          <-utils.ID,
-				Height:      e.Slots[i].Height,
-				Width:       e.Slots[i].Width,
-				URL:         fmt.Sprintf("%s://clickyab.com/fake-support/%dx%d.html", rd.Scheme, e.Slots[i].Width, e.Slots[i].Height),
-				SlotTrackID: e.Slots[i].TrackID,
-				Landing:     "clickyab.com",
-				CPM:         e.Source.FloorCPM,
-			})
-		}
-		return c.JSON(http.StatusOK, dm)
-	}
-
 	if e.Platform != "app" && e.Platform != "web" {
 		return c.HTML(http.StatusBadRequest, "wrong platform")
 	}
@@ -242,7 +214,7 @@ func (tc *selectController) selectDemandAd(c echo.Context) error {
 }
 
 func (tc *selectController) getDemandAppDataFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.App, int64, *mr.PhoneData, *mr.CellLocation, error) {
-	name, userID, err := config.GetSupplier(e.Source.Supplier)
+	name, userID, err := utils.GetSupplier(e.Source.Supplier)
 	if err != nil {
 		return nil, nil, nil, 0, nil, nil, fmt.Errorf("can not accept from %s demand", e.Source.Supplier)
 	}
@@ -275,7 +247,7 @@ func stripURLParts(in string) string {
 }
 
 func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.Website, int64, error) {
-	name, userID, err := config.GetSupplier(e.Source.Supplier)
+	name, userID, err := utils.GetSupplier(e.Source.Supplier)
 	if err != nil {
 		return nil, nil, nil, 0, fmt.Errorf("can not accept from %s supplier", e.Source.Supplier)
 	}
@@ -310,8 +282,8 @@ func (tc *selectController) fetchWebsiteDomain(domain, supplier string, user int
 			return nil, err
 		}
 	}
-	if website.WFloorCpm.Int64 < config.Config.Clickyab.MinCPMFloorWeb {
-		website.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloorWeb
+	if website.WFloorCpm.Int64 < minCPMFloorWeb.Int64() {
+		website.WFloorCpm.Int64 = minCPMFloorWeb.Int64()
 	}
 	return website, err
 }
@@ -334,7 +306,7 @@ func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website
 	var trackIDs = make(map[string]string)
 	var attr = make(map[string]map[string]string)
 	for slot := range slots {
-		size, err := config.GetSize(fmt.Sprintf("%dx%d", slots[slot].Width, slots[slot].Height))
+		size, err := utils.GetSize(fmt.Sprintf("%dx%d", slots[slot].Width, slots[slot].Height))
 		slotPublic := fmt.Sprintf("%d%d%d", website.WPubID, size, slot)
 		attr[slotPublic] = make(map[string]string)
 		for k, v := range slots[slot].Attributes {
@@ -361,7 +333,7 @@ func (tc selectController) slotSizeAppExchange(slots []middlewares.Slot, app mr.
 	var attr = make(map[string]map[string]string)
 
 	for slot := range slots {
-		size, err := config.GetSize(fmt.Sprintf("%dx%d", slots[slot].Width, slots[slot].Height))
+		size, err := utils.GetSize(fmt.Sprintf("%dx%d", slots[slot].Width, slots[slot].Height))
 		slotPublic := fmt.Sprintf("%d0%d0%d", app.ID, app.UserID, size)
 		for k, v := range slots[slot].Attributes {
 			attr[slotPublic][k] = v
@@ -426,9 +398,9 @@ func (tc selectController) slotSizeAppExchangeNormal(slotPublic []string, appID 
 	}
 
 	for i := range answer {
-		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), config.Config.Redis.Days, "i", "c")
-		if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {
-			answer[i].Ctr = config.Config.Clickyab.DefaultCTR
+		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), dailyClickDays.Int(), "i", "c")
+		if err != nil || result["c"] == 0 || result["i"] < minImp.Int64() {
+			answer[i].Ctr = defaultCTR.Float64()
 		} else {
 			answer[i].Ctr = utils.Ctr(result["i"], result["c"])
 		}

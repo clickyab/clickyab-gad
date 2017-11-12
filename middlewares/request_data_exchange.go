@@ -7,10 +7,9 @@ import (
 	"net"
 	"regexp"
 
-	"github.com/clickyab/services/assert"
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/mr"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 
 	"net/http"
 
@@ -141,7 +140,7 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			rde.OS = ua.OS()
 			rde.Mobile = ua.Mobile()
 			rde.Platform = ua.Platform()
-			rde.PlatformID = config.FindOsID(ua.Platform())
+			rde.PlatformID = utils.FindOsID(ua.Platform())
 			if v, ok := e.Attributes["referrer"]; ok {
 				rde.Referrer = v.(string)
 			}
@@ -151,7 +150,7 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			rde.MegaImp = e.TrackID
 			rde.TID = e.UserTrackID
 			if rde.TID == "" {
-				rde.TID = utils.CreateHash(config.Config.Clickyab.CopLen, []byte(rde.UserAgent), []byte(rde.IP))
+				rde.TID = utils.CreateHash(copLen.Int(), []byte(rde.UserAgent), []byte(rde.IP))
 			}
 			rde.CopID = mr.NewManager().CreateCookieProfile(rde.TID, rde.IP).ID
 			rde.Host = ctx.Request().Host

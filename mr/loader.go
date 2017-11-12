@@ -10,12 +10,15 @@ import (
 	"time"
 
 	"github.com/clickyab/services/assert"
-	"clickyab.com/gad/config"
 
+	"github.com/clickyab/services/config"
 	"github.com/sirupsen/logrus"
 )
 
-var last time.Time = time.Now()
+var (
+	defaultCTR           = config.RegisterFloat64("clickyab.default_ctr", 0.1, "default ctr")
+	last       time.Time = time.Now()
+)
 
 // LoadAds load all ads at once and return them
 func (m *Manager) LoadAds() (res []AdData, err error) {
@@ -79,7 +82,7 @@ func (m *Manager) LoadAds() (res []AdData, err error) {
 		if res[i].CaCTR.Valid {
 			res[i].AdCTR = res[i].CaCTR.Float64
 		} else {
-			res[i].AdCTR = config.Config.Clickyab.DefaultCTR
+			res[i].AdCTR = defaultCTR.Float64()
 		}
 		//if res[i].AdCTR < 0.001 {
 		//	if err != nil || result["c"] == 0 || result["i"] < config.Config.Clickyab.MinImp {

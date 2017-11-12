@@ -6,7 +6,6 @@ import (
 	"errors"
 	"sync"
 
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
 
@@ -53,10 +52,10 @@ func Publish(in Job) (err error) {
 		}
 	}()
 	topic := in.GetTopic()
-	if config.Config.AMQP.Debug {
+	if debug.Bool() {
 		topic = "debug." + topic
 	}
-	return v.chn.Publish(config.Config.AMQP.Exchange, topic, true, false, pub)
+	return v.chn.Publish(exchange.String(), topic, true, false, pub)
 }
 
 // MustPublish publish an event with force
@@ -67,7 +66,7 @@ func MustPublish(ei Job) {
 // FinalizeWait is a function to wait for all publication to finish. after calling this,
 // must not call the PublishEvent
 func finalizeWait() {
-	for i := 0; i < config.Config.AMQP.Publisher; i++ {
+	for i := 0; i < pubCount; i++ {
 		rng = rng.Next()
 		v := rng.Value.(*chnlLock)
 		v.lock.Lock()

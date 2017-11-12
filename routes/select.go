@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"time"
 
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/modules"
@@ -29,6 +28,7 @@ import (
 
 	"clickyab.com/gad/js"
 
+	"github.com/clickyab/services/safe"
 	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
 )
@@ -106,7 +106,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		ISP:         isp,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, _ := tc.makeShow(c, "web", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCWeb, config.Config.Clickyab.UnderFloor, true, config.Config.Clickyab.FloorDiv.Web)
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, minCPCWeb.Int64(), allowUnderFloor.Bool(), true, floorDivWeb.Int64())
 
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
@@ -152,10 +152,10 @@ func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website P
 		"WS": fmt.Sprintf("%d", website.GetID()),
 		"T":  fmt.Sprintf("%d", time.Now().Unix()),
 	}
-	assert.True(config.Config.Clickyab.MegaImpExpire > 1, "invalid config")
+	assert.True(megaImpExpire.Int64() > 1, "invalid config")
 	return aredis.HMSet(
 		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
-		config.Config.Clickyab.MegaImpExpire,
+		megaImpExpire.Duration(),
 		tmp,
 	)
 }
@@ -169,7 +169,7 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 			transport.DELIMITER,
 			adID),
 		fmt.Sprintf("%d", winnerBid),
-		config.Config.Clickyab.MegaImpExpire,
+		megaImpExpire.Duration(),
 	))
 	assert.Nil(aredis.StoreHashKey(
 		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
@@ -179,7 +179,7 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 			transport.DELIMITER,
 			adID),
 		strconv.FormatInt(slotID, 10),
-		config.Config.Clickyab.MegaImpExpire,
+		megaImpExpire.Duration(),
 	))
 	if clickURL != "" && clickParam != "" {
 		assert.Nil(aredis.StoreHashKey(
@@ -190,7 +190,7 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 				transport.DELIMITER,
 				slotID),
 			clickURL,
-			config.Config.Clickyab.MegaImpExpire,
+			megaImpExpire.Duration(),
 		))
 
 		assert.Nil(aredis.StoreHashKey(
@@ -201,7 +201,7 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 				transport.DELIMITER,
 				slotID),
 			clickParam,
-			config.Config.Clickyab.MegaImpExpire,
+			megaImpExpire.Duration(),
 		))
 		assert.Nil(aredis.StoreHashKey(
 			fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
@@ -211,7 +211,7 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 				transport.DELIMITER,
 				slotID),
 			clickType,
-			config.Config.Clickyab.MegaImpExpire,
+			megaImpExpire.Duration(),
 		))
 	}
 
@@ -264,8 +264,8 @@ func (tc *selectController) fetchWebsite(publicID int64) (*mr.Website, error) {
 	if err != nil {
 		return nil, err
 	}
-	if website.WFloorCpm.Int64 < config.Config.Clickyab.MinCPMFloorWeb {
-		website.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloorWeb
+	if website.WFloorCpm.Int64 < minCPMFloorWeb.Int64() {
+		website.WFloorCpm.Int64 = minCPMFloorWeb.Int64()
 	}
 	return website, err
 }
@@ -293,7 +293,7 @@ func (tc selectController) slotSizeWeb(c echo.Context, website mr.Website, mobil
 
 		for _, pid := range payload.Slots {
 			for i := 0; i < pid.Count; i++ {
-				s, _ := config.GetSize(pid.Size)
+				s, _ := utils.GetSize(pid.Size)
 				r := fmt.Sprintf("%d", rand.Intn(10000))
 
 				pubAd[r] = &slotData{
@@ -325,7 +325,7 @@ func (tc selectController) slotSizeWeb(c echo.Context, website mr.Website, mobil
 			size[slice[1]] = params[key][0]
 			//check for size
 			//size[slice[1]] = strings.Trim(size[slice[1]], "a")
-			SizeNum, _ := config.GetSize(size[slice[1]])
+			SizeNum, _ := utils.GetSize(size[slice[1]])
 			sizeNumSlice[slice[1]] = SizeNum
 		}
 	}
@@ -372,8 +372,8 @@ func (tc selectController) slotSizeNative(c echo.Context, website mr.Website, te
 	if err != nil || countInt < 1 {
 		return make(map[string]*slotData), make(map[string]int), nil
 	}
-	if countInt > config.Config.Clickyab.Native.MaxCount {
-		countInt = config.Config.Clickyab.Native.MaxCount
+	if countInt > nativeMaxCount.Int() {
+		countInt = nativeMaxCount.Int()
 	}
 	order := []string{}
 	for i := 1; i <= countInt; i++ { //range  over slots
@@ -421,7 +421,7 @@ func (selectController) insertNewAppSlots(appID int64, newSlots []int64, newSize
 
 // CalculateCtr calculate ctr
 func (selectController) calculateCTR(ad *mr.AdData, slot *slotData) float64 {
-	return (ad.AdCTR*float64(config.Config.Clickyab.AdCTREffect) + slot.Ctr*float64(config.Config.Clickyab.SlotCTREffect)) / float64(100)
+	return (ad.AdCTR*float64(adCTREffect.Int()) + slot.Ctr*float64(slotCTREffect.Int())) / float64(100)
 }
 
 func (tc *selectController) makeShow(
@@ -458,7 +458,7 @@ func (tc *selectController) makeShow(
 	reserve := make(map[string]string)
 	for o := range order {
 		slotID := order[o]
-		tmp := config.Config.MachineName + <-utils.ID
+		tmp := <-utils.ID
 		reserve[slotID] = tmp
 		u := url.URL{
 			Scheme: rd.Scheme,
@@ -483,7 +483,7 @@ func (tc *selectController) makeShow(
 		wait = make(chan map[string]*mr.AdData)
 	}
 	assert.Nil(tc.createMegaKey(rd, publisher))
-	middlewares.SafeGO(c, false, false, func() {
+	safe.GoRoutine(func() {
 		ads := make(map[string]*mr.AdData)
 		defer func() {
 			if typ == "sync" {
@@ -512,7 +512,7 @@ func (tc *selectController) makeShow(
 
 			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
 				total[slotSize[slotID].SlotSize]++
-				if adData.AdType == config.AdTypeVideo && noVideo {
+				if adData.AdType == utils.AdTypeVideo && noVideo {
 					continue
 				}
 				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv) {
@@ -548,7 +548,7 @@ func (tc *selectController) makeShow(
 				extra += " From Under, FirstBID "
 			}
 			if len(ef.Ads) == 0 {
-				w, h := config.GetSizeByNum(slotSize[slotID].SlotSize)
+				w, h := utils.GetSizeByNum(slotSize[slotID].SlotSize)
 				req, _ := httputil.DumpRequest(c.Request(), false)
 				logrus.WithFields(logrus.Fields{
 					"publisher":     publisher.GetName(),
@@ -608,7 +608,7 @@ func (tc *selectController) makeShow(
 			ads[slotID] = sorted[0]
 
 			if !multipleVideo {
-				noVideo = noVideo || sorted[0].AdType == config.AdTypeVideo
+				noVideo = noVideo || sorted[0].AdType == utils.AdTypeVideo
 			}
 			var clu, clp, clt string
 			if sa, ok := attr[slotID]; ok {

@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/ip2location"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/mr"
@@ -39,7 +38,7 @@ func (tc *selectController) showphp(c echo.Context) error {
 
 	rd := middlewares.MustGetRequestData(c)
 	rd.TID = tid
-	size, err := config.GetSize(fmt.Sprintf("%sx%s", width, height))
+	size, err := utils.GetSize(fmt.Sprintf("%sx%s", width, height))
 	if err != nil {
 		return c.HTML(http.StatusBadRequest, "wrong slot size")
 	}
@@ -92,10 +91,10 @@ func (tc *selectController) showphp(c echo.Context) error {
 			nil,
 			website,
 			false,
-			config.Config.Clickyab.MinCPCWeb,
-			config.Config.Clickyab.UnderFloor,
+			minCPCWeb.Int64(),
+			allowUnderFloor.Bool(),
 			true,
-			config.Config.Clickyab.FloorDiv.Web,
+			floorDivWeb.Int64(),
 		)
 	} else {
 		res := &slotPins[0].AdData
@@ -105,7 +104,7 @@ func (tc *selectController) showphp(c echo.Context) error {
 		tc.updateMegaKey(rd, slotPins[0].AdID, slotPins[0].Bid, slotPins[0].SlotID, "", "", "")
 		reserve := make(map[string]string)
 		slotPubID := slotReq
-		tmp := config.Config.MachineName + <-utils.ID
+		tmp := <-utils.ID
 		reserve[slotPubID] = tmp
 		store.Set(reserve[slotPubID], fmt.Sprintf("%d", slotPins[0].AdID))
 	}
@@ -141,7 +140,7 @@ func (tc *selectController) showphp(c echo.Context) error {
 		adURL = ad.AdURL.String
 	}
 	showT := false
-	if rd.Mobile && provinceID > 0 && rand.Intn(config.Config.Clickyab.ChanceShowT) == 1 {
+	if rd.Mobile && provinceID > 0 && rand.Intn(chanceShowT.Int()) == 1 {
 		showT = true
 		middlewares.SetData(c, "show_t", 1)
 	}
@@ -222,19 +221,19 @@ func checkFixSlotSize(a mr.SlotPinData, typ string) bool {
 		if a.CampaignNetwork != 2 && a.AdType == 3 {
 			return false
 		}
-		if a.AdType == config.AdTypeDynamic {
+		if a.AdType == utils.AdTypeDynamic {
 			return false
 		}
 		if a.CampaignNetwork != 0 && a.CampaignNetwork != 2 {
 			return false
 		}
-		return a.AdType == config.AdTypeVideo || config.InVastSize(a.AdSize)
+		return a.AdType == utils.AdTypeVideo || utils.InVastSize(a.AdSize)
 	} else if typ == "banner" {
 		if a.CampaignNetwork != 0 {
 			return false
 		}
-		if a.AdType == config.AdTypeVideo {
-			if config.InVideoSize(a.AdSize) {
+		if a.AdType == utils.AdTypeVideo {
+			if utils.InVideoSize(a.AdSize) {
 				return true
 			}
 			return false

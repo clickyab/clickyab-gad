@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/clickyab/services/assert"
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/gmaps"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
+	"github.com/clickyab/services/config"
 )
 
 // UnknownNetwork is the default network
@@ -88,10 +88,14 @@ func (w *App) GetName() string {
 	return w.AppPackage
 }
 
+var (
+	floorApp = config.RegisterInt("clickyab.min_cpm_floor_app", 700, "minimyum app florcpm")
+)
+
 // FloorCPM is the floor value for this site
 func (w *App) FloorCPM() int64 {
-	if w.AppFloorCPM.Int64 < config.Config.Clickyab.MinCPMFloorApp {
-		w.AppFloorCPM.Int64 = config.Config.Clickyab.MinCPMFloorApp
+	if w.AppFloorCPM.Int64 < floorApp.Int64() {
+		w.AppFloorCPM.Int64 = floorApp.Int64()
 		w.AppFloorCPM.Valid = true
 	}
 	return w.AppFloorCPM.Int64

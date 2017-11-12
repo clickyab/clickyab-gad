@@ -1,11 +1,11 @@
 package routes
 
 import (
-	"clickyab.com/gad/config"
 	"net/http"
+	"strings"
+
 	selector2 "clickyab.com/gad/pin"
 	"clickyab.com/gad/selector"
-	"strings"
 	"clickyab.com/gad/utils"
 
 	"fmt"
@@ -66,7 +66,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	var h = make(map[string]*mr.AdData)
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
 	// TODO : Currently underfloor is always true
-	_, h = tc.makeShow(c, "sync", rd, filteredAds, resOrder, sizeNumSlice, slotSize, nil, website, false, config.Config.Clickyab.MinCPCNative, true, true, config.Config.Clickyab.FloorDiv.Native)
+	_, h = tc.makeShow(c, "sync", rd, filteredAds, resOrder, sizeNumSlice, slotSize, nil, website, false, minCPCNative.Int64(), allowUnderFloor.Bool(), true, floorDivNative.Int64())
 
 	if slotFixFound {
 		for _, val := range slotPins {
@@ -76,14 +76,13 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 			h[val.SlotPublicID] = res
 			reserve := make(map[string]string)
 			tc.updateMegaKey(rd, val.AdID, val.Bid, val.SlotID, "", "", "")
-			tmp := config.Config.MachineName + <-utils.ID
-			reserve[val.SlotPublicID] = tmp
+			reserve[val.SlotPublicID] = <-utils.ID
 			store.Set(reserve[val.SlotPublicID], fmt.Sprintf("%d", val.AdID))
 		}
 	}
 
 	ads := make([]nativeAd, 0)
-	var p protocol = httpScheme
+	var p = httpScheme
 	if rd.Scheme == httpsScheme {
 		p = httpsScheme
 	}
@@ -106,10 +105,8 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		v.Set("ref", rd.Referrer)
 		v.Set("parent", rd.Parent)
 		u.RawQuery = v.Encode()
-		//middlewares.SafeGO(c, false, false, func() {
 		imp := tc.fillNativeImp(rd, false, j, j.WinnerBid, website, j.SlotID)
 		tc.callWebWorker(website, j.SlotID, j.AdID, m.RequestData.MegaImp, rnd, imp, rd)
-		//})
 
 		if v == nil {
 			continue

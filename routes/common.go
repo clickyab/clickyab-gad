@@ -1,16 +1,16 @@
 package routes
 
 import (
-	"github.com/clickyab/services/assert"
-	"clickyab.com/gad/config"
 	"fmt"
+	"strconv"
+	"time"
+
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/mr"
 	"clickyab.com/gad/rabbit"
 	"clickyab.com/gad/redis"
-	"strconv"
-	"time"
 	"clickyab.com/gad/transport"
+	"github.com/clickyab/services/assert"
 
 	"github.com/sirupsen/logrus"
 )
@@ -136,7 +136,7 @@ func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, m
 			mega,
 			transport.DELIMITER,
 			adID),
-		config.Config.Clickyab.MegaImpExpire,
+		megaImpExpire.Duration(),
 		tmp)
 	if err != nil {
 		logrus.WithField("cy.imp", imp).Error("error in hmset", err)

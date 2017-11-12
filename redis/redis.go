@@ -5,20 +5,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/clickyab/services/assert"
-
 	"fmt"
 
 	"strconv"
 
 	"net"
-
-	"context"
-
-	"clickyab.com/gad/config"
-	"github.com/clickyab/services/initializer"
-	"github.com/go-redis/redis"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -40,47 +31,6 @@ func lookup(svcName string) ([]string, error) {
 	}
 	fmt.Print(endpoints)
 	return endpoints, nil
-}
-
-type rInit struct {
-}
-
-// Initialize try to create a redis pool
-func (r *rInit) Initialize(ctx context.Context) {
-	once.Do(func() {
-		if config.Config.Redis.Cluster {
-			endpoints, err := lookup(config.Config.Redis.Address)
-			assert.Nil(err)
-			for i := range endpoints {
-				endpoints[i] = endpoints[i] + ":" + config.Config.Redis.Port
-			}
-			Client = redis.NewClusterClient(
-				&redis.ClusterOptions{
-					Addrs:    endpoints,
-					Password: config.Config.Redis.Password,
-					PoolSize: config.Config.Redis.Size,
-				},
-			)
-		} else {
-			Client = redis.NewClient(
-				&redis.Options{
-					Network:  config.Config.Redis.Network,
-					Addr:     config.Config.Redis.Address + ":" + config.Config.Redis.Port,
-					Password: config.Config.Redis.Password,
-					PoolSize: config.Config.Redis.Size,
-					DB:       config.Config.Redis.Databse,
-				},
-			)
-		}
-		// PING the server to make sure every thing is fine
-		assert.Nil(Client.Ping().Err())
-		logrus.Debug("redis is ready.")
-	})
-
-	go func() {
-		<-ctx.Done()
-		logrus.Debug("redis is finalized.")
-	}()
 }
 
 // StoreKey is a simple key value store with timeout
@@ -265,8 +215,4 @@ func SAddInt(key string, touch bool, expire time.Duration, members ...int64) err
 	}
 
 	return SAdd(key, touch, expire, r...)
-}
-
-func init() {
-	initializer.Register(&rInit{}, 0)
 }

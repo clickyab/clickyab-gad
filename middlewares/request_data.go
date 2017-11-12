@@ -5,11 +5,11 @@ import (
 	"net"
 	"strings"
 
-	"github.com/clickyab/services/assert"
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/mr"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 
+	"github.com/clickyab/services/config"
 	"github.com/mssola/user_agent"
 	"gopkg.in/labstack/echo.v3"
 )
@@ -60,6 +60,10 @@ const (
 	https            = "https"
 )
 
+var (
+	copLen = config.RegisterInt("clickyab.cop_len", 10, "cop key len")
+)
+
 // RequestCollectorGenerator try to collect data from request
 func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) string, tag string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -97,7 +101,7 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 			SetData(ctx, "mobile", e.Mobile)
 			SetData(ctx, "browser", name)
 
-			e.PlatformID = config.FindOsID(ua.Platform())
+			e.PlatformID = utils.FindOsID(ua.Platform())
 			e.Referrer = ctx.Request().URL.Query().Get("ref")
 			e.Method = ctx.Request().Method
 			e.MegaImp = <-utils.ID
@@ -112,8 +116,8 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 				SetData(ctx, "ref", e.Referrer)
 			}
 
-			if e.TID = ctx.Request().URL.Query().Get("tid"); len(e.TID) < config.Config.Clickyab.CopLen {
-				e.TID = copKey(ctx, e, config.Config.Clickyab.CopLen)
+			if e.TID = ctx.Request().URL.Query().Get("tid"); len(e.TID) < copLen.Int() {
+				e.TID = copKey(ctx, e, copLen.Int())
 			}
 			e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
 

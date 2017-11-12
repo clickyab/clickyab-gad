@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/config"
 )
 
 // Website type for website
@@ -52,10 +52,14 @@ func (w *Website) GetName() string {
 	return w.WDomain.String
 }
 
+var (
+	floorWeb = config.RegisterInt64("clickyab.min_cpm_floor_web", 1000, "minimum web florcpm")
+)
+
 // FloorCPM is the floor value for this site
 func (w *Website) FloorCPM() int64 {
-	if w.WFloorCpm.Int64 < config.Config.Clickyab.MinCPMFloorWeb {
-		w.WFloorCpm.Int64 = config.Config.Clickyab.MinCPMFloorWeb
+	if w.WFloorCpm.Int64 < floorWeb.Int64() {
+		w.WFloorCpm.Int64 = floorWeb.Int64()
 		w.WFloorCpm.Valid = true
 	}
 	return w.WFloorCpm.Int64 / 3

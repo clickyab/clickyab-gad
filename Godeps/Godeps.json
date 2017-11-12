@@ -19,6 +19,10 @@
 			"Rev": "ee183c78608976ad2be45212ce8f69d86b5716b5"
 		},
 		{
+			"ImportPath": "github.com/clickyab/services/fluentd",
+			"Rev": "ee183c78608976ad2be45212ce8f69d86b5716b5"
+		},
+		{
 			"ImportPath": "github.com/clickyab/services/framework",
 			"Rev": "ee183c78608976ad2be45212ce8f69d86b5716b5"
 		},
@@ -63,6 +67,10 @@
 			"Rev": "ee183c78608976ad2be45212ce8f69d86b5716b5"
 		},
 		{
+			"ImportPath": "github.com/clickyab/services/shell",
+			"Rev": "ee183c78608976ad2be45212ce8f69d86b5716b5"
+		},
+		{
 			"ImportPath": "github.com/clickyab/services/trans",
 			"Rev": "ee183c78608976ad2be45212ce8f69d86b5716b5"
 		},
@@ -97,10 +105,6 @@
 		{
 			"ImportPath": "github.com/fzerorubigd/expand",
 			"Rev": "fd359294116f3987dc04c5987782f845e99e9f42"
-		},
-		{
-			"ImportPath": "github.com/fzerorubigd/go-redmine",
-			"Rev": "05bb0a08b5c20b45765553ca33aea5a2aea9f3a8"
 		},
 		{
 			"ImportPath": "github.com/fzerorubigd/sql-migrate",
@@ -234,11 +238,6 @@
 			"Rev": "bb6d471dc95d4fe11e432687f8b70ff496cf3136"
 		},
 		{
-			"ImportPath": "github.com/pkg/profile",
-			"Comment": "v1.2.1",
-			"Rev": "5b67d428864e92711fcbd2f8629456121a56d91f"
-		},
-		{
 			"ImportPath": "github.com/rs/xhandler",
 			"Comment": "v.11-5-g1eb70cf",
 			"Rev": "1eb70cf1520d43c307a89c5dabb7a7efd132fccd"
@@ -354,11 +353,6 @@
 		},
 		{
 			"ImportPath": "gopkg.in/fzerorubigd/onion.v2",
-			"Comment": "v1.0.0-13-g0789309",
-			"Rev": "078930955df67fe99807c7099902a5282796521f"
-		},
-		{
-			"ImportPath": "gopkg.in/fzerorubigd/onion.v2/extraenv",
 			"Comment": "v1.0.0-13-g0789309",
 			"Rev": "078930955df67fe99807c7099902a5282796521f"
 		},

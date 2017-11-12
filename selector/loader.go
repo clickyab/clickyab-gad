@@ -5,12 +5,14 @@ import (
 	"sync"
 	"time"
 
-	"clickyab.com/gad/config"
-	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/mr"
 	"github.com/clickyab/services/assert"
 	"github.com/clickyab/services/mysql"
 
+	"context"
+
+	"github.com/clickyab/services/config"
+	"github.com/clickyab/services/safe"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,12 +22,14 @@ var (
 	once   = &sync.Once{}
 
 	lastTime time.Time
+
+	maxLoadFail = config.RegisterInt("clickyab.max_load_fail", 3, "maximum fail allowed in sequence")
 )
 
 type myModel struct {
 }
 
-func interval() {
+func interval(_ context.CancelFunc) {
 	manager := mr.NewManager()
 	fail := 0
 	for {
@@ -34,7 +38,7 @@ func interval() {
 		l, err := manager.LoadAds()
 		if err != nil {
 			//oh crap, failed. can we tolerate this?
-			if fail > config.Config.Clickyab.MaxLoadFail {
+			if fail > maxLoadFail.Int() {
 				assert.Nil(err, fmt.Sprintf("more than %s time failed to load data", fail))
 			}
 			fail++
@@ -71,7 +75,7 @@ func (m *myModel) Initialize() {
 		loaded, err = manager.LoadAds()
 		assert.Nil(err)
 		lastTime = time.Now()
-		middlewares.SafeGO(nil, true, false, interval)
+		safe.ContinuesGoRoutine(interval, time.Second)
 	})
 }
 

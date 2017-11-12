@@ -4,12 +4,14 @@ import (
 	"container/ring"
 	"sync"
 
-	"clickyab.com/gad/config"
 	"github.com/clickyab/services/assert"
+	"github.com/clickyab/services/config"
 
 	"sync/atomic"
 
 	"context"
+
+	"time"
 
 	"github.com/clickyab/services/initializer"
 	"github.com/sirupsen/logrus"
@@ -19,6 +21,15 @@ import (
 var (
 	conn *amqp.Connection
 	once = sync.Once{}
+)
+
+var (
+	dsn        = config.RegisterString("services.amqp.dsn", "amqp://server:bita123@127.0.0.1:5672/cy", "amqp dsn")
+	exchange   = config.RegisterString("services.amqp.exchange", "cy", "amqp exchange to publish into")
+	publisher  = config.RegisterInt("services.ampq.publisher", 30, "amqp publisher to publish into")
+	confirmLen = config.RegisterInt("services.amqp.confirm_len", 200, "amqp confirm channel len")
+	debug      = config.RegisterBoolean("services.amqp.debug", false, "amqp debug mode")
+	tryLimit   = config.RegisterDuration("services.amqp.try_limit", time.Minute, "the limit to incremental try wait")
 )
 
 // Channel opens a unique, concurrent server channel to process the bulk of AMQP
@@ -136,6 +147,7 @@ type Connection interface {
 var (
 	quit        = make(chan chan struct{})
 	hasConsumer int64
+	pubCount    int
 )
 
 type rInit struct {
@@ -146,7 +158,7 @@ func (r *rInit) Initialize(ctx context.Context) {
 
 	once.Do(func() {
 		var err error
-		conn, err = amqp.Dial(config.Config.AMQP.DSN)
+		conn, err = amqp.Dial(dsn.String())
 		assert.Nil(err)
 		chn, err := conn.Channel()
 		assert.Nil(err)
@@ -158,7 +170,7 @@ func (r *rInit) Initialize(ctx context.Context) {
 
 		assert.Nil(
 			chn.ExchangeDeclare(
-				config.Config.AMQP.Exchange,
+				exchange.String(),
 				"topic",
 				true,
 				false,
@@ -168,16 +180,16 @@ func (r *rInit) Initialize(ctx context.Context) {
 			),
 		)
 	})
-
-	if config.Config.AMQP.Publisher < 1 {
-		config.Config.AMQP.Publisher = 1
+	pubCount = publisher.Int()
+	if pubCount < 1 {
+		pubCount = 1
 	}
 
-	rng = ring.New(config.Config.AMQP.Publisher)
-	for i := 0; i < config.Config.AMQP.Publisher; i++ {
+	rng = ring.New(pubCount)
+	for i := 0; i < pubCount; i++ {
 		chn, err := conn.Channel()
 		assert.Nil(err)
-		rtrn := make(chan amqp.Confirmation, config.Config.AMQP.ConfirmLen)
+		rtrn := make(chan amqp.Confirmation, confirmLen.Int())
 		err = chn.Confirm(false)
 		assert.Nil(err)
 		chn.NotifyPublish(rtrn)

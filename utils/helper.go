@@ -8,35 +8,14 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"regexp"
 	"strings"
 	"syscall"
 
-	"clickyab.com/gad/config"
+	"time"
+
 	"clickyab.com/gad/redis"
+	"github.com/clickyab/services/config"
 )
-
-var spaceMatch = regexp.MustCompile(`\s+`)
-
-// PrefixMatch return the matched items in array
-func PrefixMatch(in string, data ...string) []string {
-	var res []string
-	for i := range data {
-		if len(in) < len(data[i]) {
-			if data[i][:len(in)] == in {
-				res = append(res, data[i][len(in):])
-			}
-		}
-	}
-
-	return res
-}
-
-// CleanSplit replace all multiple strings with one and then split them using the space as delimiter
-func CleanSplit(line string) []string {
-	str := strings.Trim(spaceMatch.ReplaceAllString(line, " "), " ")
-	return strings.Split(str, " ")
-}
 
 // Exists returns whether the given file or directory exists or not
 func Exists(path string) (bool, error) {
@@ -59,25 +38,6 @@ func StringInArray(q string, arr ...string) bool {
 	}
 
 	return false
-}
-
-// Int64InArray check for a string in other strings
-func Int64InArray(q int64, arr ...int64) bool {
-	for i := range arr {
-		if arr[i] == q {
-			return true
-		}
-	}
-
-	return false
-}
-
-// Long2IP change the integer to ip
-func Long2IP(ipLong uint32) net.IP {
-	ipByte := make([]byte, 4)
-	binary.BigEndian.PutUint32(ipByte, ipLong)
-	ip := net.IP(ipByte)
-	return ip
 }
 
 // IP2long change ip to integer
@@ -114,24 +74,18 @@ func WaitSignal(exit chan chan struct{}) {
 	}
 }
 
+var (
+	impExpireDaily = config.RegisterDuration("clickyab.daily_imp_expire", 7*24*time.Hour, "daily impression expiration")
+)
+
 //IncKeyDaily function increase redis daily key
 func IncKeyDaily(key, subKey string, count int64) (int64, error) {
 	res, err := aredis.IncHash(
 		key,
 		subKey,
 		count,
-		config.Config.Clickyab.DailyImpExpire)
+		impExpireDaily.Duration())
 	return res, err
-}
-
-// InSlice check if the value exists in the slice
-func InSlice(a interface{}, list []interface{}) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
 }
 
 // Hash is the hash generation func for keys, md5 normally

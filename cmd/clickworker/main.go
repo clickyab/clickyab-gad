@@ -1,7 +1,6 @@
 package main
 
 import (
-	"clickyab.com/gad/config"
 	"clickyab.com/gad/rabbit"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
@@ -9,14 +8,13 @@ import (
 	_ "github.com/clickyab/services/mysql/connection/mysql"
 
 	"github.com/clickyab/services/assert"
+	"github.com/clickyab/services/config"
 	"github.com/clickyab/services/initializer"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	config.Initialize()
-	config.SetConfigParameter()
-	config.Config.AMQP.Publisher = 1 // Do not waste many publisher channel
+	config.Initialize("clickyab", "gad", "GAD")
 
 	version.PrintVersion().Info("Application started")
 	defer initializer.Initialize()()

@@ -1,12 +1,12 @@
 package routes
 
 import (
-	"clickyab.com/gad/config"
 	"fmt"
-	"clickyab.com/gad/mr"
-	aredis "clickyab.com/gad/redis"
 	"sort"
 	"time"
+
+	"clickyab.com/gad/mr"
+	aredis "clickyab.com/gad/redis"
 	"clickyab.com/gad/transport"
 
 	"github.com/sirupsen/logrus"
@@ -61,7 +61,7 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 
 	}
 	c := make(mr.CappingContext)
-	results, _ := aredis.HGetAll(getCappingKey(copID), true, config.Config.Clickyab.DailyCapExpire)
+	results, _ := aredis.HGetAll(getCappingKey(copID), true, dailyCapExpire.Duration())
 	doneSized := make(map[int]bool)
 	for i := range sizeNumSlice {
 		if doneSized[sizeNumSlice[i]] {
@@ -72,7 +72,7 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 		sizeCap := map[string]interface{}{}
 		for ad := range filteredAds[sizeNumSlice[i]] {
 			if filteredAds[sizeNumSlice[i]][ad].CampaignFrequency <= 0 {
-				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency = config.Config.Clickyab.MinFrequency
+				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency = minFrequency.Int()
 			}
 			key := fmt.Sprintf(
 				"%s%s%d",
@@ -91,7 +91,7 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 		// if not found then reset all capping
 		if !found {
 			logrus.Debugf("Removing key for size %d", sizeNumSlice[i])
-			aredis.HMSet(getCappingKey(copID), config.Config.Clickyab.DailyCapExpire, sizeCap)
+			aredis.HMSet(getCappingKey(copID), dailyCapExpire.Duration(), sizeCap)
 			for i := range sizeCap {
 				results[i] = 0
 			}
@@ -126,7 +126,7 @@ func storeCapping(copID int64, cpID int64) error {
 		getCappingKey(copID),
 		fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, cpID),
 		1,
-		config.Config.Clickyab.DailyCapExpire,
+		dailyCapExpire.Duration(),
 	)
 	return err
 }
