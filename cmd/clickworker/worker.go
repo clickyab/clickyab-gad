@@ -21,11 +21,12 @@
 package main
 
 import (
-	"github.com/clickyab/services/assert"
-	"clickyab.com/gad/mr"
 	"strconv"
+
+	"clickyab.com/gad/mr"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 )
 
 // error means Ack/Nack the boolean maens only when error is not nil, and means re-queue
@@ -33,11 +34,11 @@ func clickWorker(in *transport.Click) (bool, error) {
 
 	prefix := ""
 	if in.FraudReason != 0 {
-		prefix = transport.FRAUD_PREFIX
+		prefix = transport.FraudPrefix
 	}
 	var err error
 	// increment click to slot
-	_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(in.SlotID, 10)), prefix+transport.SUBKEY_Cl, 1)
+	_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.Slot, strconv.FormatInt(in.SlotID, 10)), prefix+transport.ClickSubKey, 1)
 	assert.Nil(err)
 	//insert click in db
 	err = mr.NewManager().InsertClick(in)

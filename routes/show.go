@@ -101,16 +101,15 @@ func (tc *selectController) show(c echo.Context) error {
 		suspicious = true
 	}
 
-	megaImp, err := aredis.HGetAllString(transport.MEGA+transport.DELIMITER+mega, false, 0)
+	megaImp, err := aredis.HGetAllString(transport.MegaKey+transport.Delimiter+mega, false, 0)
 	assert.Nil(err)
 	var winnerBid string
 	var winnerFinalBid int64
 	var ok bool
-	if winnerBid, ok = megaImp[fmt.Sprintf("%s%s%s", transport.ADVERTISE, transport.DELIMITER, ad)]; !ok {
+	if winnerBid, ok = megaImp[fmt.Sprintf("%s%s%s", transport.Advertise, transport.Delimiter, ad)]; !ok {
 		return c.String(http.StatusNotFound, "ad not found")
 	}
-	winnerFinalBid, err = strconv.ParseInt(winnerBid, 10, 64)
-
+	winnerFinalBid, _ = strconv.ParseInt(winnerBid, 10, 64)
 	ads, err := mr.NewManager().GetAd(adID, false)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
@@ -127,23 +126,23 @@ func (tc *selectController) show(c echo.Context) error {
 	v.Set("ref", rd.Referrer)
 	v.Set("parent", rd.Parent)
 	u.RawQuery = v.Encode()
-	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.SLOT, transport.DELIMITER, adID)], 10, 64)
+	slotID, err := strconv.ParseInt(megaImp[fmt.Sprintf("%s%s%d", transport.Slot, transport.Delimiter, adID)], 10, 64)
 	assert.Nil(err)
 
 	ccu, ccuok := megaImp[fmt.Sprintf(
 		"%s%s%d",
-		transport.CUSTOM_CLICK_URL,
-		transport.DELIMITER,
+		transport.CustomClickURL,
+		transport.Delimiter,
 		slotID)]
 	ccp, ccpok := megaImp[fmt.Sprintf(
 		"%s%s%d",
-		transport.CUSTOM_CLICK_PARAM,
-		transport.DELIMITER,
+		transport.CustomClickParam,
+		transport.Delimiter,
 		slotID)]
 	cct := megaImp[fmt.Sprintf(
 		"%s%s%d",
-		transport.CUSTOM_CLICK_TYPE,
-		transport.DELIMITER,
+		transport.CustomClickType,
+		transport.Delimiter,
 		slotID)]
 	if ccuok && ccpok {
 		cu, e := url.Parse(ccu)

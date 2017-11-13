@@ -46,9 +46,9 @@ var (
 	)
 )
 
-const inAppJson string = `{"status":1,"apps":[{"name":"snapp","packaage":"cab.snapp.passenger"},{"name":"tap30","packaage":"taxi.tap30.passenger"},{"name":"ajancy","packaage":"com.mammutgroup.ajancy.passenger"},{"name":"digikala","packaage":"com.digikala"},{"name":"bamilo","packaage":"com.bamilo.android"},{"name":"pintapin","packaage":"com.pintapin.pintapin"},{"name":"alibaba","packaage":"ir.alibaba"}]}`
+const inAppJSON = `{"status":1,"apps":[{"name":"snapp","packaage":"cab.snapp.passenger"},{"name":"tap30","packaage":"taxi.tap30.passenger"},{"name":"ajancy","packaage":"com.mammutgroup.ajancy.passenger"},{"name":"digikala","packaage":"com.digikala"},{"name":"bamilo","packaage":"com.bamilo.android"},{"name":"pintapin","packaage":"com.pintapin.pintapin"},{"name":"alibaba","packaage":"ir.alibaba"}]}`
 
-type appJson struct {
+type appJSON struct {
 	Status int64 `json:"status"`
 	Apps   []struct {
 		Name     string `json:"name"`
@@ -139,9 +139,9 @@ func (tc *selectController) inApp(c echo.Context) error {
 	return c.HTML(http.StatusOK, d)
 }
 
-func (tc *selectController) inAppJson(c echo.Context) error {
-	res := appJson{}
-	dec := json.NewDecoder(bytes.NewBuffer([]byte(inAppJson)))
+func (tc *selectController) inAppJSON(c echo.Context) error {
+	res := appJSON{}
+	dec := json.NewDecoder(bytes.NewBuffer([]byte(inAppJSON)))
 	err := dec.Decode(&res)
 	assert.Nil(err)
 	return c.JSON(http.StatusOK, res)
@@ -189,7 +189,7 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 	sizes := map[string]int{slotString: bs}
 
 	for i := range data {
-		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(data[i].ID, 10)), dailyClickDays.Int(), "i", "c")
+		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.Slot, strconv.FormatInt(data[i].ID, 10)), dailyClickDays.Int(), "i", "c")
 		if err != nil || result["c"] == 0 || result["i"] < minImp.Int64() {
 			data[i].Ctr = defaultCTR.Float64()
 		} else {

@@ -68,10 +68,10 @@ func (tc *selectController) click(c echo.Context) error {
 	status = changeStatus(0, suspNoAdFound, err != nil)
 
 	result, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s%s%d",
-		transport.IMP,
-		transport.DELIMITER,
+		transport.ImpKey,
+		transport.Delimiter,
 		mega,
-		transport.DELIMITER,
+		transport.Delimiter,
 		adID,
 	), true, dailyImpExpire.Duration())
 	if err != nil {
@@ -129,7 +129,7 @@ func (tc *selectController) click(c echo.Context) error {
 			status = suspFastClick
 		}
 
-		clickRedis := fmt.Sprintf("%s%s%s%s%s", transport.CLICK, transport.DELIMITER, mega, transport.DELIMITER, transport.ADVERTISE)
+		clickRedis := fmt.Sprintf("%s%s%s%s%s", transport.ClickKey, transport.Delimiter, mega, transport.Delimiter, transport.Advertise)
 		count, err := aredis.IncHash(clickRedis, fmt.Sprintf("CLICK_%d", adID), 1, dailyImpExpire.Duration())
 		assert.Nil(err)
 
@@ -145,8 +145,6 @@ func (tc *selectController) click(c echo.Context) error {
 	if status == suspNoAdFound {
 		return c.String(http.StatusNotFound, "Not found")
 	}
-	// TODO : better handling
-	_, _ = aredis.IncHash(fmt.Sprintf("%s%s%s", transport.CONV, transport.DELIMITER, clickID), "OK", 1, dailyClickExpire.Duration())
 	url := ""
 	cpName := ""
 	if ads != nil {
@@ -207,7 +205,7 @@ func (selectController) fillClick(
 		WinnerBid:    winnerBid,
 		InTime:       inTime,
 		OutTime:      outTime,
-		SlaID:        slaID,
+		SLAID:        slaID,
 		ImpID:        impID,
 		OS:           rd.PlatformID,
 		Status:       status,
@@ -219,7 +217,7 @@ func (selectController) fillClick(
 	}
 }
 
-func (selectController) replaceParameters(url, domain, campaign, clickID, impID, ip, googlead_id, android_id, android_device string) string {
+func (selectController) replaceParameters(url, domain, campaign, clickID, impID, ip, googleAdID, androidID, androidDevice string) string {
 	r := strings.NewReplacer(
 		"[app]",
 		domain,
@@ -245,21 +243,21 @@ func (selectController) replaceParameters(url, domain, campaign, clickID, impID,
 		"[ip]",
 		ip,
 		"{googlead_id}",
-		googlead_id,
+		googleAdID,
 		"[googlead_id]",
-		googlead_id,
+		googleAdID,
 		"{android_id}",
-		android_id,
+		androidID,
 		"[android_id]",
-		android_id,
+		androidID,
 		"{android_device}",
-		android_device,
+		androidDevice,
 		"[android_device]",
-		android_device,
+		androidDevice,
 	)
 
 	url = r.Replace(url)
-	return `<html><head><title>$imp_url</title><meta name="robots" content="nofollow"/></head>
+	return `<html><head><title>` + url + `</title><meta name="robots" content="nofollow"/></head>
 			<body><script>window.setTimeout( function() { window.location.href = '` + url + `' }, 500 );</script></body>
 			</html>`
 }

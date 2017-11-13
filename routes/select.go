@@ -154,7 +154,7 @@ func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website P
 	}
 	assert.True(megaImpExpire.Int64() > 1, "invalid config")
 	return aredis.HMSet(
-		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+		fmt.Sprintf("%s%s%s", transport.MegaKey, transport.Delimiter, rd.MegaImp),
 		megaImpExpire.Duration(),
 		tmp,
 	)
@@ -162,53 +162,53 @@ func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website P
 
 func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int64, winnerBid int64, slotID int64, clickURL, clickParam, clickType string) {
 	assert.Nil(aredis.StoreHashKey(
-		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+		fmt.Sprintf("%s%s%s", transport.MegaKey, transport.Delimiter, rd.MegaImp),
 		fmt.Sprintf(
 			"%s%s%d",
-			transport.ADVERTISE,
-			transport.DELIMITER,
+			transport.Advertise,
+			transport.Delimiter,
 			adID),
 		fmt.Sprintf("%d", winnerBid),
 		megaImpExpire.Duration(),
 	))
 	assert.Nil(aredis.StoreHashKey(
-		fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+		fmt.Sprintf("%s%s%s", transport.MegaKey, transport.Delimiter, rd.MegaImp),
 		fmt.Sprintf(
 			"%s%s%d",
-			transport.SLOT,
-			transport.DELIMITER,
+			transport.Slot,
+			transport.Delimiter,
 			adID),
 		strconv.FormatInt(slotID, 10),
 		megaImpExpire.Duration(),
 	))
 	if clickURL != "" && clickParam != "" {
 		assert.Nil(aredis.StoreHashKey(
-			fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+			fmt.Sprintf("%s%s%s", transport.MegaKey, transport.Delimiter, rd.MegaImp),
 			fmt.Sprintf(
 				"%s%s%d",
-				transport.CUSTOM_CLICK_URL,
-				transport.DELIMITER,
+				transport.CustomClickURL,
+				transport.Delimiter,
 				slotID),
 			clickURL,
 			megaImpExpire.Duration(),
 		))
 
 		assert.Nil(aredis.StoreHashKey(
-			fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+			fmt.Sprintf("%s%s%s", transport.MegaKey, transport.Delimiter, rd.MegaImp),
 			fmt.Sprintf(
 				"%s%s%d",
-				transport.CUSTOM_CLICK_PARAM,
-				transport.DELIMITER,
+				transport.CustomClickParam,
+				transport.Delimiter,
 				slotID),
 			clickParam,
 			megaImpExpire.Duration(),
 		))
 		assert.Nil(aredis.StoreHashKey(
-			fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, rd.MegaImp),
+			fmt.Sprintf("%s%s%s", transport.MegaKey, transport.Delimiter, rd.MegaImp),
 			fmt.Sprintf(
 				"%s%s%d",
-				transport.CUSTOM_CLICK_TYPE,
-				transport.DELIMITER,
+				transport.CustomClickType,
+				transport.Delimiter,
 				slotID),
 			clickType,
 			megaImpExpire.Duration(),

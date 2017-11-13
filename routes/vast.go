@@ -92,7 +92,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		MinBidPercentage: 1, // TODO : Hard coded shit.
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
-	var show = make(map[string]string)
+	var show map[string]string
 	show, _ = tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, minCPCVast.Int64(), allowUnderFloor.Bool(), true, floorDivVast.Int64())
 	var vTemp = make([]vastAdTemplate, 0)
 	if slotFixFound {
@@ -269,7 +269,7 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 	}
 
 	for i := range answer {
-		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), dailyClickDays.Int(), "i", "c")
+		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.Slot, strconv.FormatInt(answer[i].ID, 10)), dailyClickDays.Int(), "i", "c")
 		if err != nil || result["c"] == 0 || result["i"] < minImp.Int64() {
 			answer[i].Ctr = defaultCTR.Float64()
 		} else {

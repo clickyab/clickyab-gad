@@ -73,7 +73,7 @@ func (m *Manager) LoadAds() (res []AdData, err error) {
 	for i := range res {
 		//get redis key for ad
 		//result, err := aredis.SumHMGetField(
-		//	transport.KeyGenDaily(transport.ADVERTISE, strconv.FormatInt(res[i].AdID, 10)),
+		//	transport.KeyGenDaily(transport.Advertise, strconv.FormatInt(res[i].AdID, 10)),
 		//	config.Config.Redis.Days,
 		//	"i",
 		//	"c",

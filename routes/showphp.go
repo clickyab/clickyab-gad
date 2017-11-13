@@ -168,8 +168,7 @@ func makeAdURL(rd *middlewares.RequestData, wID, adID int64, mega string, rnd st
 }
 
 func locationStatus(c echo.Context, tc *selectController, wpid string, ip net.IP) (*mr.Website, int64, int64, error) {
-	wpID, err := strconv.ParseInt(wpid, 10, 0)
-
+	wpID, _ := strconv.ParseInt(wpid, 10, 0)
 	website, err := tc.fetchWebsite(wpID)
 	if err != nil {
 		return nil, 0, 0, errors.New("wrong website")
@@ -241,7 +240,6 @@ func checkFixSlotSize(a mr.SlotPinData, typ string) bool {
 		return a.SlotSize == a.AdSize
 	} else if typ == "native" {
 		return a.AdSize == 20 && a.CampaignNetwork == 3
-	} else {
-		panic("[BUG] unsupported type")
 	}
+	panic("[BUG] unsupported type")
 }

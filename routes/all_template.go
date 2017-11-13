@@ -752,7 +752,7 @@ var allAddTemplate = `
 
                 },
                 error: function(xhr){
-                    //alert("An error occured: " + xhr.status + " " + xhr.statusText);
+                    //alert("An error occurred: " + xhr.status + " " + xhr.statusText);
                 }
             });
         });

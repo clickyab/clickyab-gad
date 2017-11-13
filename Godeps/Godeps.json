@@ -39,6 +39,10 @@
 			"Rev": "511b648a196c78e8ddadb77b1b2b13e77176db42"
 		},
 		{
+			"ImportPath": "github.com/clickyab/services/gmaps",
+			"Rev": "511b648a196c78e8ddadb77b1b2b13e77176db42"
+		},
+		{
 			"ImportPath": "github.com/clickyab/services/healthz",
 			"Rev": "511b648a196c78e8ddadb77b1b2b13e77176db42"
 		},
@@ -87,11 +91,6 @@
 			"Rev": "511b648a196c78e8ddadb77b1b2b13e77176db42"
 		},
 		{
-			"ImportPath": "github.com/cpuguy83/go-md2man/md2man",
-			"Comment": "v1.0.7",
-			"Rev": "1d903dcb749992f3741d744c0f8376b4bd7eb3e1"
-		},
-		{
 			"ImportPath": "github.com/evalphobia/logrus_fluent",
 			"Comment": "v0.4.0",
 			"Rev": "76779e73f35d90f5a873e7feaf6691999b2c5db4"
@@ -100,11 +99,6 @@
 			"ImportPath": "github.com/fluent/fluent-logger-golang/fluent",
 			"Comment": "v1.2.1-23-ga8dfe4a",
 			"Rev": "a8dfe4adfeaf7b985acb486f6b060ff2f6a17e91"
-		},
-		{
-			"ImportPath": "github.com/fsnotify/fsnotify",
-			"Comment": "v1.4.2-6-g4da3e2c",
-			"Rev": "4da3e2cfbabc9f751898f250b49f2439785783a1"
 		},
 		{
 			"ImportPath": "github.com/fzerorubigd/expand",
@@ -150,51 +144,6 @@
 			"Rev": "a0583e0143b1624142adab07e0e97fe106d99561"
 		},
 		{
-			"ImportPath": "github.com/hashicorp/hcl",
-			"Rev": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/ast",
-			"Rev": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/parser",
-			"Rev": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/scanner",
-			"Rev": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/strconv",
-			"Rev": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/hcl/token",
-			"Rev": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/json/parser",
-			"Rev": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/json/scanner",
-			"Rev": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/hcl/json/token",
-			"Rev": "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
-		},
-		{
-			"ImportPath": "github.com/inconshreveable/mousetrap",
-			"Comment": "v1.0",
-			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
-		},
-		{
-			"ImportPath": "github.com/kib357/less-go",
-			"Rev": "9f0400998d19595d890d9366f4ec98347ea443ec"
-		},
-		{
 			"ImportPath": "github.com/labstack/gommon/color",
 			"Comment": "v0.2.1",
 			"Rev": "1121fd3e243c202482226a7afe4dcd07ffc4139a"
@@ -203,11 +152,6 @@
 			"ImportPath": "github.com/labstack/gommon/log",
 			"Comment": "v0.2.1",
 			"Rev": "1121fd3e243c202482226a7afe4dcd07ffc4139a"
-		},
-		{
-			"ImportPath": "github.com/magiconair/properties",
-			"Comment": "v1.7.3-9-g49d762b",
-			"Rev": "49d762b9817ba1c2e9d0c69183c2b4a8b8f1d934"
 		},
 		{
 			"ImportPath": "github.com/mattn/go-colorable",
@@ -220,22 +164,9 @@
 			"Rev": "fc9e8d8ef48496124e79ae0df75490096eccf6fe"
 		},
 		{
-			"ImportPath": "github.com/mitchellh/go-homedir",
-			"Rev": "b8bc1bf767474819792c23f32d8286a45736f1c6"
-		},
-		{
-			"ImportPath": "github.com/mitchellh/mapstructure",
-			"Rev": "06020f85339e21b2478f756a78e295255ffa4d6a"
-		},
-		{
 			"ImportPath": "github.com/mssola/user_agent",
 			"Comment": "v0.4.1-20-g07efe2b",
 			"Rev": "07efe2b857fb8c02d2dd85c12d0145f58554ec7c"
-		},
-		{
-			"ImportPath": "github.com/pelletier/go-toml",
-			"Comment": "v1.0.1-10-g4e9e0ee",
-			"Rev": "4e9e0ee19b60b13eb79915933f44d8ed5f268bdd"
 		},
 		{
 			"ImportPath": "github.com/philhofer/fwd",
@@ -255,56 +186,9 @@
 			"Rev": "79fe99e24311fa42469fb2ca23eb3f8f065e6155"
 		},
 		{
-			"ImportPath": "github.com/russross/blackfriday",
-			"Comment": "v1.5-7-g6d1ef89",
-			"Rev": "6d1ef893fcb01b4f50cb6e57ed7df3e2e627b6b2"
-		},
-		{
 			"ImportPath": "github.com/sirupsen/logrus",
 			"Comment": "v1.0.3-11-g89742ae",
 			"Rev": "89742aefa4b206dcf400792f3bd35b542998eb3b"
-		},
-		{
-			"ImportPath": "github.com/spf13/afero",
-			"Rev": "5660eeed305fe5f69c8fc6cf899132a459a97064"
-		},
-		{
-			"ImportPath": "github.com/spf13/afero/mem",
-			"Rev": "5660eeed305fe5f69c8fc6cf899132a459a97064"
-		},
-		{
-			"ImportPath": "github.com/spf13/cast",
-			"Comment": "v1.1.0",
-			"Rev": "acbeb36b902d72a7a4c18e8f3241075e7ab763e4"
-		},
-		{
-			"ImportPath": "github.com/spf13/cobra",
-			"Comment": "v0.0.1-7-g2da4a54",
-			"Rev": "2da4a54c5ceefcee7ca5dd0eea1e18a3b6366489"
-		},
-		{
-			"ImportPath": "github.com/spf13/cobra/cobra/cmd",
-			"Comment": "v0.0.1-7-g2da4a54",
-			"Rev": "2da4a54c5ceefcee7ca5dd0eea1e18a3b6366489"
-		},
-		{
-			"ImportPath": "github.com/spf13/cobra/doc",
-			"Comment": "v0.0.1-7-g2da4a54",
-			"Rev": "2da4a54c5ceefcee7ca5dd0eea1e18a3b6366489"
-		},
-		{
-			"ImportPath": "github.com/spf13/jwalterweatherman",
-			"Rev": "12bd96e66386c1960ab0f74ced1362f66f552f7b"
-		},
-		{
-			"ImportPath": "github.com/spf13/pflag",
-			"Comment": "v1.0.0-3-g7aff26d",
-			"Rev": "7aff26db30c1be810f9de5038ec5ef96ac41fd7c"
-		},
-		{
-			"ImportPath": "github.com/spf13/viper",
-			"Comment": "v1.0.0-4-g4dddf7c",
-			"Rev": "4dddf7c62e16bce5807744018f5b753bfe21bbd2"
 		},
 		{
 			"ImportPath": "github.com/streadway/amqp",
@@ -344,18 +228,6 @@
 			"Rev": "9aade4d3a3b7e6d876cd3823ad20ec45fc035402"
 		},
 		{
-			"ImportPath": "golang.org/x/text/transform",
-			"Rev": "1cbadb444a806fd9430d14ad08967ed91da4fa0a"
-		},
-		{
-			"ImportPath": "golang.org/x/text/unicode/norm",
-			"Rev": "1cbadb444a806fd9430d14ad08967ed91da4fa0a"
-		},
-		{
-			"ImportPath": "gopkg.in/check.v1",
-			"Rev": "20d25e2804050c1cd24a7eea1e7a6447dd0e74ec"
-		},
-		{
 			"ImportPath": "gopkg.in/fzerorubigd/onion.v2",
 			"Comment": "v1.0.0-13-g0789309",
 			"Rev": "078930955df67fe99807c7099902a5282796521f"
@@ -384,10 +256,6 @@
 			"ImportPath": "gopkg.in/labstack/echo.v3",
 			"Comment": "v3.1.0",
 			"Rev": "1049c9613cd371b7ea8f219404c9a821734781ed"
-		},
-		{
-			"ImportPath": "gopkg.in/olebedev/go-duktape.v2",
-			"Rev": "7da705daddc2f0181fc46c9a5d192f8b4e116212"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

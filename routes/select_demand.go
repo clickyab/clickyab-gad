@@ -26,6 +26,7 @@ import (
 	echo "gopkg.in/labstack/echo.v3"
 )
 
+// Demand is the demand data in database
 type Demand struct {
 	ID          string `json:"id"`
 	CPM         int64  `json:"max_cpm"`
@@ -398,7 +399,7 @@ func (tc selectController) slotSizeAppExchangeNormal(slotPublic []string, appID 
 	}
 
 	for i := range answer {
-		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.SLOT, strconv.FormatInt(answer[i].ID, 10)), dailyClickDays.Int(), "i", "c")
+		result, err := aredis.SumHMGetField(transport.KeyGenDaily(transport.Slot, strconv.FormatInt(answer[i].ID, 10)), dailyClickDays.Int(), "i", "c")
 		if err != nil || result["c"] == 0 || result["i"] < minImp.Int64() {
 			answer[i].Ctr = defaultCTR.Float64()
 		} else {

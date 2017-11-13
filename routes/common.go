@@ -102,7 +102,7 @@ func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, m
 	}
 	assert.Nil(m.InsertImpression(&imp))
 	//validate
-	res, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s", transport.MEGA, transport.DELIMITER, mega), true, 2*time.Hour)
+	res, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s", transport.MegaKey, transport.Delimiter, mega), true, 2*time.Hour)
 	assert.Nil(err)
 
 	//check ip
@@ -131,10 +131,10 @@ func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, m
 	err = aredis.HMSet(
 		fmt.Sprintf(
 			"%s%s%s%s%d",
-			transport.IMP,
-			transport.DELIMITER,
+			transport.ImpKey,
+			transport.Delimiter,
 			mega,
-			transport.DELIMITER,
+			transport.Delimiter,
 			adID),
 		megaImpExpire.Duration(),
 		tmp)

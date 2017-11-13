@@ -28,7 +28,13 @@ type mux struct {
 	retries int
 }
 
-// TODO : this is not compatible with redis cluster. it work only when there is one redis instance
+// LockInterface is the interface to use as distributed lock
+type LockInterface interface {
+	Lock()
+	Unlock()
+	Resource() string
+	TTL() time.Duration
+}
 
 // Lock is used to set a record in redis and tries until it gets its goal
 func (m *mux) Lock() {
@@ -67,7 +73,7 @@ func (m *mux) TTL() time.Duration {
 }
 
 // NewRedisDistributedLock returns interface of a redlock
-func NewRedisDistributedLock(resource string, ttl time.Duration) *mux {
+func NewRedisDistributedLock(resource string, ttl time.Duration) LockInterface {
 	return &mux{
 		retries:  int((ttl / tryCoolDown) + 1),
 		resource: resource,

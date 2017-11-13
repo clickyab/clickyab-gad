@@ -1,9 +1,10 @@
 package store
 
 import (
-	"github.com/clickyab/services/assert"
-	"clickyab.com/gad/redis"
 	"time"
+
+	"clickyab.com/gad/redis"
+	"github.com/clickyab/services/assert"
 )
 
 // TODO : {IMPORTANT} create key on selecting ad, so there is a chance to detect no ad request before 10 secound

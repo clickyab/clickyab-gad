@@ -38,7 +38,7 @@ func (tc *selectController) Routes(e *echo.Echo, _ string) {
 	e.GET("/allads", tc.allAdsTemp, middlewares.RequestCollectorGenerator(webCopCreateor, "debug"), middlewares.Header)
 	e.GET("/version", tc.version, middlewares.Header)
 	e.GET("/ads/inapp.php", tc.inApp, middlewares.RequestCollectorGenerator(appCopCreateor, "app"), middlewares.Header)
-	e.GET("/ads/json-inapp.php", tc.inAppJson, middlewares.Header)
+	e.GET("/ads/json-inapp.php", tc.inAppJSON, middlewares.Header)
 	e.GET("/healthz", tc.healthz, middlewares.Header)
 	e.GET("/show.js", tc.showjs, middlewares.RequestCollectorGenerator(webCopCreateor, "showjs"), middlewares.Header)
 	e.GET("/js/jwvast.js", tc.vastJS)

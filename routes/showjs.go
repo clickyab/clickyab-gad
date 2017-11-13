@@ -2,11 +2,13 @@ package routes
 
 import (
 	"encoding/base64"
-	"clickyab.com/gad/middlewares"
 	"text/template"
 
-	"github.com/clickyab/services/assert"
+	"clickyab.com/gad/middlewares"
+
 	"net/url"
+
+	"github.com/clickyab/services/assert"
 
 	"math/rand"
 

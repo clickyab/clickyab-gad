@@ -15,20 +15,11 @@ import (
 func getCappingKey(copID int64) string {
 	return fmt.Sprintf(
 		"%s%s%d%s%s",
-		transport.USER_CAPPING,
-		transport.DELIMITER,
+		transport.CappingKey,
+		transport.Delimiter,
 		copID,
-		transport.DELIMITER,
+		transport.Delimiter,
 		time.Now().Format("060102"),
-	)
-}
-
-func retargetingKey(copID int64) string {
-	return fmt.Sprintf(
-		"%s%s%d",
-		transport.USER_RETARGETING,
-		transport.DELIMITER,
-		copID,
 	)
 }
 
@@ -76,8 +67,8 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 			}
 			key := fmt.Sprintf(
 				"%s%s%d",
-				transport.ADVERTISE,
-				transport.DELIMITER,
+				transport.Advertise,
+				transport.Delimiter,
 				filteredAds[sizeNumSlice[i]][ad].AdID,
 			)
 			view := results[key]
@@ -101,8 +92,8 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 			if found {
 				view = results[fmt.Sprintf(
 					"%s%s%d",
-					transport.ADVERTISE,
-					transport.DELIMITER,
+					transport.Advertise,
+					transport.Delimiter,
 					filteredAds[sizeNumSlice[i]][ad].AdID,
 				)]
 			}
@@ -124,7 +115,7 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 func storeCapping(copID int64, cpID int64) error {
 	_, err := aredis.IncHash(
 		getCappingKey(copID),
-		fmt.Sprintf("%s%s%d", transport.ADVERTISE, transport.DELIMITER, cpID),
+		fmt.Sprintf("%s%s%d", transport.Advertise, transport.Delimiter, cpID),
 		1,
 		dailyCapExpire.Duration(),
 	)
