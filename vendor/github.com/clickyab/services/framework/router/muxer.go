@@ -41,7 +41,7 @@ func (x *xmuxer) RootMux() *xmux.Mux {
 }
 
 func (x *xmuxer) GET(name string, path string, handler framework.Handler) {
-	addRoute(name, filepath.Join(x.path, path))
+	AddRoute(name, filepath.Join(x.path, path))
 	if x.engine != nil {
 		x.engine.GET(path, x.getFunc(handler))
 		return
@@ -50,7 +50,7 @@ func (x *xmuxer) GET(name string, path string, handler framework.Handler) {
 }
 
 func (x *xmuxer) HEAD(name string, path string, handler framework.Handler) {
-	addRoute(name, filepath.Join(x.path, path))
+	AddRoute(name, filepath.Join(x.path, path))
 	if x.engine != nil {
 		x.engine.HEAD(path, x.getFunc(handler))
 		return
@@ -59,7 +59,7 @@ func (x *xmuxer) HEAD(name string, path string, handler framework.Handler) {
 }
 
 func (x *xmuxer) OPTIONS(name string, path string, handler framework.Handler) {
-	addRoute(name, filepath.Join(x.path, path))
+	AddRoute(name, filepath.Join(x.path, path))
 	if x.engine != nil {
 		x.engine.HEAD(path, x.getFunc(handler))
 		return
@@ -68,7 +68,7 @@ func (x *xmuxer) OPTIONS(name string, path string, handler framework.Handler) {
 }
 
 func (x *xmuxer) POST(name string, path string, handler framework.Handler) {
-	addRoute(name, filepath.Join(x.path, path))
+	AddRoute(name, filepath.Join(x.path, path))
 	if x.engine != nil {
 		x.engine.POST(path, x.getFunc(handler))
 		return
@@ -77,7 +77,7 @@ func (x *xmuxer) POST(name string, path string, handler framework.Handler) {
 }
 
 func (x *xmuxer) PUT(name string, path string, handler framework.Handler) {
-	addRoute(name, filepath.Join(x.path, path))
+	AddRoute(name, filepath.Join(x.path, path))
 	if x.engine != nil {
 		x.engine.PUT(path, x.getFunc(handler))
 		return
@@ -86,7 +86,7 @@ func (x *xmuxer) PUT(name string, path string, handler framework.Handler) {
 }
 
 func (x *xmuxer) PATCH(name string, path string, handler framework.Handler) {
-	addRoute(name, filepath.Join(x.path, path))
+	AddRoute(name, filepath.Join(x.path, path))
 	if x.engine != nil {
 		x.engine.PATCH(path, x.getFunc(handler))
 		return
@@ -95,7 +95,7 @@ func (x *xmuxer) PATCH(name string, path string, handler framework.Handler) {
 }
 
 func (x *xmuxer) DELETE(name string, path string, handler framework.Handler) {
-	addRoute(name, filepath.Join(x.path, path))
+	AddRoute(name, filepath.Join(x.path, path))
 	if x.engine != nil {
 		x.engine.DELETE(path, x.getFunc(handler))
 		return

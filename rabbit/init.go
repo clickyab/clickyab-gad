@@ -11,8 +11,6 @@ import (
 
 	"context"
 
-	"time"
-
 	"github.com/clickyab/services/initializer"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
@@ -24,12 +22,12 @@ var (
 )
 
 var (
-	dsn        = config.RegisterString("services.amqp.dsn", "amqp://server:bita123@127.0.0.1:5672/cy", "amqp dsn")
+	dsn        = config.RegisterString("services.amqp.dsn", "amqp://server:bita123@127.0.0.1:5672/", "amqp dsn")
 	exchange   = config.RegisterString("services.amqp.exchange", "cy", "amqp exchange to publish into")
 	publisher  = config.RegisterInt("services.ampq.publisher", 30, "amqp publisher to publish into")
 	confirmLen = config.RegisterInt("services.amqp.confirm_len", 200, "amqp confirm channel len")
 	debug      = config.RegisterBoolean("services.amqp.debug", false, "amqp debug mode")
-	tryLimit   = config.RegisterDuration("services.amqp.try_limit", time.Minute, "the limit to incremental try wait")
+	//tryLimit   = config.RegisterDuration("services.amqp.try_limit", time.Minute, "the limit to incremental try wait")
 )
 
 // Channel opens a unique, concurrent server channel to process the bulk of AMQP

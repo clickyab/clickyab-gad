@@ -9,6 +9,8 @@ import (
 
 	_ "github.com/clickyab/services/fluentd"
 
+	"os"
+
 	"clickyab.com/gad/modules"
 	"github.com/clickyab/services/config"
 	"github.com/clickyab/services/initializer"
@@ -22,7 +24,7 @@ var port = config.RegisterInt("port", 80, "port of app")
 func main() {
 	envLayer := onion.NewEnvLayer("PORT")
 	config.Initialize("clickyab", "gad", "GAD", envLayer)
-
+	config.DumpConfig(os.Stdout)
 	version.PrintVersion().Info("Application started")
 	defer initializer.Initialize()()
 

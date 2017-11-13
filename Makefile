@@ -1,5 +1,6 @@
 export APPNAME=server
 export DEFAULT_PASS=bita123
+export READ_PASS?=
 export GO=$(shell which go)
 export NODE=$(shell which nodejs)
 export GIT:=$(shell which git)
@@ -27,7 +28,8 @@ export RPASS?=$(DEFAULT_PASS)
 export WORK_DIR=$(ROOT)/tmp
 export LINTERCMD=$(LINTER) --cyclo-over=15 --line-length=120 --deadline=100s --disable-all --enable=structcheck --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell
 export UGLIFYJS=$(ROOT)/node_modules/.bin/uglifyjs
-export DATABASE_URL=mysql://$(DB_USER):$(DBPASS)@127.0.0.1:3306/$(DB_NAME)
+export GAD_SERVICES_MYSQL_WDSN=$(DB_USER):$(DBPASS)@tcp(127.0.0.1:3306)/$(DB_NAME)?charset=utf8&parseTime=true
+export GAD_SERVICES_MYSQL_RDSN=dev:$(READ_PASS)@tcp(db-1.clickyab.ae:3306)/$(DB_NAME)?charset=utf8&parseTime=true
 
 .PHONY: all clean
 
@@ -169,5 +171,6 @@ $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN:
 	cd $(ROOT)/contrib && md5sum -c IP-COUNTRY-REGION-CITY-ISP.BIN.md5
 
 ip2location: $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN
-	echo 'echo asd'
-	mv $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN $(BIN)
+	cp $(ROOT)/contrib/IP-COUNTRY-REGION-CITY-ISP.BIN $(BIN)
+
+.PHONY: ip2location
