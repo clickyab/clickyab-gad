@@ -26,7 +26,7 @@ export DB_NAME?=clickyab
 export RUSER?=$(APPNAME)
 export RPASS?=$(DEFAULT_PASS)
 export WORK_DIR=$(ROOT)/tmp
-export LINTERCMD=$(LINTER) --cyclo-over=15 --line-length=120 --deadline=100s --disable-all --enable=structcheck --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=goconst --enable=gosimple --enable=staticcheck --enable=unused --enable=misspell
+export LINTERCMD=$(LINTER) -e "vendor/.*" -e "tmp/.*" -e ".*gen.go" --cyclo-over=27 --line-length=180 --deadline=100s --disable-all --enable=structcheck --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=gosimple --enable=staticcheck --enable=unused
 export UGLIFYJS=$(ROOT)/node_modules/.bin/uglifyjs
 export GAD_SERVICES_MYSQL_WDSN=$(DB_USER):$(DBPASS)@tcp(127.0.0.1:3306)/$(DB_NAME)?charset=utf8&parseTime=true
 export GAD_SERVICES_MYSQL_RDSN=dev:$(READ_PASS)@tcp(db-1.clickyab.ae:3306)/$(DB_NAME)?charset=utf8&parseTime=true
@@ -48,7 +48,7 @@ clean:
 	cd $(ROOT) && git clean -fX ./bin
 
 $(LINTER):
-	@[ -f $(LINTER) ] || make metalinter
+	@[ -f $(LINTER) ] || make -f $(ROOT)/Makefile metalinter
 
 server: stylegen
 	$(BUILD) clickyab.com/gad/cmd/server
@@ -105,22 +105,7 @@ rabbitmq-setup: needroot
 	rabbitmqadmin declare binding source="dlx-exchange" destination_type="queue" destination="dlx-queue" routing_key="#"
 
 lint: $(LINTER)
-	$(LINTERCMD) $(ROOT)/assert
-	$(LINTERCMD) $(ROOT)/config
-	$(LINTERCMD) $(ROOT)/filter
-	$(LINTERCMD) $(ROOT)/middlewares
-	$(LINTERCMD) $(ROOT)/models
-	$(LINTERCMD) $(ROOT)/modules
-	$(LINTERCMD) $(ROOT)/mr
-	$(LINTERCMD) $(ROOT)/selector
-	#$(LINTERCMD) $(ROOT)/selectroute
-	$(LINTERCMD) $(ROOT)/utils
-	$(LINTERCMD) $(ROOT)/version
-	$(LINTERCMD) $(ROOT)/rabbit
-	#$(LINTERCMD) $(BIN)/server
-	#$(LINTERCMD) $(BIN)/impworker
-	#$(LINTERCMD) $(BIN)/clickworker
-	#$(LINTERCMD) $(BIN)/convworker
+	cd $(ROOT) && $(LINTERCMD) ./...
 
 uglifyjs:
 	npm install uglifyjs
@@ -142,7 +127,7 @@ go-bindata:
 	$(BUILD) github.com/jteeuwen/go-bindata/go-bindata
 
 embed: go-bindata uglify
-	cd $(ROOT)/tmp/embed/ && $(BIN)/go-bindata -o $(ROOT)/statics_src/static-no-lint.go -nomemcopy=true -pkg=statics ./...
+	cd $(ROOT)/tmp/embed/ && $(BIN)/go-bindata -o $(ROOT)/statics_src/static-no-lint.gen.go -nomemcopy=true -pkg=statics ./...
 
 create-imp-table :
 	echo 'CREATE TABLE impressions$(IMPDATE)  LIKE impressions20161108; ' | mysql -u $(DB_USER) -p$(DBPASS) -c $(DB_NAME)

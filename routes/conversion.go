@@ -1,13 +1,15 @@
 package routes
 
 import (
-	"github.com/clickyab/services/assert"
 	"encoding/base64"
 	"net/http"
 	"time"
 
-	"clickyab.com/gad/mr"
+	"github.com/clickyab/services/assert"
+
 	"strconv"
+
+	"clickyab.com/gad/mr"
 
 	"gopkg.in/labstack/echo.v3"
 )

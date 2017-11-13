@@ -76,7 +76,7 @@ func (m *Manager) InsertClick(click *transport.Click) error {
 		click.CampaignAdID, //default in mysql ca_id
 		click.SlotID,
 		//fetch slot AD
-		click.SlaID,
+		click.SLAID,
 		click.AdID,
 		click.CopID,
 		click.ImpID,

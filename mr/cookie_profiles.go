@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/clickyab/services/assert"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/assert"
 )
 
 // CookieProfile cookie_profiles struct table

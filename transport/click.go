@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Impression is the record for the single impression
+// Click is the record for the single Click
 type Click struct {
 	ID           int64     `json:"id"`
 	CopID        int64     `json:"copid"`
@@ -18,7 +18,7 @@ type Click struct {
 	InTime       time.Time `json:"it"`
 	OutTime      time.Time `json:"ot"`
 	FraudReason  int       `json:"fre"`
-	SlaID        int64     `json:"sla_id"`
+	SLAID        int64     `json:"sla_id"`
 	ImpID        int64     `json:"imp_id"`
 	OS           int64     `json:"os"`
 	Status       int64     `json:"status"`

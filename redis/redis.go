@@ -54,7 +54,7 @@ func HGetAll(key string, touch bool, expire time.Duration) (map[string]int, erro
 	return newRes, nil
 }
 
-// HGetAll Get a key and value from redis
+// HGetAllString Get a key and value from redis
 func HGetAllString(key string, touch bool, expire time.Duration) (map[string]string, error) {
 	cmd := redis.Client.HGetAll(key)
 	if err := cmd.Err(); err != nil {
@@ -76,7 +76,7 @@ func IncHash(key string, hash string, value int64, expire time.Duration) (int64,
 	return cmd.Result()
 }
 
-// HGetAll Get a key and value from redis
+// HGetByField Get a key and value from redis
 func HGetByField(key string, field ...string) (map[string]int64, error) {
 
 	final := map[string]int64{}
@@ -93,6 +93,8 @@ func HGetByField(key string, field ...string) (map[string]int64, error) {
 	}
 	return final, nil
 }
+
+// SumHMGetField get and calculate sum of a hash
 func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, error) {
 	now := time.Now()
 	var (
@@ -109,6 +111,7 @@ func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, 
 	return final, nil
 }
 
+// HMSet command in redis to set a set :)
 func HMSet(key string, expire time.Duration, fields map[string]interface{}) error {
 
 	cmd := redis.Client.HMSet(key, fields)
@@ -129,7 +132,7 @@ func StoreHashKey(key, subkey, data string, expire time.Duration) error {
 	return err
 }
 
-// RPush perform an rpush command
+// LPush perform an LPush command
 func LPush(key string, t time.Duration, value ...interface{}) error {
 	err := redis.Client.LPush(key, value...).Err()
 	if err == nil {

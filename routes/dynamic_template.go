@@ -5,8 +5,9 @@ import (
 	"html/template"
 	"sync"
 
-	"github.com/clickyab/services/assert"
 	"strings"
+
+	"github.com/clickyab/services/assert"
 )
 
 var templates = map[int]*template.Template{}

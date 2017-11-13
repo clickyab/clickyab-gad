@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"sort"
 
-	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/mr"
 	"clickyab.com/gad/selector"
@@ -30,44 +29,6 @@ type AllData struct {
 	Vast bool
 	Data []*mr.AdData
 	Len  int
-}
-
-var allFiter = map[string]selector.FilterFunc{
-	"isWebNetwork":  filter.IsWebNetwork,
-	"webSize":       filter.CheckWebSize,
-	"appSize":       filter.CheckAppSize,
-	"vastSize":      filter.CheckVastSize,
-	"os":            filter.CheckOS,
-	"whiteList":     filter.CheckWhiteList,
-	"blackList":     filter.CheckWebBlackList,
-	"webCategory":   filter.CheckWebCategory,
-	"checkProvince": filter.CheckProvince,
-	"isWebMobile":   filter.IsWebMobile,
-	"notWebMobile":  filter.IsNotWebMobile,
-	"checkCampaign": filter.CheckCampaign,
-	"webMobileSize": filter.CheckWebMobileSize,
-	"appBlackList":  filter.CheckAppBlackList,
-	"appWhiteList":  filter.CheckAppWhiteList,
-	"appCategory":   filter.CheckAppCategory,
-	"appBrand":      filter.CheckAppBrand,
-	"appHood":       filter.CheckAppHood,
-	"appProvider":   filter.CheckProvder,
-	"appAreaInGlob": filter.CheckAppAreaInGlob,
-}
-
-// Ints returns a unique subset of the int slice provided.
-func UniqueStr(input []string) []string {
-	u := make([]string, 0, len(input))
-	m := make(map[string]bool)
-
-	for _, val := range input {
-		if _, ok := m[val]; !ok {
-			m[val] = true
-			u = append(u, val)
-		}
-	}
-
-	return u
 }
 
 type allAdsWebPayload struct {

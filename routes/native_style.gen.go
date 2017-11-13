@@ -3,7 +3,7 @@
 
 package routes
 
-const style=`
+const style = `
 .cyb-holder {
   direction: rtl;
   box-sizing: border-box;

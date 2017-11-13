@@ -1,56 +1,38 @@
 package transport
 
 const (
-	// DELIMITER is the delimiter in all redis key
-	DELIMITER = "_"
-	// USER is for user keys
-	USER = "U"
-	// CAMPAIGN for campaign keys
-	CAMPAIGN = "CP"
-	// ADVERTISE for advertise keys
-	ADVERTISE = "AD"
-	// NATIVE for native keys
-	NATIVE = "NAT"
-	// SLOT for slot keys
-	SLOT = "S"
-	// WEBSITE is for website keys
-	WEBSITE = "W"
-	// APP is for app keys
-	APP = "A"
-	// CUSTOM_CLICK_URL is for app keys
-	CUSTOM_CLICK_URL = "CCU"
-	// CUSTOM_CLICK_PARAM is for app keys
-	CUSTOM_CLICK_PARAM = "CCP"
-	// CUSTOM_CLICK_TYPE is for app keys
-	CUSTOM_CLICK_TYPE = "CCT"
+	// Delimiter is the delimiter in all redis key
+	Delimiter = "_"
+	// User is for user keys
+	User = "U"
+	// Campaign for campaign keys
+	Campaign = "CP"
+	// Advertise for advertise keys
+	Advertise = "AD"
+	// Slot for slot keys
+	Slot = "S"
+	// Website is for website keys
+	Website = "W"
+	// CustomClickURL is for app keys
+	CustomClickURL = "CCU"
+	// CustomClickParam is for app keys
+	CustomClickParam = "CCP"
+	// CustomClickType is for app keys
+	CustomClickType = "CCT"
 
-	// FRAUD_PREFIX for all fraud key
-	FRAUD_PREFIX = "F"
-	// SUBKEY_IMP is for impression key inside each master hash
-	SUBKEY_IMP = "I"
-	// SUBKEY_Cl is for click count
-	SUBKEY_Cl = "C"
-	// CAMPAIGN_SLOT is the campaign related stuff
-	CAMPAIGN_SLOT = "CPS"
-	// CAMPAIGN_WEBSITE is for campaign related to website
-	CAMPAIGN_WEBSITE = "CPW"
-	// CAMPAIGN_APP campaign relation to app keys
-	CAMPAIGN_APP = "CPA"
-	// AD_SLOT ad related to slots
-	AD_SLOT = "ADS"
-	// AD_WEBSITE ads related to websites
-	AD_WEBSITE = "ADW"
-	// AD_APP is ad related to apps
-	AD_APP = "ADA"
-	// USER_WEBSITE is user realted to website
-	USER_WEBSITE = "UW"
-	// USER_APP is user related to apps
-	USER_APP = "UA"
+	// FraudPrefix for all fraud key
+	FraudPrefix = "F"
+	// ImpSubKey is for impression key inside each master hash
+	ImpSubKey = "I"
+	// ClickSubKey is for click count
+	ClickSubKey = "C"
 
-	USER_CAPPING     = "CAP2"
-	USER_RETARGETING = "RET"
-	IMP              = "IMP"
-	CLICK            = "CLK"
-	MEGA             = "MGA"
-	CONV             = "CNV"
+	// CappingKey is the key for capping system
+	CappingKey = "CAP2"
+	// ImpKey is the key for impression
+	ImpKey = "ImpKey"
+	// ClickKey is the key for click
+	ClickKey = "CLK"
+	// MegaKey is the key for mega
+	MegaKey = "MGA"
 )

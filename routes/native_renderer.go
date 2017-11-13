@@ -1,12 +1,12 @@
 package routes
 
 import (
-	"github.com/clickyab/services/assert"
 	"bytes"
 	"fmt"
-	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/clickyab/services/assert"
 )
 
 type protocol string
@@ -23,7 +23,7 @@ type nativeContainer struct {
 	FontSize   string
 	FontFamily string
 	Position   string
-	MinSize    string
+	MinSize    int64
 	IsVertical bool
 }
 
@@ -164,15 +164,10 @@ var native = template.New("native").Funcs(template.FuncMap{"renderAds": addRende
 
 func renderNative(imp nativeContainer) string {
 	buf := &bytes.Buffer{}
-	var resStyle = style
-	if imp.MinSize != "" {
-		num, err := strconv.ParseInt(imp.MinSize, 10, 64)
-		halfNum := num / 2
-		if err == nil {
-			rep := strings.NewReplacer("cyb-minSize", fmt.Sprintf("%dpx", halfNum), "cyb-doubleMinSize", fmt.Sprintf("%dpx", num))
-			resStyle = rep.Replace(style)
-		}
-	}
+	var resStyle string
+	halfNum := imp.MinSize / 2
+	rep := strings.NewReplacer("cyb-minSize", fmt.Sprintf("%dpx", halfNum), "cyb-doubleMinSize", fmt.Sprintf("%dpx", imp.MinSize))
+	resStyle = rep.Replace(style)
 	imp.Style = resStyle
 	e := native.Lookup("ads").Execute(buf, imp)
 	assert.Nil(e)

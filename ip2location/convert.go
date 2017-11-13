@@ -5,12 +5,12 @@ import (
 	"regexp"
 )
 
-var ispConst map[int64]*regexp.Regexp = map[int64]*regexp.Regexp{
+var ispConst = map[int64]*regexp.Regexp{
 	1: regexp.MustCompile(`(?i)iran\s?cell`),
 	2: regexp.MustCompile(`(?i)Mobile Communication Company of Iran PLC`),
 }
 
-var m map[string]int64 = map[string]int64{
+var m = map[string]int64{
 	"IR": 1,
 	"Azarbayjan-e Sharqi":         2,
 	"Ostan-e Azarbayjan-e Gharbi": 3,
@@ -46,11 +46,12 @@ var m map[string]int64 = map[string]int64{
 	//"Hamadan":37,
 }
 
+// LocationData is the data for current request location whatever we can find
 type LocationData struct {
 	Country, Province, City, ISP string
 }
 
-// GetProvinceIDByIP get province id by ip
+// GetProvinceISPByIP get province id by ip
 func GetProvinceISPByIP(ip net.IP) (int64, int64, LocationData) {
 	var province int64
 	var uISP int64

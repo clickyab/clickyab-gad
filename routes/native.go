@@ -53,7 +53,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	// remove fucking order
 	var resOrder = []string{}
 	for i := range order {
-		var appending bool = true
+		var appending = true
 		for _, v := range slotPins {
 			if v.SlotPublicID == order[i] {
 				appending = false
@@ -63,7 +63,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 			resOrder = append(resOrder, order[i])
 		}
 	}
-	var h = make(map[string]*mr.AdData)
+	var h map[string]*mr.AdData
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
 	// TODO : Currently underfloor is always true
 	_, h = tc.makeShow(c, "sync", rd, filteredAds, resOrder, sizeNumSlice, slotSize, nil, website, false, minCPCNative.Int64(), allowUnderFloor.Bool(), true, floorDivNative.Int64())
@@ -151,8 +151,10 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	}
 
 	//check min size
+	var minInt int64 = 141
 	if params.Get("minsize") != "" {
-		minInt, err := strconv.ParseInt(params.Get("minsize"), 10, 64)
+		var err error
+		minInt, err = strconv.ParseInt(params.Get("minsize"), 10, 64)
 		if err != nil || minInt < 90 || minInt > 150 {
 			minInt = 141
 		}
@@ -164,7 +166,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		FontSize:   params.Get("fontSize"),
 		FontFamily: params.Get("fontFamily"),
 		Position:   params.Get("position"),
-		MinSize:    params.Get("minsize"),
+		MinSize:    minInt,
 		IsVertical: params.Get("orientation") == "vertical",
 	}
 
