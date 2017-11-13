@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"clickyab.com/gad/gmaps"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
 	"github.com/clickyab/services/config"
+	"github.com/clickyab/services/gmaps"
 )
 
 // UnknownNetwork is the default network
