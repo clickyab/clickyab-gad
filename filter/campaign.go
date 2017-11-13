@@ -1,11 +1,11 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 )
 
 //CheckCampaign find campaign
-func CheckCampaign(c *selector.Context, in mr.AdData) bool {
+func CheckCampaign(c *selector.Context, in models.AdData) bool {
 	return c.Campaign == 0 || in.CampaignID == c.Campaign
 }

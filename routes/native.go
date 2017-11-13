@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/store"
 
 	"clickyab.com/gad/middlewares"
@@ -63,7 +63,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 			resOrder = append(resOrder, order[i])
 		}
 	}
-	var h map[string]*mr.AdData
+	var h map[string]*models.AdData
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
 	// TODO : Currently underfloor is always true
 	_, h = tc.makeShow(c, "sync", rd, filteredAds, resOrder, sizeNumSlice, slotSize, nil, website, false, minCPCNative.Int64(), allowUnderFloor.Bool(), true, floorDivNative.Int64())

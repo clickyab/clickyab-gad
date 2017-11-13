@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/rabbit"
 	"clickyab.com/gad/redis"
 	"clickyab.com/gad/transport"
@@ -64,7 +64,7 @@ func (tc *selectController) click(c echo.Context) error {
 	typ := c.Param("typ")
 	tv := c.QueryParam("tv") != ""
 
-	ads, err := mr.NewManager().GetAd(adID, true)
+	ads, err := models.NewManager().GetAd(adID, true)
 	status = changeStatus(0, suspNoAdFound, err != nil)
 
 	result, err := aredis.HGetAllString(fmt.Sprintf("%s%s%s%s%d",
@@ -85,10 +85,10 @@ func (tc *selectController) click(c echo.Context) error {
 
 	var pub Publisher
 	if typ != "app" {
-		pub, err = mr.NewManager().FetchWebsite(wID)
+		pub, err = models.NewManager().FetchWebsite(wID)
 		status = changeStatus(status, suspInvalidWebsite, err != nil || !pub.GetActive())
 	} else {
-		pub, err = mr.NewManager().GetAppByID(wID)
+		pub, err = models.NewManager().GetAppByID(wID)
 		status = changeStatus(status, suspInvalidApp, err != nil || !pub.GetActive())
 	}
 	clickID := <-utils.ID
@@ -161,7 +161,7 @@ func (tc *selectController) click(c echo.Context) error {
 
 func (selectController) fillClick(
 	rd *middlewares.RequestData,
-	ads *mr.Ad,
+	ads *models.Ad,
 	winnerBid int64,
 	pub Publisher,
 	slotID int64,

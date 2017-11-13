@@ -12,7 +12,7 @@ import (
 
 	"clickyab.com/gad/ip2location"
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	selector2 "clickyab.com/gad/pin"
 	"clickyab.com/gad/redis"
 	"clickyab.com/gad/redlock"
@@ -78,7 +78,7 @@ func (tc *selectController) showphp(c echo.Context) error {
 	// TODO remove slot fix ads from normal pool
 
 	c.Set("EVENT_PAGE", eventpage)
-	var pubsAds = make(map[string]*mr.AdData)
+	var pubsAds = make(map[string]*models.AdData)
 	if !slotFixFound {
 		filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
 		_, pubsAds = tc.makeShow(c,
@@ -113,11 +113,11 @@ func (tc *selectController) showphp(c echo.Context) error {
 	if targetedAd == nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	ad, err := mr.NewManager().GetAd(targetedAd.AdID, false)
+	ad, err := models.NewManager().GetAd(targetedAd.AdID, false)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
-	ad.RawSlotSize = &mr.RawSlotDimensions{
+	ad.RawSlotSize = &models.RawSlotDimensions{
 		Width:  width,
 		Height: height,
 	}
@@ -167,7 +167,7 @@ func makeAdURL(rd *middlewares.RequestData, wID, adID int64, mega string, rnd st
 	return u.String()
 }
 
-func locationStatus(c echo.Context, tc *selectController, wpid string, ip net.IP) (*mr.Website, int64, int64, error) {
+func locationStatus(c echo.Context, tc *selectController, wpid string, ip net.IP) (*models.Website, int64, int64, error) {
 	wpID, _ := strconv.ParseInt(wpid, 10, 0)
 	website, err := tc.fetchWebsite(wpID)
 	if err != nil {
@@ -183,8 +183,8 @@ func locationStatus(c echo.Context, tc *selectController, wpid string, ip net.IP
 	return website, provinceID, ispID, nil
 }
 
-func checkForFixSlot(pins []mr.SlotPinData, a map[string]*slotData, b map[string]int, typ string) (bool, map[string]*slotData, map[string]int, []mr.SlotPinData, map[string]*slotData, map[string]int) {
-	var fix []mr.SlotPinData
+func checkForFixSlot(pins []models.SlotPinData, a map[string]*slotData, b map[string]int, typ string) (bool, map[string]*slotData, map[string]int, []models.SlotPinData, map[string]*slotData, map[string]int) {
+	var fix []models.SlotPinData
 	var fixSizeNumSlice = make(map[string]int)
 	var fixSlotSize = make(map[string]*slotData)
 	var found bool
@@ -215,7 +215,7 @@ func checkFixChance(a int) bool {
 	return a >= rand.Intn(100)
 }
 
-func checkFixSlotSize(a mr.SlotPinData, typ string) bool {
+func checkFixSlotSize(a models.SlotPinData, typ string) bool {
 	if typ == "vast" {
 		if a.CampaignNetwork != 2 && a.AdType == 3 {
 			return false

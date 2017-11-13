@@ -9,7 +9,7 @@ import (
 
 	"strconv"
 
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 
 	"gopkg.in/labstack/echo.v3"
 )
@@ -28,15 +28,15 @@ func (tc *selectController) conversion(c echo.Context) error {
 	}
 	go func() {
 		//query database for current impression
-		imp, err := mr.NewManager().FindImpByIDDate(impIDINT, today.Format("20060102"))
+		imp, err := models.NewManager().FindImpByIDDate(impIDINT, today.Format("20060102"))
 		if err != nil {
-			imp, err = mr.NewManager().FindImpByIDDate(impIDINT, yesterday.Format("20060102"))
+			imp, err = models.NewManager().FindImpByIDDate(impIDINT, yesterday.Format("20060102"))
 			if err != nil {
 				return
 			}
 		}
 		//apply the conversion query
-		err = mr.NewManager().InsertConversion(actionID, imp)
+		err = models.NewManager().InsertConversion(actionID, imp)
 		if err != nil {
 			return
 		}

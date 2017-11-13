@@ -15,9 +15,9 @@ import (
 
 	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/modules"
-	"clickyab.com/gad/mr"
-	aredis "clickyab.com/gad/redis"
+	"clickyab.com/gad/redis"
 	"clickyab.com/gad/selector"
 	"clickyab.com/gad/store"
 	"clickyab.com/gad/transport"
@@ -122,7 +122,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *slotData, floorDiv int64) bool {
+func (tc *selectController) doBid(adData *models.AdData, website Publisher, slot *slotData, floorDiv int64) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
@@ -136,7 +136,7 @@ func (tc *selectController) doBid(adData *mr.AdData, website Publisher, slot *sl
 	return adData.CPM >= website.FloorCPM()/floorDiv
 }
 
-func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*mr.AdData) int64 {
+func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*models.AdData) int64 {
 	var secondCPM = floorCPM
 	if len(exceedFloor) > 1 && exceedFloor[0].Capping.GetSelected() == exceedFloor[1].Capping.GetSelected() {
 		secondCPM = exceedFloor[1].CPM
@@ -217,7 +217,7 @@ func (tc *selectController) updateMegaKey(rd *middlewares.RequestData, adID int6
 
 }
 
-func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, int64, int64, error) {
+func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.RequestData, *models.Website, int64, int64, error) {
 	rd := middlewares.MustGetRequestData(c)
 	params := c.QueryParams()
 	publicParams, ok := params["i"]
@@ -242,7 +242,7 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 		return nil, nil, 0, 0, errors.New("web is not active")
 	}
 
-	if !mr.NewManager().IsUserActive(website.UserID) {
+	if !models.NewManager().IsUserActive(website.UserID) {
 		return nil, nil, 0, 0, errors.New("user is banned")
 	}
 	province, isp, ll := ip2location.GetProvinceISPByIP(rd.IP)
@@ -259,8 +259,8 @@ func (tc *selectController) getWebDataFromCtx(c echo.Context) (*middlewares.Requ
 }
 
 //FetchWebsite website and check if the minimum floor is applied
-func (tc *selectController) fetchWebsite(publicID int64) (*mr.Website, error) {
-	website, err := mr.NewManager().FetchWebsiteByPublicID(publicID)
+func (tc *selectController) fetchWebsite(publicID int64) (*models.Website, error) {
+	website, err := models.NewManager().FetchWebsiteByPublicID(publicID)
 	if err != nil {
 		return nil, err
 	}
@@ -271,12 +271,12 @@ func (tc *selectController) fetchWebsite(publicID int64) (*mr.Website, error) {
 }
 
 //fetchProvince find province and set context
-func (tc *selectController) fetchProvinceDemand(r string) (*mr.Province, error) {
+func (tc *selectController) fetchProvinceDemand(r string) (*models.Province, error) {
 	// if strings.ToUpper(cfHeader) != "IR" {
 	// 	return nil, errors.New("not inside iran")
 	// }
-	var province mr.Province
-	province, err := mr.NewManager().ConvertProvince2Info(r)
+	var province models.Province
+	province, err := models.NewManager().ConvertProvince2Info(r)
 	if err != nil {
 		return nil, errors.New("province not found")
 	}
@@ -284,7 +284,7 @@ func (tc *selectController) fetchProvinceDemand(r string) (*mr.Province, error) 
 
 }
 
-func (tc selectController) slotSizeWeb(c echo.Context, website mr.Website, mobile bool, allAdsCase ...bool) (map[string]*slotData, map[string]int) {
+func (tc selectController) slotSizeWeb(c echo.Context, website models.Website, mobile bool, allAdsCase ...bool) (map[string]*slotData, map[string]int) {
 	// main if for all ads data
 	if len(allAdsCase) == 1 && allAdsCase[0] {
 		var pubAd = make(map[string]*slotData)
@@ -338,7 +338,7 @@ func (tc selectController) slotSizeWeb(c echo.Context, website mr.Website, mobil
 	return tc.slotSizeNormal(slotPublic, website.WID, sizeNumSlice)
 }
 
-func (tc selectController) slotSizeNative(c echo.Context, website mr.Website, test ...bool) (map[string]*slotData, map[string]int, []string) {
+func (tc selectController) slotSizeNative(c echo.Context, website models.Website, test ...bool) (map[string]*slotData, map[string]int, []string) {
 	if len(test) == 1 && test[0] {
 		var pubAd = make(map[string]*slotData)
 		var pubSize = make(map[string]int)
@@ -392,7 +392,7 @@ func (selectController) insertNewSlots(wID int64, newSlots []int64, newSize []in
 	result := make(map[string]int64)
 	if len(newSlots) > 0 {
 		for i := range newSlots {
-			insertedSlots, err := mr.NewManager().InsertSlots(wID, 0, newSlots[i], newSize[i])
+			insertedSlots, err := models.NewManager().InsertSlots(wID, 0, newSlots[i], newSize[i])
 			if err == nil {
 				p := fmt.Sprintf("%d", insertedSlots.PublicID)
 				result[p] = insertedSlots.ID
@@ -408,7 +408,7 @@ func (selectController) insertNewAppSlots(appID int64, newSlots []int64, newSize
 	result := make(map[string]int64)
 	if len(newSlots) > 0 {
 		for i := range newSlots {
-			insertedSlots, err := mr.NewManager().InsertSlots(0, appID, newSlots[i], newSize[i])
+			insertedSlots, err := models.NewManager().InsertSlots(0, appID, newSlots[i], newSize[i])
 			if err == nil {
 				p := fmt.Sprintf("%d", insertedSlots.PublicID)
 				result[p] = insertedSlots.ID
@@ -420,7 +420,7 @@ func (selectController) insertNewAppSlots(appID int64, newSlots []int64, newSize
 }
 
 // CalculateCtr calculate ctr
-func (selectController) calculateCTR(ad *mr.AdData, slot *slotData) float64 {
+func (selectController) calculateCTR(ad *models.AdData, slot *slotData) float64 {
 	return (ad.AdCTR*float64(adCTREffect.Int()) + slot.Ctr*float64(slotCTREffect.Int())) / float64(100)
 }
 
@@ -428,7 +428,7 @@ func (tc *selectController) makeShow(
 	c echo.Context,
 	typ string,
 	rd *middlewares.RequestData,
-	filteredAds map[int][]*mr.AdData,
+	filteredAds map[int][]*models.AdData,
 	order []string,
 	sizeNumSlice map[string]int,
 	slotSize map[string]*slotData,
@@ -439,10 +439,10 @@ func (tc *selectController) makeShow(
 	allowUnderFloor bool,
 	capping bool,
 	floorDiv int64, // I hate add parameter to this function :/ TODO : implement the function option pattern
-) (map[string]string, map[string]*mr.AdData) {
-	//var dum []*mr.AdData
+) (map[string]string, map[string]*models.AdData) {
+	//var dum []*models.AdData
 	var (
-		winnerAd = make(map[string]*mr.AdData)
+		winnerAd = make(map[string]*models.AdData)
 		show     = make(map[string]string)
 		noVideo  bool // once set, never unset it again
 	)
@@ -478,13 +478,13 @@ func (tc *selectController) makeShow(
 		show[slotID] = u.String()
 	}
 
-	var wait chan map[string]*mr.AdData
+	var wait chan map[string]*models.AdData
 	if typ == "sync" {
-		wait = make(chan map[string]*mr.AdData)
+		wait = make(chan map[string]*models.AdData)
 	}
 	assert.Nil(tc.createMegaKey(rd, publisher))
 	safe.GoRoutine(func() {
-		ads := make(map[string]*mr.AdData)
+		ads := make(map[string]*models.AdData)
 		defer func() {
 			if typ == "sync" {
 				wait <- ads
@@ -507,8 +507,8 @@ func (tc *selectController) makeShow(
 
 		for o := range order {
 			slotID := order[o]
-			exceedFloor := []*mr.AdData{}
-			underFloor := []*mr.AdData{}
+			exceedFloor := []*models.AdData{}
+			underFloor := []*models.AdData{}
 
 			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
 				total[slotSize[slotID].SlotSize]++
@@ -524,23 +524,23 @@ func (tc *selectController) makeShow(
 
 			extra := fmt.Sprintf("For Slot %s", slotID)
 
-			var sorted []*mr.AdData
+			var sorted []*models.AdData
 			var (
-				ef     mr.ByMulti
+				ef     models.ByMulti
 				secBid bool
 			)
 
 			// order is to get data from exceed flor, then capping passed and if the config allowed,
 			// use the under floor. for under floor there is no second biding pricing
 			if len(exceedFloor) > 0 {
-				ef = mr.ByMulti{
+				ef = models.ByMulti{
 					Ads:   exceedFloor,
 					Video: multipleVideo,
 				}
 				secBid = true
 				extra += " From Exceed, SecBID "
 			} else if allowUnderFloor && len(underFloor) > 0 {
-				ef = mr.ByMulti{
+				ef = models.ByMulti{
 					Ads:   underFloor,
 					Video: multipleVideo,
 				}
@@ -623,7 +623,7 @@ func (tc *selectController) makeShow(
 			// TODO {fzerorubigd} : Can we check for inner capping increase?
 		}
 	})
-	var allAds map[string]*mr.AdData
+	var allAds map[string]*models.AdData
 	if typ == "sync" {
 		allAds = <-wait
 	}

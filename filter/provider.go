@@ -1,12 +1,12 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 )
 
 //CheckProvder find provider client in campaign
-func CheckProvder(c *selector.Context, in mr.AdData) bool {
+func CheckProvder(c *selector.Context, in models.AdData) bool {
 	if c.PhoneData.NetworkID == 0 {
 		return len(in.CampaignNetProvider) == 0
 	}

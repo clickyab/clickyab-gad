@@ -1,4 +1,4 @@
-package mr
+package models
 
 // SlotData type is record of one slot
 type SlotData struct {

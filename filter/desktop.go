@@ -1,12 +1,12 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 )
 
 // CheckDesktopNetwork filter network for desktop
-func CheckDesktopNetwork(c *selector.Context, in mr.AdData) bool {
+func CheckDesktopNetwork(c *selector.Context, in models.AdData) bool {
 	if in.CampaignWeb == 1 {
 		if in.CampaignWebMobile == 0 {
 			return !c.Mobile

@@ -3,12 +3,12 @@ package filter
 import (
 	"math"
 
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 )
 
 //CheckMinBid find isp
-func CheckMinBid(c *selector.Context, in mr.AdData) bool {
+func CheckMinBid(c *selector.Context, in models.AdData) bool {
 	if c.Website == nil {
 		return true
 	}

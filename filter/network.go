@@ -1,12 +1,12 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 )
 
 // IsWebNetwork filter network for campaigns
-func IsWebNetwork(c *selector.Context, in mr.AdData) bool {
+func IsWebNetwork(c *selector.Context, in models.AdData) bool {
 	if in.CampaignNetwork == 0 {
 		return in.CampaignWeb == 1 || in.CampaignWebMobile == 1
 	}
@@ -14,11 +14,11 @@ func IsWebNetwork(c *selector.Context, in mr.AdData) bool {
 }
 
 // IsAppNetwork filter network for campaigns
-func IsAppNetwork(c *selector.Context, in mr.AdData) bool {
+func IsAppNetwork(c *selector.Context, in models.AdData) bool {
 	return in.CampaignNetwork == 1
 }
 
 // IsNativeNetwork filter network for native
-func IsNativeNetwork(c *selector.Context, in mr.AdData) bool {
+func IsNativeNetwork(c *selector.Context, in models.AdData) bool {
 	return in.CampaignNetwork == 3
 }

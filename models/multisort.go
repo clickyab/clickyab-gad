@@ -1,4 +1,4 @@
-package mr
+package models
 
 // ByMulti sort by multi sort
 type ByMulti struct {

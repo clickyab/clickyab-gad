@@ -6,7 +6,7 @@ import (
 	"sort"
 
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 	"github.com/clickyab/services/assert"
 
@@ -22,12 +22,12 @@ import (
 // AllData return all data required to render the all routes
 // TODO : Rename this
 type AllData struct {
-	Website  []*mr.Website
-	Province []*mr.Province
-	//Campaign *[]mr.Campaign
+	Website  []*models.Website
+	Province []*models.Province
+	//Campaign *[]models.Campaign
 	Size map[string]int
 	Vast bool
-	Data []*mr.AdData
+	Data []*models.AdData
 	Len  int
 }
 
@@ -71,7 +71,7 @@ func (tc *selectController) allAds(c echo.Context) error {
 	rd := middlewares.MustGetRequestData(c)
 
 	wid := c.QueryParam("i")
-	website, err := mr.NewManager().FindWebsiteByDomain(wid)
+	website, err := models.NewManager().FindWebsiteByDomain(wid)
 	assert.Nil(err)
 
 	switch adType {
@@ -86,7 +86,7 @@ func (tc *selectController) allAds(c echo.Context) error {
 	return err
 }
 
-func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestData, website *mr.Website) error {
+func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestData, website *models.Website) error {
 	payload := allAdsWebPayload{}
 	dec := json.NewDecoder(c.Request().Body)
 	defer c.Request().Body.Close()
@@ -144,7 +144,7 @@ func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestDat
 	return c.JSON(http.StatusOK, resp)
 }
 
-func (tc *selectController) allNativeAds(ctx echo.Context, rd *middlewares.RequestData, website *mr.Website) error {
+func (tc *selectController) allNativeAds(ctx echo.Context, rd *middlewares.RequestData, website *models.Website) error {
 	payload := allAdsNativePayload{}
 	dec := json.NewDecoder(ctx.Request().Body)
 	err := dec.Decode(&payload)
@@ -184,7 +184,7 @@ func (tc *selectController) allNativeAds(ctx echo.Context, rd *middlewares.Reque
 	return ctx.JSON(200, resp)
 }
 
-func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.RequestData, website *mr.Website) error {
+func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.RequestData, website *models.Website) error {
 	payload := allAdsVastPayload{}
 	dec := json.NewDecoder(ctx.Request().Body)
 	err := dec.Decode(&payload)
@@ -234,11 +234,11 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 	return ctx.JSON(http.StatusOK, response)
 }
 
-func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*mr.AdData {
+func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds map[int][]*models.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*models.AdData {
 	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, "")
 
 	for i := range filteredAds {
-		Ads := mr.ByMulti{Ads: filteredAds[i]}
+		Ads := models.ByMulti{Ads: filteredAds[i]}
 		sort.Sort(Ads)
 
 		filteredAds[i] = Ads.Ads
@@ -247,11 +247,11 @@ func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds m
 	return filteredAds
 }
 
-func (tc *selectController) nativeBiding(rd *middlewares.RequestData, filteredAds map[int][]*mr.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*mr.AdData {
+func (tc *selectController) nativeBiding(rd *middlewares.RequestData, filteredAds map[int][]*models.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*models.AdData {
 	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, "")
 
 	for i := range filteredAds {
-		Ads := mr.ByMulti{Ads: filteredAds[i]}
+		Ads := models.ByMulti{Ads: filteredAds[i]}
 		sort.Sort(Ads)
 
 		filteredAds[i] = Ads.Ads
@@ -260,7 +260,7 @@ func (tc *selectController) nativeBiding(rd *middlewares.RequestData, filteredAd
 	return filteredAds
 }
 
-func makeVastSlot(length map[string][]string, website *mr.Website) (map[string]vastSlotData, []string, map[string]int) {
+func makeVastSlot(length map[string][]string, website *models.Website) (map[string]vastSlotData, []string, map[string]int) {
 	var i int
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string

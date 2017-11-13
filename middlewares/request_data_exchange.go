@@ -7,7 +7,7 @@ import (
 	"net"
 	"regexp"
 
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
 
@@ -152,7 +152,7 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			if rde.TID == "" {
 				rde.TID = utils.CreateHash(copLen.Int(), []byte(rde.UserAgent), []byte(rde.IP))
 			}
-			rde.CopID = mr.NewManager().CreateCookieProfile(rde.TID, rde.IP).ID
+			rde.CopID = models.NewManager().CreateCookieProfile(rde.TID, rde.IP).ID
 			rde.Host = ctx.Request().Host
 			rde.Scheme = "http"
 			if e.Scheme == "https" {

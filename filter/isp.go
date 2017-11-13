@@ -1,12 +1,12 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 )
 
 //CheckISP find isp
-func CheckISP(c *selector.Context, in mr.AdData) bool {
+func CheckISP(c *selector.Context, in models.AdData) bool {
 	if c.ISP == 0 {
 		return len(in.CampaignISP) == 0
 	}

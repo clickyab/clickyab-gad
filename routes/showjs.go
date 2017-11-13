@@ -12,7 +12,7 @@ import (
 
 	"math/rand"
 
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 
 	"time"
 
@@ -645,7 +645,7 @@ func (tc *selectController) showjs(c echo.Context) error {
 	assert.Nil(err)
 	var wmobad int
 	var domain string
-	website, err := mr.NewManager().FetchWebsiteByDomain(u.Host, "clickyab")
+	website, err := models.NewManager().FetchWebsiteByDomain(u.Host, "clickyab")
 	if err == nil {
 		wmobad = website.WMobad
 		domain = website.WDomain.String

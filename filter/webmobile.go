@@ -1,12 +1,12 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 )
 
 // IsNotWebMobile filter for webmobile
-func IsNotWebMobile(c *selector.Context, in mr.AdData) bool {
+func IsNotWebMobile(c *selector.Context, in models.AdData) bool {
 	if c.Mobile {
 		return true
 	}
@@ -14,7 +14,7 @@ func IsNotWebMobile(c *selector.Context, in mr.AdData) bool {
 }
 
 // IsWebMobile return if the campaign is ok for web mobile
-func IsWebMobile(c *selector.Context, in mr.AdData) bool {
+func IsWebMobile(c *selector.Context, in models.AdData) bool {
 	if c.Mobile {
 		return in.CampaignWebMobile == 1
 	}

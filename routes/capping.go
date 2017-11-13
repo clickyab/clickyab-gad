@@ -5,10 +5,9 @@ import (
 	"sort"
 	"time"
 
-	"clickyab.com/gad/mr"
-	aredis "clickyab.com/gad/redis"
+	"clickyab.com/gad/models"
+	"clickyab.com/gad/redis"
 	"clickyab.com/gad/transport"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,8 +22,8 @@ func getCappingKey(copID int64) string {
 	)
 }
 
-func emptyCapping(filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
-	c := make(mr.CappingContext)
+func emptyCapping(filteredAds map[int][]*models.AdData) map[int][]*models.AdData {
+	c := make(models.CappingContext)
 	for i := range filteredAds {
 		for j := range filteredAds[i] {
 			capp := c.NewCapping(
@@ -35,15 +34,15 @@ func emptyCapping(filteredAds map[int][]*mr.AdData) map[int][]*mr.AdData {
 			filteredAds[i][j].Capping = capp
 
 		}
-		sortCap := mr.ByCapping(filteredAds[i])
+		sortCap := models.ByCapping(filteredAds[i])
 		sort.Sort(sortCap)
-		filteredAds[i] = []*mr.AdData(sortCap)
+		filteredAds[i] = []*models.AdData(sortCap)
 	}
 
 	return filteredAds
 }
 
-func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*mr.AdData, eventPage string) map[int][]*mr.AdData {
+func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*models.AdData, eventPage string) map[int][]*models.AdData {
 	var selected = make(map[int64]bool)
 	if eventPage != "" {
 		for _, v := range aredis.SMembersInt(eventPage) {
@@ -51,7 +50,7 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 		}
 
 	}
-	c := make(mr.CappingContext)
+	c := make(models.CappingContext)
 	results, _ := aredis.HGetAll(getCappingKey(copID), true, dailyCapExpire.Duration())
 	doneSized := make(map[int]bool)
 	for i := range sizeNumSlice {
@@ -105,9 +104,9 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 			capp.IncView(filteredAds[sizeNumSlice[i]][ad].AdID, view, selected[filteredAds[sizeNumSlice[i]][ad].AdID])
 			filteredAds[sizeNumSlice[i]][ad].Capping = capp
 		}
-		//sortCap := mr.ByCapping(filteredAds[sizeNumSlice[i]])
+		//sortCap := models.ByCapping(filteredAds[sizeNumSlice[i]])
 		//sort.Sort(sortCap)
-		//filteredAds[sizeNumSlice[i]] = []*mr.AdData(sortCap)
+		//filteredAds[sizeNumSlice[i]] = []*models.AdData(sortCap)
 	}
 	return filteredAds
 }

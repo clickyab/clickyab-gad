@@ -23,7 +23,7 @@ package main
 import (
 	"strconv"
 
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
@@ -41,6 +41,6 @@ func clickWorker(in *transport.Click) (bool, error) {
 	_, err = utils.IncKeyDaily(transport.KeyGenDaily(transport.Slot, strconv.FormatInt(in.SlotID, 10)), prefix+transport.ClickSubKey, 1)
 	assert.Nil(err)
 	//insert click in db
-	err = mr.NewManager().InsertClick(in)
+	err = models.NewManager().InsertClick(in)
 	return false, err
 }
