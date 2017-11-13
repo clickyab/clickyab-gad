@@ -2,51 +2,29 @@
 package aredis
 
 import (
-	"sync"
 	"time"
 
 	"fmt"
 
 	"strconv"
 
-	"net"
+	redis "github.com/clickyab/services/aredis"
 )
-
-var (
-	// Pool the actual pool to use with redis
-	Client RedisClient
-	once   = &sync.Once{}
-)
-
-func lookup(svcName string) ([]string, error) {
-	endpoints := []string{}
-	_, srvRecords, err := net.LookupSRV("", "", svcName)
-	if err != nil {
-		return endpoints, err
-	}
-	for _, srvRecord := range srvRecords {
-		// The SRV records ends in a "." for the root domain
-		ep := fmt.Sprintf("%v", srvRecord.Target[:len(srvRecord.Target)-1])
-		endpoints = append(endpoints, ep)
-	}
-	fmt.Print(endpoints)
-	return endpoints, nil
-}
 
 // StoreKey is a simple key value store with timeout
 func StoreKey(key, data string, expire time.Duration) error {
-	return Client.Set(key, data, expire).Err()
+	return redis.Client.Set(key, data, expire).Err()
 }
 
 // GetKey Get a key from redis
 func GetKey(key string, touch bool, expire time.Duration) (string, error) {
-	cmd := Client.Get(key)
+	cmd := redis.Client.Get(key)
 	if err := cmd.Err(); err != nil {
 		return "", err
 	}
 
 	if touch {
-		bCmd := Client.Expire(key, expire)
+		bCmd := redis.Client.Expire(key, expire)
 		if err := bCmd.Err(); err != nil {
 			return "", err
 		}
@@ -56,7 +34,7 @@ func GetKey(key string, touch bool, expire time.Duration) (string, error) {
 
 // RemoveKey for removing a key in redis
 func RemoveKey(key string) error {
-	bCmd := Client.Del(key)
+	bCmd := redis.Client.Del(key)
 	return bCmd.Err()
 }
 
@@ -78,13 +56,13 @@ func HGetAll(key string, touch bool, expire time.Duration) (map[string]int, erro
 
 // HGetAll Get a key and value from redis
 func HGetAllString(key string, touch bool, expire time.Duration) (map[string]string, error) {
-	cmd := Client.HGetAll(key)
+	cmd := redis.Client.HGetAll(key)
 	if err := cmd.Err(); err != nil {
 		return nil, err
 	}
 
 	if touch {
-		Client.Expire(key, expire)
+		redis.Client.Expire(key, expire)
 	}
 
 	return cmd.Result()
@@ -92,9 +70,9 @@ func HGetAllString(key string, touch bool, expire time.Duration) (map[string]str
 
 // IncHash try to inc hash
 func IncHash(key string, hash string, value int64, expire time.Duration) (int64, error) {
-	cmd := Client.HIncrBy(key, hash, value)
+	cmd := redis.Client.HIncrBy(key, hash, value)
 
-	Client.Expire(key, expire)
+	redis.Client.Expire(key, expire)
 	return cmd.Result()
 }
 
@@ -133,19 +111,19 @@ func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, 
 
 func HMSet(key string, expire time.Duration, fields map[string]interface{}) error {
 
-	cmd := Client.HMSet(key, fields)
+	cmd := redis.Client.HMSet(key, fields)
 	if err := cmd.Err(); err != nil {
 		return err
 	}
-	Client.Expire(key, expire)
+	redis.Client.Expire(key, expire)
 	return nil
 }
 
 // StoreHashKey is a simple function to set hash key
 func StoreHashKey(key, subkey, data string, expire time.Duration) error {
-	err := Client.HSet(key, subkey, data).Err()
+	err := redis.Client.HSet(key, subkey, data).Err()
 	if err == nil {
-		err = Client.Expire(key, expire).Err()
+		err = redis.Client.Expire(key, expire).Err()
 	}
 
 	return err
@@ -153,9 +131,9 @@ func StoreHashKey(key, subkey, data string, expire time.Duration) error {
 
 // RPush perform an rpush command
 func LPush(key string, t time.Duration, value ...interface{}) error {
-	err := Client.LPush(key, value...).Err()
+	err := redis.Client.LPush(key, value...).Err()
 	if err == nil {
-		err = Client.Expire(key, t).Err()
+		err = redis.Client.Expire(key, t).Err()
 	}
 
 	return err
@@ -163,7 +141,7 @@ func LPush(key string, t time.Duration, value ...interface{}) error {
 
 // BRPopSingle is the function to pop a value from a single list
 func BRPopSingle(key string, t time.Duration) (string, bool) {
-	res := Client.BRPop(t, key)
+	res := redis.Client.BRPop(t, key)
 
 	v := res.Val()
 	if len(v) == 0 {
@@ -179,18 +157,18 @@ func BRPopSingle(key string, t time.Duration) (string, bool) {
 
 // SMembers return data in a set
 func SMembers(key string) []string {
-	return Client.SMembers(key).Val()
+	return redis.Client.SMembers(key).Val()
 }
 
 // SAdd is a function to add data to set
 func SAdd(key string, touch bool, expire time.Duration, members ...interface{}) error {
-	add := Client.SAdd(key, members...)
+	add := redis.Client.SAdd(key, members...)
 	if err := add.Err(); err != nil {
 		return err
 	}
 
 	if touch {
-		Client.Expire(key, expire)
+		redis.Client.Expire(key, expire)
 	}
 
 	return nil

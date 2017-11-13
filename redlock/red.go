@@ -3,8 +3,8 @@ package redlock
 import (
 	"time"
 
-	"clickyab.com/gad/redis"
 	"clickyab.com/gad/utils"
+	"github.com/clickyab/services/aredis"
 
 	"github.com/sirupsen/logrus"
 )
