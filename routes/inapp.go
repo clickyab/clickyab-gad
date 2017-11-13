@@ -10,7 +10,7 @@ import (
 
 	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
@@ -96,7 +96,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 	)
 	rnd := <-utils.ID
 	if !noAd {
-		ad, err := mr.NewManager().GetAd(ads[slotString].AdID, false)
+		ad, err := models.NewManager().GetAd(ads[slotString].AdID, false)
 		assert.Nil(err)
 		imp := tc.fillImp(rd, false, ad, ads[slotString].WinnerBid, app, slotSize[slotString].ID)
 		u = url.URL{
@@ -147,7 +147,7 @@ func (tc *selectController) inAppJSON(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[string]*slotData, map[string]int, string, string) {
+func (tc *selectController) slotSizeApp(ctx echo.Context, app *models.App) (map[string]*slotData, map[string]int, string, string) {
 	adsMedia := ctx.Request().URL.Query().Get("adsMedia")
 	var (
 		bs   int
@@ -172,10 +172,10 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 	middlewares.SetData(ctx, "ad_size", bs)
 	slotString := fmt.Sprintf("%d0%d0%d", app.ID, app.UserID, bs)
 	slot, _ := strconv.ParseInt(slotString, 10, 0)
-	s, err := mr.NewManager().FetchAppSlot(app.ID, slot)
+	s, err := models.NewManager().FetchAppSlot(app.ID, slot)
 	if err != nil {
 		// no slot found
-		s, err = mr.NewManager().InsertSlots(0, app.ID, slot, bs)
+		s, err = models.NewManager().InsertSlots(0, app.ID, slot, bs)
 		assert.Nil(err)
 	}
 	data := map[string]*slotData{
@@ -199,14 +199,14 @@ func (tc *selectController) slotSizeApp(ctx echo.Context, app *mr.App) (map[stri
 	return data, sizes, slotString, full
 }
 
-func (tc *selectController) getAppDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.App, int64, int64, *mr.PhoneData, *mr.CellLocation, error) {
+func (tc *selectController) getAppDataFromCtx(c echo.Context) (*middlewares.RequestData, *models.App, int64, int64, *models.PhoneData, *models.CellLocation, error) {
 	rd := middlewares.MustGetRequestData(c)
 
 	token := c.Request().URL.Query().Get("token")
 	if len(token) < 1 {
 		return nil, nil, 0, 0, nil, nil, errors.New("invalid request")
 	}
-	m := mr.NewManager()
+	m := models.NewManager()
 	app, err := m.GetApp(token)
 	if err != nil {
 		return nil, nil, 0, 0, nil, nil, err

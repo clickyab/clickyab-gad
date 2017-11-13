@@ -5,7 +5,7 @@ import (
 	"net"
 	"strings"
 
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
 
@@ -18,7 +18,7 @@ import (
 type RequestData struct {
 	IP             net.IP
 	UserAgent      string
-	IP2Location    *mr.IP2Location
+	IP2Location    *models.IP2Location
 	Browser        string
 	SuppliersName  string
 	OS             string
@@ -119,7 +119,7 @@ func RequestCollectorGenerator(copKey func(echo.Context, *RequestData, int) stri
 			if e.TID = ctx.Request().URL.Query().Get("tid"); len(e.TID) < copLen.Int() {
 				e.TID = copKey(ctx, e, copLen.Int())
 			}
-			e.CopID = mr.NewManager().CreateCookieProfile(e.TID, e.IP).ID
+			e.CopID = models.NewManager().CreateCookieProfile(e.TID, e.IP).ID
 
 			//extract app stuff
 			e.GoogleID = ctx.Request().URL.Query().Get("GoogleAdvertisingId")

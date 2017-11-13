@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/rabbit"
 	"clickyab.com/gad/redis"
 	"clickyab.com/gad/transport"
@@ -34,7 +34,7 @@ type Publisher interface {
 	GetType() string
 }
 
-func (selectController) fillImp(rd *middlewares.RequestData, sus bool, ads *mr.Ad, winnerBid int64, pub Publisher, slotID int64) transport.Impression {
+func (selectController) fillImp(rd *middlewares.RequestData, sus bool, ads *models.Ad, winnerBid int64, pub Publisher, slotID int64) transport.Impression {
 	imp := transport.Impression{
 		Suspicious:   sus,
 		IP:           rd.IP,
@@ -66,7 +66,7 @@ func (selectController) fillImp(rd *middlewares.RequestData, sus bool, ads *mr.A
 	return imp
 }
 
-func (selectController) fillNativeImp(rd *middlewares.RequestData, sus bool, ads *mr.AdData, winnerBid int64, pub Publisher, slotID int64) transport.Impression {
+func (selectController) fillNativeImp(rd *middlewares.RequestData, sus bool, ads *models.AdData, winnerBid int64, pub Publisher, slotID int64) transport.Impression {
 	imp := transport.Impression{
 		Suspicious:   sus,
 		IP:           rd.IP,
@@ -93,7 +93,7 @@ func (selectController) fillNativeImp(rd *middlewares.RequestData, sus bool, ads
 }
 
 func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, mega string, rand string, imp transport.Impression, rd *middlewares.RequestData) {
-	m := mr.NewManager()
+	m := models.NewManager()
 	var err error
 	imp.SLAID, err = m.InsertSlotAd(slotID, adID)
 	if err != nil {

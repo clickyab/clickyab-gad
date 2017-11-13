@@ -1,4 +1,4 @@
-package mr
+package models
 
 import (
 	"github.com/clickyab/services/mysql"

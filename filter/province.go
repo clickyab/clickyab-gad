@@ -1,12 +1,12 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 )
 
 //CheckProvince find province client in campaign
-func CheckProvince(c *selector.Context, in mr.AdData) bool {
+func CheckProvince(c *selector.Context, in models.AdData) bool {
 	if c.Province == 0 {
 		return len(in.CampaignGeos) == 0
 	}

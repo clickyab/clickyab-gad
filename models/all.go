@@ -1,4 +1,4 @@
-package mr
+package models
 
 // FetchWebsiteAll return all domain
 func (m *Manager) FetchWebsiteAll() ([]*Website, error) {

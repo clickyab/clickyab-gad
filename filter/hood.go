@@ -1,12 +1,12 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 )
 
 // CheckAppHood return boolean
-func CheckAppHood(c *selector.Context, in mr.AdData) bool {
+func CheckAppHood(c *selector.Context, in models.AdData) bool {
 	if c.CellLocation == nil {
 		return in.Campaign.CampaignHoods == ""
 	}

@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/redis"
 	"clickyab.com/gad/store"
 	"clickyab.com/gad/transport"
@@ -84,11 +84,11 @@ func (tc *selectController) show(c echo.Context) error {
 	websiteID, err := strconv.ParseInt(c.Param("wid"), 10, 64)
 	var publisher Publisher
 	if typ == "web" || typ == "vast" {
-		website, err := mr.NewManager().FetchWebsite(websiteID)
+		website, err := models.NewManager().FetchWebsite(websiteID)
 		assert.Nil(err)
 		publisher = website
 	} else {
-		app, err := mr.NewManager().FetchValidAppByID(websiteID)
+		app, err := models.NewManager().FetchValidAppByID(websiteID)
 		publisher = app
 		assert.Nil(err)
 	}
@@ -110,7 +110,7 @@ func (tc *selectController) show(c echo.Context) error {
 		return c.String(http.StatusNotFound, "ad not found")
 	}
 	winnerFinalBid, _ = strconv.ParseInt(winnerBid, 10, 64)
-	ads, err := mr.NewManager().GetAd(adID, false)
+	ads, err := models.NewManager().GetAd(adID, false)
 	if err != nil {
 		return c.String(http.StatusNotFound, "not found")
 	}
@@ -175,20 +175,20 @@ func (tc *selectController) show(c echo.Context) error {
 	return c.HTML(http.StatusOK, res)
 }
 
-func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool, showT bool) (string, error) {
+func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *models.Ad, url string, long string, pos string, https bool, showT bool) (string, error) {
 	buf := &bytes.Buffer{}
 	switch ads.AdType {
-	case mr.SingleAdType:
+	case models.SingleAdType:
 		res := tc.makeSingleAdData(ads, url, https, showT)
 		if err := singleAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
-	case mr.VideoAdType:
+	case models.VideoAdType:
 		res := tc.makeVideoAdData(ads, url, https)
 		if err := videoAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
-	case mr.DynamicAdType:
+	case models.DynamicAdType:
 		if https {
 			ads.AdAttribute.Product = strings.Replace(ads.AdAttribute.Product, "http://", "https://", -1)
 			ads.AdAttribute.Logo = strings.Replace(ads.AdAttribute.Logo, "http://", "https://", -1)
@@ -204,7 +204,7 @@ func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mr.
 }
 
 // makeAdData
-func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, url string, long string, pos string, https bool) (string, error) {
+func (tc *selectController) makeAdData(c echo.Context, typ string, ads *models.Ad, url string, long string, pos string, https bool) (string, error) {
 	if typ == "web" || typ == "app" {
 		return tc.makeWebTemplate(c, typ, ads, url, long, pos, https, false)
 	}
@@ -226,7 +226,7 @@ func (tc *selectController) makeAdData(c echo.Context, typ string, ads *mr.Ad, u
 
 }
 
-func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string, https bool) VideoAd {
+func (tc *selectController) makeVideoAdData(ad *models.Ad, url string, https bool) VideoAd {
 	w, h := utils.GetSizeByNum(ad.AdSize)
 	src := ad.AdImg.String
 	if https {
@@ -247,7 +247,7 @@ func (tc *selectController) makeVideoAdData(ad *mr.Ad, url string, https bool) V
 	return sa
 }
 
-func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string, https, showT bool) SingleAd {
+func (tc *selectController) makeSingleAdData(ad *models.Ad, url string, https, showT bool) SingleAd {
 	w, h := utils.GetSizeByNum(ad.AdSize)
 	src := ad.AdImg.String
 	if https {
@@ -263,7 +263,7 @@ func (tc *selectController) makeSingleAdData(ad *mr.Ad, url string, https, showT
 	}
 	return sa
 }
-func (tc *selectController) makeVastAdData(ad *mr.Ad, urll string, long string, pos string, https bool) vastTemplate {
+func (tc *selectController) makeVastAdData(ad *models.Ad, urll string, long string, pos string, https bool) vastTemplate {
 	w, h := utils.GetSizeByNum(ad.AdSize)
 	_, ma := utils.MakeVastLen(long, "", "", "")
 

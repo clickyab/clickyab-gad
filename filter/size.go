@@ -1,13 +1,13 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 	"clickyab.com/gad/utils"
 )
 
 // CheckWebSize check if the banner size exists in the request
-func CheckWebSize(c *selector.Context, in mr.AdData) bool {
+func CheckWebSize(c *selector.Context, in models.AdData) bool {
 	if in.AdType == utils.AdTypeVideo {
 		for _, size := range c.Size {
 			if utils.InVideoSize(size) {
@@ -26,7 +26,7 @@ func CheckWebSize(c *selector.Context, in mr.AdData) bool {
 }
 
 // CheckVastSize check if the banner size fits for Vast Template
-func CheckVastSize(_ *selector.Context, in mr.AdData) bool {
+func CheckVastSize(_ *selector.Context, in models.AdData) bool {
 	if in.AdType == utils.AdTypeDynamic {
 		return false
 	}
@@ -35,7 +35,7 @@ func CheckVastSize(_ *selector.Context, in mr.AdData) bool {
 }
 
 // CheckAppSize check if the banner size exists in the request
-func CheckAppSize(c *selector.Context, in mr.AdData) bool {
+func CheckAppSize(c *selector.Context, in models.AdData) bool {
 	if in.AdType == utils.AdTypeVideo || in.AdType == utils.AdTypeDynamic {
 		return false
 	}
@@ -49,6 +49,6 @@ func CheckAppSize(c *selector.Context, in mr.AdData) bool {
 }
 
 // CheckWebMobileSize check if the banner size exists in the request
-func CheckWebMobileSize(c *selector.Context, in mr.AdData) bool {
+func CheckWebMobileSize(c *selector.Context, in models.AdData) bool {
 	return in.AdSize == 8
 }

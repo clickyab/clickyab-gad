@@ -10,7 +10,7 @@ import (
 
 	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	selector2 "clickyab.com/gad/pin"
 	aredis "clickyab.com/gad/redis"
 	"clickyab.com/gad/selector"
@@ -141,7 +141,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	return c.XMLBlob(http.StatusOK, result.Bytes())
 }
 
-func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, length map[string][]string, website mr.Website, alladscase ...bool) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
+func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, length map[string][]string, website models.Website, alladscase ...bool) (map[string]*slotData, map[string]int, map[string]vastSlotData) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublic []string
 	var vastSlot = make(map[string]vastSlotData)
@@ -174,7 +174,7 @@ func (tc *selectController) slotSizeVast(mobile bool, websitePublicID int64, len
 
 }
 
-func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *mr.Website, int64, int64, string, map[string][]string, error) {
+func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.RequestData, *models.Website, int64, int64, string, map[string][]string, error) {
 	rd := middlewares.MustGetRequestData(c)
 
 	publicID, err := strconv.ParseInt(c.QueryParam("a"), 10, 0)
@@ -193,7 +193,7 @@ func (tc *selectController) getVastDataFromCtx(c echo.Context) (*middlewares.Req
 		return nil, nil, 0, 0, "", nil, errors.New("web is not active")
 	}
 
-	if !mr.NewManager().IsUserActive(website.UserID) {
+	if !models.NewManager().IsUserActive(website.UserID) {
 		return nil, nil, 0, 0, "", nil, errors.New("user is banned")
 	}
 
@@ -222,8 +222,8 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 		return slotData2, sizeNumSlice
 	}
 
-	slotPublicString := mr.Build(slotPublic)
-	res, err := mr.NewManager().FetchWebSlots(slotPublicString, webID)
+	slotPublicString := models.Build(slotPublic)
+	res, err := models.NewManager().FetchWebSlots(slotPublicString, webID)
 	assert.Nil(err)
 
 	answer := make(map[string]*slotData)

@@ -1,4 +1,4 @@
-package mr
+package models
 
 // Capping is the structure for capping
 type capping struct {

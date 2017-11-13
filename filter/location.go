@@ -1,13 +1,13 @@
 package filter
 
 import (
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/selector"
 	"clickyab.com/gad/utils"
 )
 
 // CheckAppAreaInGlob filter area in glob
-func CheckAppAreaInGlob(c *selector.Context, in mr.AdData) bool {
+func CheckAppAreaInGlob(c *selector.Context, in models.AdData) bool {
 	if c.CellLocation == nil || c.CellLocation.Location == "" {
 		// there is no location detected
 		// The campaign is regional, so ignore it

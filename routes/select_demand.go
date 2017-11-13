@@ -5,25 +5,20 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
+	"clickyab.com/gad/ip2location"
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/mr"
-	aredis "clickyab.com/gad/redis"
-	"clickyab.com/gad/selector"
-	"github.com/clickyab/services/assert"
-
+	"clickyab.com/gad/models"
+	"clickyab.com/gad/redis"
 	"clickyab.com/gad/redlock"
-
-	"strconv"
-
+	"clickyab.com/gad/selector"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
-
-	"clickyab.com/gad/ip2location"
-
+	"github.com/clickyab/services/assert"
 	"github.com/sirupsen/logrus"
-	echo "gopkg.in/labstack/echo.v3"
+	"gopkg.in/labstack/echo.v3"
 )
 
 // Demand is the demand data in database
@@ -71,7 +66,7 @@ func (tc *selectController) selectDemandAppAd(c echo.Context, rd *middlewares.Re
 		e.SessionKey = "EXC_SESS_" + e.SessionKey
 		sessionAds = aredis.SMembersInt(e.SessionKey)
 		if len(sessionAds) > 0 {
-			sel = selector.Mix(sel, func(_ *selector.Context, a mr.AdData) bool {
+			sel = selector.Mix(sel, func(_ *selector.Context, a models.AdData) bool {
 				for _, i := range sessionAds {
 					if i == a.AdID {
 						return false
@@ -152,7 +147,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 		e.SessionKey = "EXC_SESS_" + e.SessionKey
 		sessionAds = aredis.SMembersInt(e.SessionKey)
 		if len(sessionAds) > 0 {
-			sel = selector.Mix(sel, func(_ *selector.Context, a mr.AdData) bool {
+			sel = selector.Mix(sel, func(_ *selector.Context, a models.AdData) bool {
 				for _, i := range sessionAds {
 					if i == a.AdID {
 						return false
@@ -214,7 +209,7 @@ func (tc *selectController) selectDemandAd(c echo.Context) error {
 
 }
 
-func (tc *selectController) getDemandAppDataFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.App, int64, *mr.PhoneData, *mr.CellLocation, error) {
+func (tc *selectController) getDemandAppDataFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *models.App, int64, *models.PhoneData, *models.CellLocation, error) {
 	name, userID, err := utils.GetSupplier(e.Source.Supplier)
 	if err != nil {
 		return nil, nil, nil, 0, nil, nil, fmt.Errorf("can not accept from %s demand", e.Source.Supplier)
@@ -228,7 +223,7 @@ func (tc *selectController) getDemandAppDataFromCtx(c echo.Context, rd *middlewa
 	if e.Location.Province.Valid {
 		province = ip2location.GetProvinceIDByName(e.Location.Province.Name)
 	}
-	m := mr.NewManager()
+	m := models.NewManager()
 	phone := m.GetPhoneData(rd.Brand, rd.Carrier, rd.Network)
 	cell, err := m.GetCellLocation(rd.MCC, rd.MNC, rd.LAC, rd.CID, rd.Carrier)
 	if err != nil {
@@ -247,7 +242,7 @@ func stripURLParts(in string) string {
 	return u.Host
 }
 
-func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *mr.Website, int64, error) {
+func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middlewares.RequestData, e *middlewares.RequestDataFromExchange) (*middlewares.RequestData, *middlewares.RequestDataFromExchange, *models.Website, int64, error) {
 	name, userID, err := utils.GetSupplier(e.Source.Supplier)
 	if err != nil {
 		return nil, nil, nil, 0, fmt.Errorf("can not accept from %s supplier", e.Source.Supplier)
@@ -263,7 +258,7 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middle
 		return nil, nil, nil, 0, errors.New("website is not active")
 	}
 
-	if !mr.NewManager().IsUserActive(website.UserID) {
+	if !models.NewManager().IsUserActive(website.UserID) {
 		return nil, nil, nil, 0, errors.New("user is banned")
 	}
 
@@ -275,10 +270,10 @@ func (tc *selectController) getWebDataExchangeFromCtx(c echo.Context, rd *middle
 }
 
 //fetchWebsiteDomain website and check if the minimum floor is applied
-func (tc *selectController) fetchWebsiteDomain(domain, supplier string, user int64) (*mr.Website, error) {
-	website, err := mr.NewManager().FetchWebsiteByDomain(domain, supplier)
+func (tc *selectController) fetchWebsiteDomain(domain, supplier string, user int64) (*models.Website, error) {
+	website, err := models.NewManager().FetchWebsiteByDomain(domain, supplier)
 	if err != nil {
-		website, err = mr.NewManager().InsertWebsite(domain, supplier, user)
+		website, err = models.NewManager().InsertWebsite(domain, supplier, user)
 		if err != nil {
 			return nil, err
 		}
@@ -290,10 +285,10 @@ func (tc *selectController) fetchWebsiteDomain(domain, supplier string, user int
 }
 
 // fetchAppPackage fetch app if not exists insert it
-func (tc *selectController) fetchAppPackage(pack, supplier string, userID int64) (*mr.App, error) {
-	app, err := mr.NewManager().FetchAppByPack(pack, supplier)
+func (tc *selectController) fetchAppPackage(pack, supplier string, userID int64) (*models.App, error) {
+	app, err := models.NewManager().FetchAppByPack(pack, supplier)
 	if err != nil {
-		app, err = mr.NewManager().InsertApp(pack, supplier, userID)
+		app, err = models.NewManager().InsertApp(pack, supplier, userID)
 		if err != nil {
 			return nil, err
 		}
@@ -301,7 +296,7 @@ func (tc *selectController) fetchAppPackage(pack, supplier string, userID int64)
 	return app, nil
 }
 
-func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website mr.Website) (map[string]*slotData, map[string]int, map[string]string, map[string]map[string]string, error) {
+func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website models.Website) (map[string]*slotData, map[string]int, map[string]string, map[string]map[string]string, error) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublics []string
 	var trackIDs = make(map[string]string)
@@ -327,7 +322,7 @@ func (tc selectController) slotSizeWebExchange(slots []middlewares.Slot, website
 	return all, size, trackIDs, attr, nil
 }
 
-func (tc selectController) slotSizeAppExchange(slots []middlewares.Slot, app mr.App) (map[string]*slotData, map[string]int, map[string]string, map[string]map[string]string, error) {
+func (tc selectController) slotSizeAppExchange(slots []middlewares.Slot, app models.App) (map[string]*slotData, map[string]int, map[string]string, map[string]map[string]string, error) {
 	var sizeNumSlice = make(map[string]int)
 	var slotPublics []string
 	var trackIDs = make(map[string]string)
@@ -353,8 +348,8 @@ func (tc selectController) slotSizeAppExchange(slots []middlewares.Slot, app mr.
 }
 
 func (tc selectController) slotSizeAppExchangeNormal(slotPublic []string, appID int64, sizeNumSlice map[string]int) (map[string]*slotData, map[string]int) {
-	slotPublicString := mr.Build(slotPublic)
-	res, err := mr.NewManager().FetchAppSlots(slotPublicString, appID)
+	slotPublicString := models.Build(slotPublic)
+	res, err := models.NewManager().FetchAppSlots(slotPublicString, appID)
 	assert.Nil(err)
 
 	answer := make(map[string]*slotData)

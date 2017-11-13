@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"clickyab.com/gad/mr"
+	"clickyab.com/gad/models"
 	"github.com/clickyab/services/assert"
 	"github.com/clickyab/services/config"
 
@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	loaded []mr.SlotPinData
+	loaded []models.SlotPinData
 	lock   = &sync.RWMutex{}
 	once   = &sync.Once{}
 
@@ -30,7 +30,7 @@ type myModel struct {
 }
 
 func interval(_ context.CancelFunc) {
-	manager := mr.NewManager()
+	manager := models.NewManager()
 	fail := 0
 	for {
 		<-time.After(time.Minute)
@@ -54,7 +54,7 @@ func interval(_ context.CancelFunc) {
 }
 
 // GetPinAdData return the current slot pin data
-func GetPinAdData() []mr.SlotPinData {
+func GetPinAdData() []models.SlotPinData {
 	lock.RLock()
 	defer lock.RUnlock()
 
@@ -71,7 +71,7 @@ func GetPinAdData() []mr.SlotPinData {
 func (m *myModel) Initialize() {
 	once.Do(func() {
 		var err error
-		manager := mr.NewManager()
+		manager := models.NewManager()
 		loaded, err = manager.LoadSlotPin()
 		assert.Nil(err)
 		lastTime = time.Now()

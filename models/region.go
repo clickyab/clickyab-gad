@@ -1,4 +1,4 @@
-package mr
+package models
 
 // FetchProvinceAll get the list of all region in database
 func (m *Manager) FetchProvinceAll() ([]*Province, error) {
