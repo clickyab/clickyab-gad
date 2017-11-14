@@ -1,4 +1,4 @@
-package routes
+package capping
 
 import (
 	"fmt"
@@ -8,7 +8,13 @@ import (
 	"clickyab.com/gad/models"
 	"clickyab.com/gad/redis"
 	"clickyab.com/gad/transport"
+	"github.com/clickyab/services/config"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	minFrequency   = config.RegisterInt("clickyab.min_frequency", 2, "")
+	dailyCapExpire = config.RegisterDuration("clickyab.daily_cap_expire", 72*time.Hour, "")
 )
 
 func getCappingKey(copID int64) string {
@@ -22,7 +28,8 @@ func getCappingKey(copID int64) string {
 	)
 }
 
-func emptyCapping(filteredAds map[int][]*models.AdData) map[int][]*models.AdData {
+// EmptyCapping is a hack to handle no capping situation
+func EmptyCapping(filteredAds map[int][]*models.AdData) map[int][]*models.AdData {
 	c := make(models.CappingContext)
 	for i := range filteredAds {
 		for j := range filteredAds[i] {
@@ -42,7 +49,8 @@ func emptyCapping(filteredAds map[int][]*models.AdData) map[int][]*models.AdData
 	return filteredAds
 }
 
-func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*models.AdData, eventPage string) map[int][]*models.AdData {
+// GetCapping try to get capping for current ad
+func GetCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]*models.AdData, eventPage string) map[int][]*models.AdData {
 	var selected = make(map[int64]bool)
 	if eventPage != "" {
 		for _, v := range aredis.SMembersInt(eventPage) {
@@ -111,7 +119,8 @@ func getCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 	return filteredAds
 }
 
-func storeCapping(copID int64, cpID int64) error {
+// StoreCapping try to store a capping object
+func StoreCapping(copID int64, cpID int64) error {
 	_, err := aredis.IncHash(
 		getCappingKey(copID),
 		fmt.Sprintf("%s%s%d", transport.Advertise, transport.Delimiter, cpID),

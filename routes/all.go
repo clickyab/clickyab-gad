@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"clickyab.com/gad/capping"
 	"clickyab.com/gad/ip2location"
 	"clickyab.com/gad/utils"
 )
@@ -134,7 +135,7 @@ func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestDat
 				CampBudget: j.CampaignTotalBudget,
 			}
 
-			assert.Nil(storeCapping(rd.CopID, j.AdID))
+			assert.Nil(capping.StoreCapping(rd.CopID, j.AdID))
 			resp[utils.GetSizeByNumString(i)] = append(resp[utils.GetSizeByNumString(i)], temp)
 		}
 	}
@@ -178,7 +179,7 @@ func (tc *selectController) allNativeAds(ctx echo.Context, rd *middlewares.Reque
 			CampID:     i.CampaignAdID,
 			CTR:        i.CTR,
 		})
-		assert.Nil(storeCapping(rd.CopID, i.AdID))
+		assert.Nil(capping.StoreCapping(rd.CopID, i.AdID))
 	}
 
 	return ctx.JSON(200, resp)
@@ -235,7 +236,7 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 }
 
 func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds map[int][]*models.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*models.AdData {
-	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, "")
+	filteredAds = capping.GetCapping(rd.CopID, sizeNumSlice, filteredAds, "")
 
 	for i := range filteredAds {
 		Ads := models.ByMulti{Ads: filteredAds[i]}
@@ -248,7 +249,7 @@ func (tc *selectController) webBiding(rd *middlewares.RequestData, filteredAds m
 }
 
 func (tc *selectController) nativeBiding(rd *middlewares.RequestData, filteredAds map[int][]*models.AdData, slotSize map[string]*slotData, sizeNumSlice map[string]int) map[int][]*models.AdData {
-	filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, "")
+	filteredAds = capping.GetCapping(rd.CopID, sizeNumSlice, filteredAds, "")
 
 	for i := range filteredAds {
 		Ads := models.ByMulti{Ads: filteredAds[i]}
