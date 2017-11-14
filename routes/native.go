@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strings"
 
-	selector2 "clickyab.com/gad/pin"
-	"clickyab.com/gad/selector"
+	"clickyab.com/gad/models/pin"
+	"clickyab.com/gad/models/selector"
 	"clickyab.com/gad/utils"
 
 	"fmt"
@@ -35,7 +35,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	middlewares.SetData(c, "site_domain", website.WDomain.String)
 
 	var slotFixFound bool
-	slotPins := selector2.GetPinAdData()
+	slotPins := pin.GetPinAdData()
 	slotSize, sizeNumSlice, order := tc.slotSizeNative(c, *website)
 	slotFixFound, slotSize, sizeNumSlice, slotPins, _, _ = checkForFixSlot(slotPins, slotSize, sizeNumSlice, "native")
 

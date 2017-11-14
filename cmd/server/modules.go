@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "clickyab.com/gad/pin"
+	_ "clickyab.com/gad/models/pin"
+	_ "clickyab.com/gad/models/selector"
 	_ "clickyab.com/gad/routes"
-	_ "clickyab.com/gad/selector"
 )

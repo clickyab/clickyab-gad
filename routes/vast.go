@@ -11,14 +11,14 @@ import (
 	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/models"
-	selector2 "clickyab.com/gad/pin"
-	aredis "clickyab.com/gad/redis"
-	"clickyab.com/gad/selector"
+	"clickyab.com/gad/models/pin"
+	"clickyab.com/gad/models/selector"
+	"clickyab.com/gad/redis"
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
 
-	echo "gopkg.in/labstack/echo.v3"
+	"gopkg.in/labstack/echo.v3"
 
 	"net/url"
 
@@ -66,7 +66,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	middlewares.SetData(c, "site_domain", website.WDomain.String)
 
 	var slotFixFound bool
-	slotPins := selector2.GetPinAdData()
+	slotPins := pin.GetPinAdData()
 	slotSize, sizeNumSlice, vastSlotData := tc.slotSizeVast(rd.Mobile, webPublicID, length, *website)
 
 	middlewares.SetData(c, "video_len", length)

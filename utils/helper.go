@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 
 	"time"
 
@@ -29,17 +27,6 @@ func Exists(path string) (bool, error) {
 	return true, err
 }
 
-// StringInArray check for a string in other strings
-func StringInArray(q string, arr ...string) bool {
-	for i := range arr {
-		if arr[i] == q {
-			return true
-		}
-	}
-
-	return false
-}
-
 // IP2long change ip to integer
 func IP2long(ip net.IP) (uint32, error) {
 	if ip == nil {
@@ -50,28 +37,6 @@ func IP2long(ip net.IP) (uint32, error) {
 		return 0, fmt.Errorf("ipv6? the input was %s", ip.String())
 	}
 	return binary.BigEndian.Uint32(ip2), nil
-}
-
-// WaitSignal get os signal
-func WaitSignal(exit chan chan struct{}) {
-	quit := make(chan os.Signal, 6)
-	signal.Notify(
-		quit,
-		syscall.SIGINT,
-		syscall.SIGABRT,
-		syscall.SIGHUP,
-		syscall.SIGTERM,
-		syscall.SIGKILL,
-		syscall.SIGQUIT,
-	)
-
-	<-quit
-	if exit != nil {
-		tmp := make(chan struct{})
-		exit <- tmp
-
-		<-tmp
-	}
 }
 
 var (

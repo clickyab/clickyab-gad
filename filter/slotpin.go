@@ -2,7 +2,7 @@ package filter
 
 import (
 	"clickyab.com/gad/models"
-	"clickyab.com/gad/selector"
+	"clickyab.com/gad/models/selector"
 )
 
 // RemoveSlotPins remove fix slot from ad pool

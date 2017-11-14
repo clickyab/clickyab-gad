@@ -34,6 +34,5 @@ func main() {
 	}()
 
 	sig := shell.WaitExitSignal()
-	logrus.Infof("getting %s signal, bye...", sig)
-
+	logrus.Infof("goodbye (%s received)", sig)
 }
