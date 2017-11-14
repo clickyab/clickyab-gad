@@ -13,7 +13,10 @@ import (
 	"strconv"
 	"time"
 
+	"clickyab.com/gad/capping"
 	"clickyab.com/gad/filter"
+	"clickyab.com/gad/ip2location"
+	"clickyab.com/gad/js"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/models"
 	"clickyab.com/gad/models/selector"
@@ -23,11 +26,6 @@ import (
 	"clickyab.com/gad/transport"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
-
-	"clickyab.com/gad/ip2location"
-
-	"clickyab.com/gad/js"
-
 	"github.com/clickyab/services/safe"
 	"github.com/sirupsen/logrus"
 	echo "gopkg.in/labstack/echo.v3"
@@ -437,7 +435,7 @@ func (tc *selectController) makeShow(
 	multipleVideo bool,
 	minCPC int64,
 	allowUnderFloor bool,
-	capping bool,
+	capp bool,
 	floorDiv int64, // I hate add parameter to this function :/ TODO : implement the function option pattern
 ) (map[string]string, map[string]*models.AdData) {
 	//var dum []*models.AdData
@@ -491,15 +489,15 @@ func (tc *selectController) makeShow(
 			}
 		}()
 
-		if capping {
+		if capp {
 			eventPage := ""
 			if ep, ok := c.Get("EVENT_PAGE").(string); ok {
 				eventPage = ep
 			}
 
-			filteredAds = getCapping(rd.CopID, sizeNumSlice, filteredAds, eventPage)
+			filteredAds = capping.GetCapping(rd.CopID, sizeNumSlice, filteredAds, eventPage)
 		} else {
-			filteredAds = emptyCapping(filteredAds)
+			filteredAds = capping.EmptyCapping(filteredAds)
 		}
 		// TODO : must loop over this values, from lowest data to highest. the size with less ad count must be in higher priority
 		selected := make(map[int]int)
@@ -530,7 +528,7 @@ func (tc *selectController) makeShow(
 				secBid bool
 			)
 
-			// order is to get data from exceed flor, then capping passed and if the config allowed,
+			// order is to get data from exceed flor, then capp passed and if the config allowed,
 			// use the under floor. for under floor there is no second biding pricing
 			if len(exceedFloor) > 0 {
 				ef = models.ByMulti{
@@ -618,9 +616,9 @@ func (tc *selectController) makeShow(
 			}
 			tc.updateMegaKey(rd, sorted[0].AdID, sorted[0].WinnerBid, slotSize[slotID].ID, clu, clp, clt)
 			store.Set(reserve[slotID], fmt.Sprintf("%d", sorted[0].AdID))
-			assert.Nil(storeCapping(rd.CopID, sorted[0].AdID))
+			assert.Nil(capping.StoreCapping(rd.CopID, sorted[0].AdID))
 			selected[slotSize[slotID].SlotSize]++
-			// TODO {fzerorubigd} : Can we check for inner capping increase?
+			// TODO {fzerorubigd} : Can we check for inner capp increase?
 		}
 	})
 	var allAds map[string]*models.AdData
