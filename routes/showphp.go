@@ -13,10 +13,10 @@ import (
 	"clickyab.com/gad/ip2location"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/models"
-	selector2 "clickyab.com/gad/pin"
+	"clickyab.com/gad/models/pin"
+	"clickyab.com/gad/models/selector"
 	"clickyab.com/gad/redis"
 	"clickyab.com/gad/redlock"
-	"clickyab.com/gad/selector"
 	"clickyab.com/gad/store"
 	"clickyab.com/gad/utils"
 
@@ -63,7 +63,7 @@ func (tc *selectController) showphp(c echo.Context) error {
 
 	sel = webSelector
 	var slotFixFound bool
-	slotPins := selector2.GetPinAdData()
+	slotPins := pin.GetPinAdData()
 
 	slotFixFound, slotSize, sizeNumSlice, slotPins, _, _ = checkForFixSlot(slotPins, slotSize, sizeNumSlice, "banner")
 	m := selector.Context{

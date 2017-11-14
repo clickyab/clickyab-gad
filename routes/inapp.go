@@ -11,7 +11,7 @@ import (
 	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/models"
-	"clickyab.com/gad/selector"
+	"clickyab.com/gad/models/selector"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/services/assert"
 

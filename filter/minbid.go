@@ -4,7 +4,7 @@ import (
 	"math"
 
 	"clickyab.com/gad/models"
-	"clickyab.com/gad/selector"
+	"clickyab.com/gad/models/selector"
 )
 
 //CheckMinBid find isp

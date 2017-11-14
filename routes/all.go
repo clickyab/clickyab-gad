@@ -7,7 +7,7 @@ import (
 
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/models"
-	"clickyab.com/gad/selector"
+	"clickyab.com/gad/models/selector"
 	"github.com/clickyab/services/assert"
 
 	echo "gopkg.in/labstack/echo.v3"

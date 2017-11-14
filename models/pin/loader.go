@@ -1,4 +1,4 @@
-package selector
+package pin
 
 import (
 	"fmt"
