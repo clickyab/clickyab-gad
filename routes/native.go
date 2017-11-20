@@ -55,7 +55,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 		MinBidPercentage: 0.5, // TODO : Hard coded :) make it some how calculated
 	}
 	// remove fucking order
-	var resOrder = []string{}
+	var resOrder []string
 	for i := range order {
 		var appending = true
 		for _, v := range slotPins {

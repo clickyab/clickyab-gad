@@ -56,7 +56,7 @@ q:before, q:after {
 blockquote, q {
   quotes: "" "";
 }
-        body{ margin: 0; padding: 0; text-align: center; }
+        body{ margin: 0; padding: 0; text-align: center; overflow:hidden; }
         .o{ position:absolute; top:0; left:0; border:0; height:250px; width:300px; z-index: 99; }
         #showb{ position:absolute; top:0; left:0; border:0; line-height: 250px; height:250px; width:300px; z-index: 100; background: rgba(0, 0, 0, 0.60); text-align: center; }
         {{ if .Tiny }}
@@ -69,10 +69,12 @@ blockquote, q {
         .butl {background: #4474CB;color: #FFF;padding: 10px;text-decoration: none;border: 2px solid #FFFFFF;font-family: tahoma;font-size: 13px;}
         img.adhere {max-width:100%;height:auto;}
         video {background: #232323 none repeat scroll 0 0;}
+		.cyb-pixel {position:absolute; left:-9999px;top:-9999px;}
 		</style>
+
 </head>
 <body>
-
+	{{if ne .Pixel ""}}<img src="{{.Pixel}}" class="cyb-pixel" width="1" height="1" />{{end}}
     {{ if .Tiny }}<a class="tiny" href="http://clickyab.com/?ref=icon" target="_blank"></a>{{ end }}
 	<a href="{{ .Link }}" target="_blank"><img  src="{{ .Src }}" border="0" height="{{ .Height }}" width="{{ .Width }}"/></a>
 <br style="clear: both;"/>
