@@ -26,7 +26,7 @@ export DB_NAME?=clickyab
 export RUSER?=$(APPNAME)
 export RPASS?=$(DEFAULT_PASS)
 export WORK_DIR=$(ROOT)/tmp
-export LINTERCMD=$(LINTER) -e "vendor/.*" -e "tmp/.*" -e ".*gen.go" --cyclo-over=27 --line-length=180 --deadline=100s --disable-all --enable=structcheck --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=gosimple --enable=staticcheck --enable=unused
+export LINTERCMD=$(LINTER) -e "vendor/.*" -e "tmp/.*" -e ".*gen.go" --cyclo-over=30 --line-length=180 --deadline=200s --disable-all --enable=structcheck --enable=gocyclo --enable=ineffassign --enable=golint --enable=goimports --enable=errcheck --enable=varcheck --enable=gosimple --enable=staticcheck --enable=unused
 export UGLIFYJS=$(ROOT)/node_modules/.bin/uglifyjs
 export GAD_SERVICES_MYSQL_WDSN=$(DB_USER):$(DBPASS)@tcp(127.0.0.1:3306)/$(DB_NAME)?charset=utf8&parseTime=true
 export GAD_SERVICES_MYSQL_RDSN=dev:$(READ_PASS)@tcp(db-1.clickyab.ae:3306)/$(DB_NAME)?charset=utf8&parseTime=true
