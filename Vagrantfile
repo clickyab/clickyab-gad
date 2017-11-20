@@ -18,11 +18,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 80,    	host: 80      # nginx
   config.vm.network "forwarded_port", guest: 15672,     host: 15672   # rabbitmq management
   config.vm.network "forwarded_port", guest: 22,        host: 5555    # ssh server
-  config.vm.synced_folder ".", "/home/develop/gad", owner: "develop", group: "develop", create: true
+  config.vm.synced_folder ".", "/home/develop/go/src/clickyab.com/gad", owner: "develop", group: "develop", create: true
 
   config.vm.provider "docker" do |d|
     d.image = "registry.clickyab.ae/clickyab/baseimage-go"
     d.has_ssh = true
-    d.cmd = ["/bin/bash", "/home/develop/gad/bin/init.sh"]
+    d.cmd = ["/bin/bash", "/home/develop/go/src/clickyab.com/gad/bin/init.sh"]
   end
 end
