@@ -125,7 +125,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *models.AdData, website Publisher, slot *slotData, floorDiv int64, floorbids map[string]int64, exchange bool) bool {
+func (tc *selectController) doBid(adData *models.AdData, website Publisher, slot *slotData, floorDiv int64, floorBid int64, exchange bool) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
@@ -136,7 +136,7 @@ func (tc *selectController) doBid(adData *models.AdData, website Publisher, slot
 		floorDiv = 1
 	}
 	if exchange {
-		return adData.CPM >= floorbids[slot.PublicID]/floorDiv
+		return adData.CPM >= floorBid/floorDiv
 	}
 	//logrus.Debugf("%d / %f ==> %d >= %d", adData.CampaignMaxBid, adData.CTR, adData.CPM, website.FloorCPM()/floorDiv)
 	return adData.CPM >= website.FloorCPM()/floorDiv
@@ -276,20 +276,6 @@ func (tc *selectController) fetchWebsite(publicID int64) (*models.Website, error
 	return website, err
 }
 
-//fetchProvince find province and set context
-func (tc *selectController) fetchProvinceDemand(r string) (*models.Province, error) {
-	// if strings.ToUpper(cfHeader) != "IR" {
-	// 	return nil, errors.New("not inside iran")
-	// }
-	var province models.Province
-	province, err := models.NewManager().ConvertProvince2Info(r)
-	if err != nil {
-		return nil, errors.New("province not found")
-	}
-	return &province, nil
-
-}
-
 func (tc selectController) slotSizeWeb(c echo.Context, website models.Website, mobile bool, allAdsCase ...bool) (map[string]*slotData, map[string]int) {
 	// main if for all ads data
 	if len(allAdsCase) == 1 && allAdsCase[0] {
@@ -409,22 +395,6 @@ func (selectController) insertNewSlots(wID int64, newSlots []int64, newSize []in
 	return result
 }
 
-func (selectController) insertNewAppSlots(appID int64, newSlots []int64, newSize []int) map[string]int64 {
-	assert.True(len(newSlots) == len(newSize), "[BUG] slot public and count is not matched")
-	result := make(map[string]int64)
-	if len(newSlots) > 0 {
-		for i := range newSlots {
-			insertedSlots, err := models.NewManager().InsertSlots(0, appID, newSlots[i], newSize[i])
-			if err == nil {
-				p := fmt.Sprintf("%d", insertedSlots.PublicID)
-				result[p] = insertedSlots.ID
-			}
-		}
-	}
-
-	return result
-}
-
 // CalculateCtr calculate ctr
 func (selectController) calculateCTR(ad *models.AdData, slot *slotData) float64 {
 	return (ad.AdCTR*float64(adCTREffect.Int()) + slot.Ctr*float64(slotCTREffect.Int())) / float64(100)
@@ -522,15 +492,15 @@ func (tc *selectController) makeShow(
 
 		for o := range order {
 			slotID := order[o]
-			exceedFloor := []*models.AdData{}
-			underFloor := []*models.AdData{}
+			var exceedFloor []*models.AdData
+			var underFloor []*models.AdData
 
 			for _, adData := range filteredAds[slotSize[slotID].SlotSize] {
 				total[slotSize[slotID].SlotSize]++
 				if adData.AdType == utils.AdTypeVideo && noVideo {
 					continue
 				}
-				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv, minCPC, exchange) {
+				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv, minCPC[slotID], exchange) {
 					exceedFloor = append(exceedFloor, adData)
 				} else if adData.WinnerBid == 0 {
 					underFloor = append(underFloor, adData)
