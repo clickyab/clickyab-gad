@@ -53,7 +53,10 @@ func (tc *selectController) showphp(c echo.Context) error {
 	middlewares.SetData(c, "ad_size", size)
 
 	slotSize, sizeNumSlice := tc.slotSizeNormal([]string{slotReq}, website.WID, map[string]int{slotReq: size})
-
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = minCPCWeb.Int64()
+	}
 	lockSession := "DMDS_SESS_" + eventpage
 	t := redlock.NewRedisDistributedLock(lockSession, 3000*time.Millisecond)
 	t.Lock()
@@ -91,10 +94,11 @@ func (tc *selectController) showphp(c echo.Context) error {
 			nil,
 			website,
 			false,
-			minCPCWeb.Int64(),
+			floorBids,
 			allowUnderFloor.Bool(),
 			true,
 			floorDivWeb.Int64(),
+			false,
 		)
 	} else {
 		res := &slotPins[0].AdData

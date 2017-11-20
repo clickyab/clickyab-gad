@@ -20,7 +20,8 @@ type Context struct {
 	CellLocation *models.CellLocation
 	Campaign     int64
 	SlotPins     []models.SlotPinData
-
+	//only for exchange
+	BidFloors        map[string]int64 //string->slot-pub-id ,int64 - > bid_floor
 	MinBidPercentage float64
 }
 

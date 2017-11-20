@@ -37,6 +37,10 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	var slotFixFound bool
 	slotPins := pin.GetPinAdData()
 	slotSize, sizeNumSlice, order := tc.slotSizeNative(c, *website)
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = minCPCNative.Int64()
+	}
 	slotFixFound, slotSize, sizeNumSlice, slotPins, _, _ = checkForFixSlot(slotPins, slotSize, sizeNumSlice, "native")
 
 	middlewares.SetData(c, "ad_count", len(sizeNumSlice))
@@ -66,7 +70,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 	var h map[string]*models.AdData
 	filteredAds := selector.Apply(&m, selector.GetAdData(), nativeSelector)
 	// TODO : Currently underfloor is always true
-	_, h = tc.makeShow(c, "sync", rd, filteredAds, resOrder, sizeNumSlice, slotSize, nil, website, false, minCPCNative.Int64(), allowUnderFloor.Bool(), true, floorDivNative.Int64())
+	_, h = tc.makeShow(c, "sync", rd, filteredAds, resOrder, sizeNumSlice, slotSize, nil, website, false, floorBids, true, true, floorDivNative.Int64(), false)
 
 	if slotFixFound {
 		for _, val := range slotPins {
