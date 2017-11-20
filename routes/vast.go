@@ -71,7 +71,10 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 
 	middlewares.SetData(c, "video_len", length)
 	middlewares.SetData(c, "ad_count", len(sizeNumSlice))
-
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = minCPCVast.Int64()
+	}
 	// TODO : Move this to slotSizeVast func
 	for i := range slotSize {
 		slotSize[i].ExtraParam = map[string]string{
@@ -93,7 +96,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
 	var show map[string]string
-	show, _ = tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, minCPCVast.Int64(), allowUnderFloor.Bool(), true, floorDivVast.Int64())
+	show, _ = tc.makeShow(c, "vast", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, true, floorBids, allowUnderFloor.Bool(), true, floorDivVast.Int64(), false)
 	var vTemp = make([]vastAdTemplate, 0)
 	if slotFixFound {
 		for _, val := range slotPins {

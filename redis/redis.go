@@ -112,7 +112,7 @@ func SumHMGetField(prefix string, days int, field ...string) (map[string]int64, 
 }
 
 // HMSet command in redis to set a set :)
-func HMSet(key string, expire time.Duration, fields map[string]interface{}) error {
+func HMSet(key string, expire time.Duration, fields map[string]string) error {
 
 	cmd := redis.Client.HMSet(key, fields)
 	if err := cmd.Err(); err != nil {

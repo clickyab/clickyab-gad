@@ -67,7 +67,7 @@ func GetCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 		}
 		doneSized[sizeNumSlice[i]] = true
 		found := false
-		sizeCap := map[string]interface{}{}
+		sizeCap := map[string]string{}
 		for ad := range filteredAds[sizeNumSlice[i]] {
 			if filteredAds[sizeNumSlice[i]][ad].CampaignFrequency <= 0 {
 				filteredAds[sizeNumSlice[i]][ad].CampaignFrequency = minFrequency.Int()

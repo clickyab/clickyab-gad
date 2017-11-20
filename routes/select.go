@@ -67,7 +67,7 @@ var (
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
 )
 
-const webMobile string = "1000"
+const webMobile = "1000"
 
 type selectController struct {
 }
@@ -79,6 +79,8 @@ type slotData struct {
 	PublicID   string
 	Ctr        float64
 	ExtraParam map[string]string
+
+	Secure bool
 }
 
 type vastSlotData struct {
@@ -104,8 +106,11 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 		ISP:         isp,
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), webSelector)
-	show, _ := tc.makeShow(c, "web", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, minCPCWeb.Int64(), allowUnderFloor.Bool(), true, floorDivWeb.Int64())
-
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = minCPCWeb.Int64()
+	}
+	show, _ := tc.makeShow(c, "web", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, floorBids, allowUnderFloor.Bool(), true, floorDivWeb.Int64(), false)
 	//substitute the webMobile slot if exists
 	wm := fmt.Sprintf("%d%s", website.WPubID, webMobile)
 	val, ok := show[wm]
@@ -120,7 +125,7 @@ func (tc *selectController) selectWebAd(c echo.Context) error {
 	return c.HTML(200, result)
 }
 
-func (tc *selectController) doBid(adData *models.AdData, website Publisher, slot *slotData, floorDiv int64) bool {
+func (tc *selectController) doBid(adData *models.AdData, website Publisher, slot *slotData, floorDiv int64, floorbids map[string]int64, exchange bool) bool {
 	adData.CTR = tc.calculateCTR(
 		adData,
 		slot,
@@ -129,6 +134,9 @@ func (tc *selectController) doBid(adData *models.AdData, website Publisher, slot
 	//exceed cpm floor
 	if floorDiv < 1 {
 		floorDiv = 1
+	}
+	if exchange {
+		return adData.CPM >= floorbids[slot.PublicID]/floorDiv
 	}
 	//logrus.Debugf("%d / %f ==> %d >= %d", adData.CampaignMaxBid, adData.CTR, adData.CPM, website.FloorCPM()/floorDiv)
 	return adData.CPM >= website.FloorCPM()/floorDiv
@@ -144,7 +152,7 @@ func (tc *selectController) getSecondCPM(floorCPM int64, exceedFloor []*models.A
 }
 
 func (tc *selectController) createMegaKey(rd *middlewares.RequestData, website Publisher) error {
-	tmp := map[string]interface{}{
+	tmp := map[string]string{
 		"IP": rd.IP.String(),
 		"UA": rd.UserAgent,
 		"WS": fmt.Sprintf("%d", website.GetID()),
@@ -433,10 +441,11 @@ func (tc *selectController) makeShow(
 	attr map[string]map[string]string,
 	publisher Publisher,
 	multipleVideo bool,
-	minCPC int64,
+	minCPC map[string]int64,
 	allowUnderFloor bool,
 	capp bool,
 	floorDiv int64, // I hate add parameter to this function :/ TODO : implement the function option pattern
+	exchange bool,
 ) (map[string]string, map[string]*models.AdData) {
 	//var dum []*models.AdData
 	var (
@@ -462,6 +471,14 @@ func (tc *selectController) makeShow(
 			Scheme: rd.Scheme,
 			Host:   rd.Host,
 			Path:   fmt.Sprintf("/show/%s/%s/%d/%s", typ, rd.MegaImp, publisher.GetID(), tmp),
+		}
+		if exchange {
+			if slotSize[slotID].Secure {
+				u.Scheme = "https"
+			} else {
+				u.Scheme = "http"
+			}
+
 		}
 		v := url.Values{}
 		v.Set("tid", rd.TID)
@@ -513,7 +530,7 @@ func (tc *selectController) makeShow(
 				if adData.AdType == utils.AdTypeVideo && noVideo {
 					continue
 				}
-				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv) {
+				if adData.WinnerBid == 0 && tc.doBid(adData, publisher, slotSize[slotID], floorDiv, minCPC, exchange) {
 					exceedFloor = append(exceedFloor, adData)
 				} else if adData.WinnerBid == 0 {
 					underFloor = append(underFloor, adData)
@@ -571,7 +588,12 @@ func (tc *selectController) makeShow(
 
 			// Do not do second biding pricing on this ads, they can not pass CPMFloor
 			if secBid {
-				secondCPM := tc.getSecondCPM(publisher.FloorCPM(), sorted)
+				var secondCPM int64
+				if exchange {
+					secondCPM = tc.getSecondCPM(minCPC[order[o]], sorted)
+				} else {
+					secondCPM = tc.getSecondCPM(publisher.FloorCPM(), sorted)
+				}
 				sorted[0].WinnerBid = utils.WinnerBid(secondCPM, sorted[0].CTR)
 				extra += fmt.Sprintf(" WinnerCPM = %d, SecCPM = %d , CTR = %f, WinnerBID: %d", sorted[0].CPM, secondCPM, sorted[0].CTR, sorted[0].WinnerBid)
 				//if len(sorted) > 1 {
@@ -592,8 +614,8 @@ func (tc *selectController) makeShow(
 				extra += " WTF? the winner bid is greater than max bid? fixing. "
 			}
 
-			if sorted[0].WinnerBid < minCPC {
-				sorted[0].WinnerBid = minCPC
+			if sorted[0].WinnerBid < minCPC[order[o]] {
+				sorted[0].WinnerBid = minCPC[order[o]]
 				extra += " Winner bid is less than min CPC? fixing. "
 			}
 

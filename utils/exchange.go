@@ -1,21 +1,33 @@
 package utils
 
-import "fmt"
+import (
+	"errors"
+	"strconv"
+	"strings"
+
+	"github.com/clickyab/services/assert"
+	"github.com/clickyab/services/config"
+)
 
 var (
-	supplierMap = map[string]string{}
-	supplier    = map[string]int64{}
+	exchangeSuppliers = config.RegisterString("exchange.supplier", "randomsupkey:supname:1234", "comma separated")
 )
 
 // GetSupplier return the id supplier
-func GetSupplier(name string) (string, int64, error) {
-	if newName, ok := supplierMap[name]; ok {
-		name = newName
+func GetSupplier(key string) (string, int64, error) {
+	a := exchangeSuppliers.String()
+	sArr := strings.Split(a, ",")
+	if len(sArr) > 0 {
+		for i := range sArr {
+			eArr := strings.Split(sArr[i], ":")
+			if len(eArr) == 3 {
+				if eArr[0] == key {
+					userID, err := strconv.ParseInt(eArr[2], 10, 64)
+					assert.Nil(err)
+					return eArr[1], userID, nil
+				}
+			}
+		}
 	}
-
-	if s := supplier[name]; s > 0 {
-		return name, s, nil
-	}
-
-	return "", 0, fmt.Errorf("supplier %s is not valid", name)
+	return "", 0, errors.New("supplier not found")
 }

@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"sort"
 
+	"clickyab.com/gad/filter"
 	"clickyab.com/gad/middlewares"
-	"clickyab.com/gad/models"
+
 	"clickyab.com/gad/models/selector"
 	"github.com/clickyab/services/assert"
 
@@ -15,8 +16,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"clickyab.com/gad/capping"
 	"clickyab.com/gad/ip2location"
+
+	"clickyab.com/gad/capping"
+	"clickyab.com/gad/models"
 	"clickyab.com/gad/utils"
 )
 
@@ -25,11 +28,49 @@ import (
 type AllData struct {
 	Website  []*models.Website
 	Province []*models.Province
-	//Campaign *[]models.Campaign
+	//Campaign *[]mr.Campaign
 	Size map[string]int
 	Vast bool
 	Data []*models.AdData
 	Len  int
+}
+
+var allFiter = map[string]selector.FilterFunc{
+	"isWebNetwork":  filter.IsWebNetwork,
+	"webSize":       filter.CheckWebSize,
+	"appSize":       filter.CheckAppSize,
+	"vastSize":      filter.CheckVastSize,
+	"os":            filter.CheckOS,
+	"whiteList":     filter.CheckWhiteList,
+	"blackList":     filter.CheckWebBlackList,
+	"webCategory":   filter.CheckWebCategory,
+	"checkProvince": filter.CheckProvince,
+	"isWebMobile":   filter.IsWebMobile,
+	"notWebMobile":  filter.IsNotWebMobile,
+	"checkCampaign": filter.CheckCampaign,
+	"webMobileSize": filter.CheckWebMobileSize,
+	"appBlackList":  filter.CheckAppBlackList,
+	"appWhiteList":  filter.CheckAppWhiteList,
+	"appCategory":   filter.CheckAppCategory,
+	"appBrand":      filter.CheckAppBrand,
+	"appHood":       filter.CheckAppHood,
+	"appProvider":   filter.CheckProvder,
+	"appAreaInGlob": filter.CheckAppAreaInGlob,
+}
+
+// Ints returns a unique subset of the int slice provided.
+func UniqueStr(input []string) []string {
+	u := make([]string, 0, len(input))
+	m := make(map[string]bool)
+
+	for _, val := range input {
+		if _, ok := m[val]; !ok {
+			m[val] = true
+			u = append(u, val)
+		}
+	}
+
+	return u
 }
 
 type allAdsWebPayload struct {
@@ -216,7 +257,11 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 	}
 
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
-	_, allAds := tc.makeShow(ctx, "sync", rd, filteredAds, nil, sizeNumSlice, SlotData, nil, website, false, minCPCVast.Int64(), allowUnderFloor.Bool(), true, floorDivVast.Int64())
+	var floorBids = make(map[string]int64)
+	for i := range sizeNumSlice {
+		floorBids[i] = minCPCVast.Int64()
+	}
+	_, allAds := tc.makeShow(ctx, "sync", rd, filteredAds, nil, sizeNumSlice, SlotData, nil, website, false, floorBids, allowUnderFloor.Bool(), true, floorDivVast.Int64(), false)
 
 	response := map[string][]allAdsResponse{}
 	for i := range allAds {
