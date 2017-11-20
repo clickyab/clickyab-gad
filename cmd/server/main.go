@@ -17,14 +17,12 @@ import (
 	"github.com/clickyab/services/initializer"
 	"github.com/clickyab/services/shell"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/fzerorubigd/onion.v2"
 )
 
-var port = config.RegisterInt("port", 80, "port of app")
+var port = config.RegisterInt("port.echo", 80, "port of app")
 
 func main() {
-	envLayer := onion.NewEnvLayer("PORT")
-	config.Initialize("clickyab", "gad", "GAD", envLayer)
+	config.Initialize("clickyab", "gad", "GAD")
 	config.DumpConfig(os.Stdout)
 	version.PrintVersion().Info("Application started")
 	defer initializer.Initialize()()
