@@ -1,0 +1,11 @@
+package filter
+
+import (
+	"clickyab.com/gad/models"
+	"clickyab.com/gad/models/selector"
+)
+
+// CheckAppBlackList filter blacklist
+func CheckAppBlackList(c *selector.Context, in models.AdData) bool {
+	return !in.CampaignAppFilter.Has(false, c.App.ID)
+}
