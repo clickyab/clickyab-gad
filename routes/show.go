@@ -29,6 +29,7 @@ type SingleAd struct {
 	Height string
 	Src    string
 	Tiny   bool
+	Pixel  string
 
 	ShowT bool
 }
@@ -66,6 +67,10 @@ func (tc *selectController) show(c echo.Context) error {
 	mega := c.Param("mega")
 
 	typ := c.Param("type")
+	px, err := base64.URLEncoding.WithPadding('.').DecodeString(c.Request().URL.Query().Get("px"))
+	if err != nil {
+		px = nil;
+	}
 	long := c.Request().URL.Query().Get("l")
 	pos := c.Request().URL.Query().Get("pos")
 	if typ == "sync" {
@@ -161,7 +166,7 @@ func (tc *selectController) show(c echo.Context) error {
 		}
 
 	}
-	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos, rd.Scheme != "http")
+	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos, rd.Scheme != "http", px)
 	if err != nil {
 		return err
 	}
@@ -175,11 +180,11 @@ func (tc *selectController) show(c echo.Context) error {
 	return c.HTML(http.StatusOK, res)
 }
 
-func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *models.Ad, url string, long string, pos string, https bool, showT bool) (string, error) {
+func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *models.Ad, url string, long string, pos string, https bool, showT bool, px []byte) (string, error) {
 	buf := &bytes.Buffer{}
 	switch ads.AdType {
 	case models.SingleAdType:
-		res := tc.makeSingleAdData(ads, url, https, showT)
+		res := tc.makeSingleAdData(ads, url, https, showT, px)
 		if err := singleAdTemplate.Execute(buf, res); err != nil {
 			return "", err
 		}
@@ -204,9 +209,9 @@ func (tc *selectController) makeWebTemplate(c echo.Context, typ string, ads *mod
 }
 
 // makeAdData
-func (tc *selectController) makeAdData(c echo.Context, typ string, ads *models.Ad, url string, long string, pos string, https bool) (string, error) {
+func (tc *selectController) makeAdData(c echo.Context, typ string, ads *models.Ad, url string, long string, pos string, https bool, px []byte) (string, error) {
 	if typ == "web" || typ == "app" {
-		return tc.makeWebTemplate(c, typ, ads, url, long, pos, https, false)
+		return tc.makeWebTemplate(c, typ, ads, url, long, pos, https, false, px)
 	}
 
 	buf := &bytes.Buffer{}
@@ -247,11 +252,14 @@ func (tc *selectController) makeVideoAdData(ad *models.Ad, url string, https boo
 	return sa
 }
 
-func (tc *selectController) makeSingleAdData(ad *models.Ad, url string, https, showT bool) SingleAd {
+func (tc *selectController) makeSingleAdData(ad *models.Ad, url string, https, showT bool, px []byte) SingleAd {
 	w, h := utils.GetSizeByNum(ad.AdSize)
 	src := ad.AdImg.String
 	if https {
 		src = strings.Replace(src, "http://", "https://", -1)
+	}
+	if px != nil {
+		showT = false
 	}
 	sa := SingleAd{
 		Link:   url,
@@ -260,6 +268,7 @@ func (tc *selectController) makeSingleAdData(ad *models.Ad, url string, https, s
 		Src:    src,
 		Tiny:   true,
 		ShowT:  showT,
+		Pixel:  string(px),
 	}
 	return sa
 }

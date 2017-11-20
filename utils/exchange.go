@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	exchangeSuppliers = config.RegisterString("exchange.supplier", "randomsupkey:supname:1234", "comma separated")
+	exchangeSuppliers = config.RegisterString("exchange.supplier", "clickyabkey:sss:1234", "comma separated")
 )
 
 // GetSupplier return the id supplier

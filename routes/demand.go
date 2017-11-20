@@ -73,13 +73,16 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 		if ads[i] == nil {
 			continue
 		}
+
+		h := utils.GetSizeByNumStringHeight(ads[i].AdSize)
+		w := utils.GetSizeByNumStringWith(ads[i].AdSize)
 		bids = append(bids, srtb.Bid{
 			ID:       <-utils.ID,
-			Height:   utils.GetSizeByNumStringHeight(ads[i].AdSize),
-			Width:    utils.GetSizeByNumStringWith(ads[i].AdSize),
+			Height:   h,
+			Width:    w,
 			AdID:     fmt.Sprintf("%d", ads[i].AdID),
 			ImpID:    trackIDs[ads[i].SlotPublicID],
-			AdMarkup: show[i],
+			AdMarkup: fmt.Sprintf(`<iframe name="clickyab_frame" src="%s&px=${PIXEL_URL_IMAGE:B64}" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" width="%d" height="%d" frameborder="0"></iframe>`, show[i], w, h),
 			Price:    int64(float64(ads[i].WinnerBid) * ads[i].CTR * 10),
 			WinURL:   "",
 			Cat:      []string{},
