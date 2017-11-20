@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"clickyab.com/gad/modules"
+	"github.com/clickyab/services/assert"
 	"github.com/clickyab/services/config"
 	"github.com/clickyab/services/initializer"
 	"github.com/clickyab/services/shell"
@@ -30,7 +31,7 @@ func main() {
 
 	server := modules.Initialize("/")
 	go func() {
-		_ = server.Start(fmt.Sprintf(":%d", port.Int()))
+		assert.Nil(server.Start(fmt.Sprintf(":%d", port.Int())))
 	}()
 
 	sig := shell.WaitExitSignal()
