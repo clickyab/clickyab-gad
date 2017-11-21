@@ -69,7 +69,7 @@ func (tc *selectController) show(c echo.Context) error {
 	typ := c.Param("type")
 	px, err := base64.URLEncoding.WithPadding('.').DecodeString(c.Request().URL.Query().Get("px"))
 	if err != nil {
-		px = nil;
+		px = nil
 	}
 	long := c.Request().URL.Query().Get("l")
 	pos := c.Request().URL.Query().Get("pos")
