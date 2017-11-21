@@ -18,15 +18,44 @@ import (
 	"strings"
 
 	"clickyab.com/gad/models"
+	"github.com/clickyab/services/config"
 	"github.com/clickyab/simple-rtb"
 	"github.com/mssola/user_agent"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
 
-const requestDataTokenExchange = "__exchange__"
+const (
+	usdCur                   = "USD"
+	rialCur                  = "IRR"
+	requestDataTokenExchange = "__exchange__"
+)
 
-var domain = regexp.MustCompile(`^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,3})$`)
+var (
+	// centExchangeRate change cent to rial
+	centExchangeRate = config.RegisterInt("demand.cent.rate", 420, "cent to rial change rate")
+	domain           = regexp.MustCompile(`^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,3})$`)
+)
+
+func validateCurr(imps []srtb.Impression) (bool, int) {
+	if imps[0].Currency != usdCur && imps[0].Currency != rialCur {
+		return false, 0
+	}
+	var curr = imps[0].Currency
+	var rate int
+	if curr == usdCur {
+		rate = centExchangeRate.Int()
+	} else if curr == rialCur {
+		rate = 1
+	}
+	for i := range imps {
+		if imps[i].Currency != curr {
+			return false, 0
+		}
+		imps[i].BidFloor = imps[i].BidFloor * float64(rate)
+	}
+	return true, rate
+}
 
 // RequestExchangeCollectorGenerator try to collect data from request
 func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, int) string) echo.MiddlewareFunc {
@@ -39,10 +68,20 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			buf := bytes.NewBuffer(tmp)
 			logrus.Debug(string(tmp))
 			dec := json.NewDecoder(buf)
-			defer ctx.Request().Body.Close()
+			defer func() {
+				err := ctx.Request().Body.Close()
+				assert.Nil(err)
+			}()
 			err = dec.Decode(e)
 			assert.Nil(err)
-
+			if len(e.Imp) == 0 {
+				return ctx.HTML(http.StatusBadRequest, "no impression")
+			}
+			//validate cur and do the conversion
+			ok, rate := validateCurr(e.Imp)
+			if !ok {
+				return ctx.HTML(http.StatusBadRequest, "Wrong Currency")
+			}
 			if e.Site != nil {
 				if !domain.MatchString(e.Site.Domain) {
 					return ctx.HTML(http.StatusBadRequest, fmt.Sprintf("invalid publisher site %s", e.Site.Domain))
@@ -56,6 +95,7 @@ func RequestExchangeCollectorGenerator(copKey func(echo.Context, *RequestData, i
 			rde.UserAgent = e.Device.UA
 			ua := user_agent.New(rde.UserAgent)
 			browser, version := ua.Browser()
+			rde.Rate = rate
 			rde.Browser = browser
 			rde.BrowserVersion = version
 			rde.OS = ua.OS()
