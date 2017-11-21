@@ -5,5 +5,6 @@ type Impression struct {
 	ID       string  `json:"id"`
 	Banner   *Banner `json:"banner"`
 	BidFloor float64 `json:"bidfloor"`
+	Currency string  `json:"currency"`
 	Secure   int     `json:"secure"`
 }

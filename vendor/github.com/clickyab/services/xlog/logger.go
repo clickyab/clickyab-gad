@@ -55,7 +55,7 @@ func SetField(ctx context.Context, key string, val interface{}) context.Context 
 		}
 	}
 	fields.lock.Lock()
-	defer fields.lock.RLock()
+	defer fields.lock.Unlock()
 	fields.fields[key] = val
 
 	return context.WithValue(ctx, ctxKey, fields)
