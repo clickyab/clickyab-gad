@@ -92,7 +92,10 @@ func (tc *selectController) allAds(c echo.Context) error {
 func (tc *selectController) allWebAds(c echo.Context, rd *middlewares.RequestData, website *models.Website) error {
 	payload := allAdsWebPayload{}
 	dec := json.NewDecoder(c.Request().Body)
-	defer c.Request().Body.Close()
+	defer func() {
+		err := c.Request().Body.Close()
+		assert.Nil(err)
+	}()
 	err := dec.Decode(&payload)
 	assert.Nil(err)
 
@@ -151,7 +154,8 @@ func (tc *selectController) allNativeAds(ctx echo.Context, rd *middlewares.Reque
 	payload := allAdsNativePayload{}
 	dec := json.NewDecoder(ctx.Request().Body)
 	err := dec.Decode(&payload)
-	ctx.Request().Body.Close()
+	assert.Nil(err)
+	err = ctx.Request().Body.Close()
 	assert.Nil(err)
 	ctx.Set("payload", payload)
 
@@ -191,7 +195,8 @@ func (tc *selectController) allVastAds(ctx echo.Context, rd *middlewares.Request
 	payload := allAdsVastPayload{}
 	dec := json.NewDecoder(ctx.Request().Body)
 	err := dec.Decode(&payload)
-	ctx.Request().Body.Close()
+	assert.Nil(err)
+	err = ctx.Request().Body.Close()
 	assert.Nil(err)
 	ctx.Set("payload", payload)
 

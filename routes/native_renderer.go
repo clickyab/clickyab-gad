@@ -174,6 +174,8 @@ func renderNative(imp nativeContainer) string {
 	return string(buf.Bytes())
 }
 func init() {
-	native.Parse(nativeTmpl)
-	native.Parse(adTmpl)
+	_, err := native.Parse(nativeTmpl)
+	assert.Nil(err)
+	_, err = native.Parse(adTmpl)
+	assert.Nil(err)
 }
