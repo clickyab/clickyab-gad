@@ -4,17 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"clickyab.com/gad/ip2location"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/models"
 	"clickyab.com/gad/models/selector"
-	"clickyab.com/gad/redis"
-	"clickyab.com/gad/redlock"
 	"clickyab.com/gad/utils"
 	"github.com/clickyab/simple-rtb"
-	"github.com/sirupsen/logrus"
 	"gopkg.in/labstack/echo.v3"
 )
 
@@ -42,33 +38,11 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 	} else {
 		return c.HTML(http.StatusBadRequest, "not supported platform")
 	}
-	lockSession := "DRD_SESS_" + e.ID
-	lock := redlock.NewRedisDistributedLock(lockSession, time.Second)
-	lock.Lock()
-	defer lock.Unlock()
-	var sessionAds []int64
-	// This is when the supplier is not support grouping
-	originalBidReqID := e.ID
-	if e.ID != "" {
-		e.ID = "EXC_SESS_" + e.ID
-		sessionAds = aredis.SMembersInt(e.ID)
-		if len(sessionAds) > 0 {
-			sel = selector.Mix(sel, func(_ *selector.Context, a models.AdData) bool {
-				for _, i := range sessionAds {
-					if i == a.AdID {
-						//TODO if u want to get ad for every bid - request change
-						return false
-					}
-				}
-				return true
-			})
-		}
-	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), sel)
 	show, ads := tc.makeShow(c, "sync", rd, filteredAds, nil, sizeNumSlice, slotSize, nil, website, false, bidfloors, false, true, floorDivDemand.Int64(), true)
 
 	//substitute the webMobile slot if exists
-	bids := []srtb.Bid{}
+	var bids []srtb.Bid
 	for i := range ads {
 		if ads[i] == nil {
 			continue
@@ -87,22 +61,13 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 			WinURL:   "",
 			Cat:      []string{},
 		})
-
-		sessionAds = append(sessionAds, ads[i].AdID)
 	}
 	dm := srtb.BidResponse{
-		ID:   originalBidReqID,
+		ID:   e.ID,
 		Bids: bids,
 	}
 	if len(dm.Bids) < 1 {
 		return c.NoContent(http.StatusNoContent)
-	}
-
-	if e.ID != "" {
-		err := aredis.SAddInt(e.ID, true, time.Minute, sessionAds...)
-		if err != nil {
-			logrus.Debug(err)
-		}
 	}
 
 	return c.JSON(http.StatusOK, dm)
