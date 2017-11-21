@@ -57,7 +57,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 			AdID:     fmt.Sprintf("%d", ads[i].AdID),
 			ImpID:    trackIDs[ads[i].SlotPublicID],
 			AdMarkup: fmt.Sprintf(`<iframe name="clickyab_frame" src="%s&px=${PIXEL_URL_IMAGE:B64}" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" width="%d" height="%d" frameborder="0"></iframe>`, show[i], w, h),
-			Price:    int64(float64(ads[i].WinnerBid) * ads[i].CTR * 10),
+			Price:    int64(float64(ads[i].WinnerBid)*ads[i].CTR*10) / int64(rd.Rate),
 			WinURL:   "",
 			Cat:      []string{},
 		})

@@ -8,6 +8,7 @@ import (
 	"clickyab.com/gad/models"
 	"clickyab.com/gad/redis"
 	"clickyab.com/gad/transport"
+	"github.com/clickyab/services/assert"
 	"github.com/clickyab/services/config"
 	"github.com/sirupsen/logrus"
 )
@@ -89,7 +90,7 @@ func GetCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 		// if not found then reset all capping
 		if !found {
 			logrus.Debugf("Removing key for size %d", sizeNumSlice[i])
-			aredis.HMSet(getCappingKey(copID), dailyCapExpire.Duration(), sizeCap)
+			assert.Nil(aredis.HMSet(getCappingKey(copID), dailyCapExpire.Duration(), sizeCap))
 			for i := range sizeCap {
 				results[i] = 0
 			}

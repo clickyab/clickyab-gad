@@ -36,6 +36,7 @@ type RequestData struct {
 	Parent         string
 	ISP            string
 	Alexa          bool
+	Rate           int
 
 	//App part
 	Network    string

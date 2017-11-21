@@ -24,6 +24,7 @@ import (
 
 	"clickyab.com/gad/ip2location"
 	"clickyab.com/gad/store"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -259,7 +260,8 @@ func (tc *selectController) slotSizeNormal(slotPublic []string, webID int64, siz
 	if len(newSlots) > 0 {
 		// Expire the cache for the select
 		key := utils.Hash(fmt.Sprintf("slot_%s_%d", slotPublicString, webID))
-		aredis.RemoveKey(key)
+		err := aredis.RemoveKey(key)
+		logrus.Debug(err)
 	}
 	insertedSlots := tc.insertNewSlots(webID, newSlots, newSize)
 	for i := range insertedSlots {
