@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"math"
+
 	"clickyab.com/gad/ip2location"
 	"clickyab.com/gad/middlewares"
 	"clickyab.com/gad/models"
@@ -57,7 +59,7 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 			AdID:     fmt.Sprintf("%d", ads[i].AdID),
 			ImpID:    trackIDs[ads[i].SlotPublicID],
 			AdMarkup: fmt.Sprintf(`<iframe name="clickyab_frame" src="%s&px=${PIXEL_URL_IMAGE:B64}" marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" width="%d" height="%d" frameborder="0"></iframe>`, show[i], w, h),
-			Price:    float64(ads[i].WinnerBid) * ads[i].CTR * 10 / rd.Rate,
+			Price:    round(float64(ads[i].WinnerBid)*ads[i].CTR*10/rd.Rate, .5, 2),
 			WinURL:   "",
 			Cat:      []string{},
 		})
@@ -69,7 +71,6 @@ func (tc *selectController) selectDemandWebAd(c echo.Context, rd *middlewares.Re
 	if len(dm.Bids) < 1 {
 		return c.NoContent(http.StatusNoContent)
 	}
-
 	return c.JSON(http.StatusOK, dm)
 }
 
@@ -163,4 +164,18 @@ func (tc selectController) slotSizeWebExchange(imps []srtb.Impression, website m
 		all[i].Secure = secureSlots[i]
 	}
 	return all, size, trackIDs, bidFloors, nil
+}
+
+func round(val float64, roundOn float64, places int) (newVal float64) {
+	var round float64
+	pow := math.Pow(10, float64(places))
+	digit := pow * val
+	_, div := math.Modf(digit)
+	if div >= roundOn {
+		round = math.Ceil(digit)
+	} else {
+		round = math.Floor(digit)
+	}
+	newVal = round / pow
+	return
 }

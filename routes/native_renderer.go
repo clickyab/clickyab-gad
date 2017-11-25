@@ -160,7 +160,7 @@ var addRenderer = func(ads []nativeAd) string {
 	return b.String()
 }
 
-var native = template.New("native").Funcs(template.FuncMap{"renderAds": addRenderer})
+var native = template.New("native").Funcs(template.FuncMap{"renderAds": addRenderer, "isRound": addRenderer})
 
 func renderNative(imp nativeContainer) string {
 	buf := &bytes.Buffer{}
