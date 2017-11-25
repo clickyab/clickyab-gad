@@ -33,18 +33,18 @@ const (
 
 var (
 	// centExchangeRate change cent to rial
-	centExchangeRate = config.RegisterInt("demand.cent.rate", 420, "cent to rial change rate")
+	centExchangeRate = config.RegisterFloat64("demand.cent.rate", 42000, "cent to rial change rate")
 	domain           = regexp.MustCompile(`^(([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.([a-zA-Z]{2,6}|[a-zA-Z0-9-]{2,30}\.[a-zA-Z]{2,3})$`)
 )
 
-func validateCurr(imps []srtb.Impression) (bool, int) {
+func validateCurr(imps []srtb.Impression) (bool, float64) {
 	if imps[0].Currency != usdCur && imps[0].Currency != rialCur {
 		return false, 0
 	}
 	var curr = imps[0].Currency
-	var rate int
+	var rate float64
 	if curr == usdCur {
-		rate = centExchangeRate.Int()
+		rate = centExchangeRate.Float64()
 	} else if curr == rialCur {
 		rate = 1
 	}
