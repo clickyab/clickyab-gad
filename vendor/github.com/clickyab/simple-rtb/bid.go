@@ -5,7 +5,7 @@ type Bid struct {
 	ID       string   `json:"id"`
 	AdID     string   `json:"ad_id,omitempty"`
 	ImpID    string   `json:"imp_id"`
-	Price    int64    `json:"price"`
+	Price    float64  `json:"price"`
 	AdMarkup string   `json:"adm"`
 	Width    int      `json:"w"`
 	Height   int      `json:"h"`
