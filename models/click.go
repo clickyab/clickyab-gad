@@ -28,6 +28,7 @@ type Click struct {
 	OS              sql.NullInt64  `json:"c_os" db:"c_os"`
 	Time            sql.NullInt64  `json:"imp_time" db:"imp_time"`
 	Date            sql.NullInt64  `json:"imp_date" db:"imp_date"`
+	AdSize          int            `json:"ad_size" db:"ad_size"`
 }
 
 // InsertClick try to insert a click in database
@@ -50,7 +51,7 @@ func (m *Manager) InsertClick(click *transport.Click) error {
 	c_fast,
 	c_os,
 	c_time,
-	c_date) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+	c_date,ad_size) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 	web := sql.NullInt64{}
 	parent := sql.NullString{}
 	ref := sql.NullString{}
@@ -88,6 +89,7 @@ func (m *Manager) InsertClick(click *transport.Click) error {
 		click.OS,
 		click.OutTime.Unix(),
 		click.OutTime.Format("20060102"),
+		click.AdSize,
 	)
 	if err != nil {
 		return err

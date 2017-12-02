@@ -26,8 +26,9 @@ type Click struct {
 	Rand         string    `json:"rand"`
 	TrueView     bool      `json:"tv"`
 	// TODO : better status
-	Web *WebSiteImp `json:"web"`
-	App *AppImp     `json:"app"`
+	Web    *WebSiteImp `json:"web"`
+	App    *AppImp     `json:"app"`
+	AdSize int         `json:"ad_size"`
 }
 
 // Validate try to validate the click in
