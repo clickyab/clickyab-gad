@@ -40,7 +40,7 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 	query := fmt.Sprintf(`INSERT INTO impressions%s (
 							cp_id,
 							w_id,wp_id,app_id,
-							ad_id,cop_id,ca_id,
+							ad_id,ad_size,cop_id,ca_id,
 							imp_ipaddress,imp_referaddress,imp_parenturl,
 							imp_url,imp_winnerbid,imp_status,
 							imp_cookie,imp_alexa,imp_flash,
@@ -48,7 +48,7 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 							) VALUES (
 							?,
 							?,?,?,
-							?,?,?,
+							?,?,?,?,
 							?,?,?,
 							?,?,?,
 							?,?,?,
@@ -79,7 +79,7 @@ func (m *Manager) InsertImpression(imp *transport.Impression) error {
 	res, err := m.GetWDbMap().Exec(query,
 		imp.CampaignID,
 		wid, 0, appID,
-		imp.AdID, imp.CopID, imp.CampaignAdID,
+		imp.AdID, imp.AdSize, imp.CopID, imp.CampaignAdID,
 		imp.IP.String(), refer, parent,
 		imp.URL, imp.WinnerBID, imp.Status,
 		0, 0, 0,
