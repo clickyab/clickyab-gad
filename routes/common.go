@@ -39,6 +39,7 @@ func (selectController) fillImp(rd *middlewares.RequestData, sus bool, ads *mode
 		Suspicious:   sus,
 		IP:           rd.IP,
 		AdID:         ads.AdID,
+		AdSize:       ads.AdSize,
 		CopID:        rd.CopID,
 		CampaignAdID: ads.CampaignAdID.Int64,
 		SlotID:       slotID,
@@ -80,6 +81,7 @@ func (selectController) fillNativeImp(rd *middlewares.RequestData, sus bool, ads
 		Time:         time.Now(),
 		WinnerBID:    winnerBid,
 		Status:       0,
+		AdSize:       ads.AdSize,
 	}
 
 	imp.Web = &transport.WebSiteImp{

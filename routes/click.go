@@ -214,6 +214,7 @@ func (selectController) fillClick(
 		TrueView:     tv,
 		Web:          web,
 		App:          app,
+		AdSize:       ads.AdSize,
 	}
 }
 

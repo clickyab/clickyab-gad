@@ -24,6 +24,7 @@ type Impression struct {
 	ID           int64     `json:"id"`
 	IP           net.IP    `json:"ip"`
 	AdID         int64     `json:"adid"`
+	AdSize       int       `json:"adsize"`
 	CopID        int64     `json:"copid"`
 	CampaignAdID int64     `json:"caid"`
 	SLAID        int64     `json:"sla"`
