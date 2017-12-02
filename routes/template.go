@@ -53,6 +53,10 @@ blockquote:before, blockquote:after,
 q:before, q:after {
   content: "";
 }
+.cy-img-banner{
+	max-width:100%;
+	height:auto;
+}
 blockquote, q {
   quotes: "" "";
 }
@@ -76,7 +80,7 @@ blockquote, q {
 <body>
 	{{if ne .Pixel ""}}<img src="{{.Pixel}}" class="cyb-pixel" width="1" height="1" />{{end}}
     {{ if .Tiny }}<a class="tiny" href="http://clickyab.com/?ref=icon" target="_blank"></a>{{ end }}
-	<a href="{{ .Link }}" target="_blank"><img  src="{{ .Src }}" border="0" height="{{ .Height }}" width="{{ .Width }}"/></a>
+	<a href="{{ .Link }}" target="_blank"><img  src="{{ .Src }}" class="cy-img-banner" border="0" height="{{ .Height }}" width="{{ .Width }}"/></a>
 <br style="clear: both;"/>
 {{ if .ShowT }}<br style="clear: both;"/><iframe src="//t.clickyab.com/" width="1" height="1" frameborder="0"></iframe>{{ end }}
 </body></html>`
