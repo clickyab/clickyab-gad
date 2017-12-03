@@ -90,7 +90,9 @@ func GetCapping(copID int64, sizeNumSlice map[string]int, filteredAds map[int][]
 		// if not found then reset all capping
 		if !found {
 			logrus.Debugf("Removing key for size %d", sizeNumSlice[i])
-			assert.Nil(aredis.HMSet(getCappingKey(copID), dailyCapExpire.Duration(), sizeCap))
+			if len(sizeCap) != 0 {
+				assert.Nil(aredis.HMSet(getCappingKey(copID), dailyCapExpire.Duration(), sizeCap))
+			}
 			for i := range sizeCap {
 				results[i] = 0
 			}
