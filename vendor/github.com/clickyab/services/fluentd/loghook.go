@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/clickyab/services/config"
-	"github.com/clickyab/services/initializer"
 	"github.com/evalphobia/logrus_fluent"
 	"github.com/sirupsen/logrus"
 )
@@ -62,5 +61,5 @@ func (hook) Initialize(ctx context.Context) {
 }
 
 func init() {
-	initializer.Register(&hook{}, 0)
+	//initializer.Register(&hook{}, 0)
 }
