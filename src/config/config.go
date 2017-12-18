@@ -213,8 +213,8 @@ func defaultLayer() onion.Layer {
 		),
 	)
 	assert.Nil(d.SetDefault("mysql.wdsn", "root:bita123@tcp(127.0.0.1:3306)/clickyab?charset=utf8&parseTime=true&charset=utf8"))
-	assert.Nil(d.SetDefault("mysql.max_connection", 30))
-	assert.Nil(d.SetDefault("mysql.max_idle_connection", 5))
+	assert.Nil(d.SetDefault("mysql.max_connection", 150))
+	assert.Nil(d.SetDefault("mysql.max_idle_connection", 30))
 
 	assert.Nil(d.SetDefault("amqp.publisher", 30))
 	assert.Nil(d.SetDefault("amqp.exchange", "cy"))
