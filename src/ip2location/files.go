@@ -2,8 +2,6 @@ package ip2location
 
 import (
 	"assert"
-	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -15,8 +13,7 @@ var (
 )
 
 type fileMock struct {
-	data []byte
-	ln   int
+	f *os.File
 }
 
 func newFileMock() (*fileMock, error) {
@@ -24,28 +21,14 @@ func newFileMock() (*fileMock, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-
-	data, err := ioutil.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
 
 	return &fileMock{
-		data: data,
-		ln:   len(data),
+		f: f,
 	}, nil
 }
 
 func (fm *fileMock) ReadAt(b []byte, off int64) (n int, err error) {
-	lb := len(b)
-	avail := int64(fm.ln) - off
-	if avail < int64(lb) {
-		return 0, io.EOF
-	}
-
-	copy(b, fm.data[off:off+int64(lb)])
-	return lb, nil
+	return fm.f.ReadAt(b, off)
 }
 
 func init() {
