@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"middlewares"
 	"mr"
-	"rabbit"
 	"redis"
 	"strconv"
 	"time"
@@ -141,8 +140,8 @@ func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, m
 	if err != nil {
 		logrus.WithField("cy.imp", imp).Error("error in hmset", err)
 	}
-	err = rabbit.Publish(imp)
-	if err != nil {
-		logrus.WithField("cy.imp", imp).Error("error in  publishing job", err)
-	}
+	//err = rabbit.Publish(imp)
+	//if err != nil {
+	//	logrus.WithField("cy.imp", imp).Error("error in  publishing job", err)
+	//}
 }
