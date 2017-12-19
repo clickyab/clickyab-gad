@@ -24,7 +24,7 @@ import (
 func main() {
 	config.Initialize()
 	config.SetConfigParameter()
-	defer profile.Start(profile.CPUProfile, profile.NoShutdownHook, profile.ProfilePath("./tmp/"+<-utils.ID)).Stop()
+	defer profile.Start(profile.CPUProfile, profile.NoShutdownHook, profile.ProfilePath("/debug/"+<-utils.ID)).Stop()
 
 	ctx, cancel := context.WithCancel(context.Background())
 
