@@ -10,6 +10,7 @@ import (
 
 func Initialize(ctx context.Context) {
 
+	return
 	var (
 		active     = config.Config.Fluentd.Enable
 		host       = config.Config.Fluentd.Host
