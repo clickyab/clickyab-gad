@@ -94,7 +94,7 @@ func (selectController) fillNativeImp(rd *middlewares.RequestData, sus bool, ads
 func (selectController) callWebWorker(pub Publisher, slotID int64, adID int64, mega string, rand string, imp transport.Impression, rd *middlewares.RequestData) {
 	m := mr.NewManager()
 	var err error
-	imp.SLAID, err = m.InsertSlotAd(slotID, adID)
+	imp.SLAID, err = m.FetchSlotAd(slotID, adID)
 	if err != nil {
 		// not important error
 		logrus.Debug(err)
