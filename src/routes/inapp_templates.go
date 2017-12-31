@@ -196,7 +196,7 @@ a.largeclose{ width: 32px; height: 32px; line-height: 32px; font-size: 24px; }
             setTimeout(function () {
                 AndroidHasNoAds();
             }, 100);// 0.1 sec
-            {{ else if eq .SdkVersion 4 }}
+            {{ else if ge .SdkVersion 4 }}
             setTimeout(function () {
                 AndroidSetHasAds(false);
             }, 100);// 0.1 sec
@@ -206,7 +206,7 @@ a.largeclose{ width: 32px; height: 32px; line-height: 32px; font-size: 24px; }
             }, 100);// 0.1 sec
             {{ end }}
         {{ else }}
-            {{ if eq .SdkVersion 4 }}
+            {{ if ge .SdkVersion 4 }}
             setTimeout(function () {
                 AndroidSetHasAds(true);
             }, 100);// 0.1 sec
