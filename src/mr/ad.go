@@ -95,6 +95,7 @@ type Ad struct {
 	CampaignID      sql.NullInt64      `db:"cp_id" json:"cp_id"`
 	CampaignName    sql.NullString     `db:"cp_name" json:"cp_name"`
 	RawSlotSize     *RawSlotDimensions `db:"-" json:"-"`
+	Mime            sql.NullString     `db:"ad_mime"`
 }
 
 type RawSlotDimensions struct {
