@@ -65,9 +65,31 @@ MOUNT {{ .EnvDir }}:/tmp/env
 MOUNT {{ .Target }}:/tmp/build
 MOUNT {{ .Cache }}:/tmp/cache
 
+ENV LONGHASH ${LONGHASH}
+ENV SHORTHASH ${SHORTHASH}
+ENV COMMITDATE ${COMMITDATE}
+ENV IMPDATE ${IMPDATE}
+ENV COMMITCOUNT ${COMMITCOUNT}
+ENV BUILDDATE ${BUILDDATE}
+
 RUN /bin/herokuish buildpack build && rm -rf /app/pkg && rm -rf /app/tmp
+
+EXPORT /app/bin app
+
+FROM ubuntu:16.04
+IMPORT /app
+
+ENV TZ=Asia/Tehran
+RUN ln -snf /usr/share/zoneinfo/\$TZ /etc/localtime && echo \$TZ > /etc/timezone
+
+RUN apt-get update && apt-get install -y ca-certificates && apt-get clean
+
+CMD ["/bin/bash", "/app/bin/run-webserver.sh"]
+
 TAG registry.clickyab.ae/clickyab/{{ .App }}:{{ .Version }}
 PUSH registry.clickyab.ae/clickyab/{{ .App }}:{{ .Version }}
+TAG registry.clickyab.ae/clickyab/{{ .App }}:latest
+PUSH registry.clickyab.ae/clickyab/{{ .App }}:latest
 EOF
 
 pushd ${TEMPORARY}

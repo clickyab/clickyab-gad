@@ -14,10 +14,6 @@ import (
 
 	"fmt"
 
-	"context"
-
-	"fluentd"
-
 	"github.com/pkg/profile"
 )
 
@@ -26,10 +22,7 @@ func main() {
 	config.SetConfigParameter()
 	defer profile.Start(profile.CPUProfile, profile.NoShutdownHook, profile.ProfilePath("/debug/"+<-utils.ID)).Stop()
 
-	ctx, cancel := context.WithCancel(context.Background())
-
 	version.PrintVersion().Info("Application started")
-	fluentd.Initialize(ctx)
 	aredis.Initialize()
 	rabbit.Initialize()
 	models.Initialize()
@@ -43,5 +36,4 @@ func main() {
 
 	signal.Notify(sig, syscall.SIGABRT, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGQUIT, syscall.SIGHUP)
 	<-sig
-	cancel()
 }
