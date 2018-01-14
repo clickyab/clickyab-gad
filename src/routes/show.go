@@ -68,6 +68,7 @@ func (tc *selectController) show(c echo.Context) error {
 	typ := c.Param("type")
 	long := c.Request().URL.Query().Get("l")
 	pos := c.Request().URL.Query().Get("pos")
+	pin := c.Request().URL.Query().Get("pin")
 	if typ == "sync" {
 		typ = "web"
 	}
@@ -162,7 +163,11 @@ func (tc *selectController) show(c echo.Context) error {
 		}
 
 	}
-	res, err := tc.makeAdData(c, typ, ads, u.String(), long, pos, rd.Scheme != "http")
+	finalURL:=u.String()
+	if pin!=""{
+		finalURL=ads.AdURL.String
+	}
+	res, err := tc.makeAdData(c, typ, ads, finalURL, long, pos, rd.Scheme != "http")
 	if err != nil {
 		return err
 	}

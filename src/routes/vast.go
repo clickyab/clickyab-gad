@@ -111,6 +111,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 			v.Set("ref", rd.Referrer)
 			v.Set("parent", rd.Parent)
 			v.Set("s", fmt.Sprintf("%d", val.SlotID))
+			v.Set("pin", "1")
 			for i, j := range fixSlotSize[val.SlotPublicID].ExtraParam {
 				v.Set(i, j)
 			}
