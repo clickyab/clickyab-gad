@@ -88,7 +88,7 @@ func (tc *selectController) selectVastAd(c echo.Context) error {
 		Province:         province,
 		ISP:              isp,
 		SlotPins:         slotPins,
-		MinBidPercentage: 1, // TODO : Hard coded shit.
+		MinBidPercentage: 0.7, // TODO : Hard coded shit.
 	}
 	filteredAds := selector.Apply(&m, selector.GetAdData(), vastSelector)
 	var show = make(map[string]string)
