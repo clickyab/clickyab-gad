@@ -113,7 +113,7 @@ func (tc *selectController) inApp(c echo.Context) error {
 		u.RawQuery = v.Encode()
 		// Pass it to worker
 		img = ad.AdImg.String
-		go tc.callWebWorker(app, slotSize[slotString].ID, ad.AdID, rd.MegaImp, rnd, imp, rd)
+		tc.callWebWorker(app, slotSize[slotString].ID, ad.AdID, rd.MegaImp, rnd, imp, rd)
 	}
 	closeClass := "largeclose"
 	if slotSize[slotString].SlotSize == 8 {

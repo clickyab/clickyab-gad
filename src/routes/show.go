@@ -174,7 +174,7 @@ func (tc *selectController) show(c echo.Context) error {
 
 	imp := tc.fillImp(rd, suspicious, ads, winnerFinalBid, publisher, slotID)
 
-	go tc.callWebWorker(publisher, slotID, adID, mega, rnd, imp, rd)
+	tc.callWebWorker(publisher, slotID, adID, mega, rnd, imp, rd)
 	if typ == "vast" {
 		return c.XMLBlob(http.StatusOK, []byte(res))
 	}
