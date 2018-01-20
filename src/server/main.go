@@ -9,18 +9,15 @@ import (
 	"rabbit"
 	"redis"
 	"syscall"
-	"utils"
 	"version"
 
 	"fmt"
-
-	"github.com/pkg/profile"
 )
 
 func main() {
 	config.Initialize()
 	config.SetConfigParameter()
-	defer profile.Start(profile.CPUProfile, profile.NoShutdownHook, profile.ProfilePath("/debug/"+<-utils.ID)).Stop()
+	//defer profile.Start(profile.CPUProfile, profile.NoShutdownHook, profile.ProfilePath("/debug/"+<-utils.ID)).Stop()
 
 	version.PrintVersion().Info("Application started")
 	aredis.Initialize()

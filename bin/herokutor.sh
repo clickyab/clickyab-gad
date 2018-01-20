@@ -79,10 +79,10 @@ EXPORT /app/bin app
 FROM ubuntu:16.04
 IMPORT /app
 
-ENV TZ=Asia/Tehran
-RUN ln -snf /usr/share/zoneinfo/\$TZ /etc/localtime && echo \$TZ > /etc/timezone
+RUN apt-get update && apt-get install -y tzdata ca-certificates && apt-get clean
 
-RUN apt-get update && apt-get install -y ca-certificates && apt-get clean
+ENV TZ=Asia/Tehran
+RUN ln -snf /usr/share/zoneinfo/Asia/Tehran /etc/localtime && echo Asia/Tehran > /etc/timezone
 
 CMD ["/bin/bash", "/app/bin/run-webserver.sh"]
 
