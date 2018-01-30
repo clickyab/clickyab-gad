@@ -40,6 +40,7 @@ var (
 		filter.CheckMinBid,
 		filter.CheckVastNetwork,
 		filter.CheckISP,
+		filter.ExcludeCPM,
 	)
 )
 
