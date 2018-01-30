@@ -48,6 +48,7 @@ var (
 		filter.RemoveSlotPins,
 		filter.CheckVastOtherNetwork,
 		filter.CheckISP,
+		filter.ExcludeCPM,
 	)
 
 	nativeSelector = selector.Mix(
@@ -64,6 +65,7 @@ var (
 		filter.CheckWebCategory,
 		filter.CheckProvince,
 		filter.CheckISP,
+		filter.ExcludeCPM,
 	)
 
 	slotReg = regexp.MustCompile(`s\[(\d*)\]`)
