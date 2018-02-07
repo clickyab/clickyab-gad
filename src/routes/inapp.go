@@ -34,6 +34,7 @@ var (
 	appSelector = selector.Mix(
 		filter.IsAppNetwork,
 		filter.CheckAppSize,
+		filter.ExcludeCPM,
 		filter.CheckAppBlackList,
 		filter.CheckAppWhiteList,
 		filter.CheckAppCategory,
