@@ -111,11 +111,11 @@ func (tc *selectController) showphp(c echo.Context) error {
 
 	targetedAd := pubsAds[slotReq]
 	if targetedAd == nil {
-		return c.String(http.StatusNotFound, "not found")
+		return c.String(http.StatusNoContent,"")
 	}
 	ad, err := mr.NewManager().GetAd(targetedAd.AdID, false)
 	if err != nil {
-		return c.String(http.StatusNotFound, "not found")
+		return c.String(http.StatusNoContent,"")
 	}
 	ad.RawSlotSize = &mr.RawSlotDimensions{
 		Width:  width,
