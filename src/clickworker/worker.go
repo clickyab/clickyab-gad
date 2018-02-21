@@ -41,5 +41,6 @@ func clickWorker(in *transport.Click) (bool, error) {
 	assert.Nil(err)
 	//insert click in db
 	err = mr.NewManager().InsertClick(in)
+	assert.Nil(err)
 	return false, err
 }
