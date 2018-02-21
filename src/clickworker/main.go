@@ -24,7 +24,8 @@ func main() {
 	rabbit.Initialize()
 	defer rabbit.Finalize()
 	aredis.Initialize()
-
+	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true, DisableColors: false})
+	
 	go func() {
 		err := rabbit.RunWorker(
 			&transport.Click{},
