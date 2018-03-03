@@ -56,7 +56,7 @@ func (m *Manager) LoadAds() (res []AdData, err error) {
 				AND C.cp_daily_budget > C.cp_today_spend
 				AND C.cp_total_budget > C.cp_total_spend
 				AND U.u_balance > U.u_today_spend AND
-				U.u_balance > 5000`, u, u, h)
+				U.u_balance > 300000`, u, u, h)
 
 	_, err = m.GetRDbMap().Select(
 		&res,
