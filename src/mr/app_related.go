@@ -175,7 +175,30 @@ func (m *Manager) GetApp(token string) (*App, error) {
 		return &res, nil
 	}
 
-	q := "SELECT * FROM `apps` WHERE `app_token`=?"
+	q := `SELECT app_id,
+	u_id,
+	app_token,
+	app_name,
+	en_app_name,
+	app_package,
+	app_supplier,
+	am_id,
+	app_minbid,
+	app_floor_cpm,
+	app_div,
+	app_status,
+	app_review,
+	app_today_ctr,
+	app_today_imps,
+	app_today_clicks,
+	app_date,
+	app_cat,
+	app_notapprovedreason,
+	app_fatfinger,
+	created_at,
+	updated_at,
+	app_prepayment,
+	app_publish_cost FROM apps WHERE app_token=?`
 	err = m.GetRDbMap().SelectOne(&res, q, token)
 	if err != nil {
 		return nil, err
@@ -194,7 +217,30 @@ func (m *Manager) GetAppByID(id int64) (*App, error) {
 		return &res, nil
 	}
 
-	q := "SELECT * FROM `apps` WHERE `app_id`=?"
+	q := `SELECT app_id,
+	u_id,
+	app_token,
+	app_name,
+	en_app_name,
+	app_package,
+	app_supplier,
+	am_id,
+	app_minbid,
+	app_floor_cpm,
+	app_div,
+	app_status,
+	app_review,
+	app_today_ctr,
+	app_today_imps,
+	app_today_clicks,
+	app_date,
+	app_cat,
+	app_notapprovedreason,
+	app_fatfinger,
+	created_at,
+	updated_at,
+	app_prepayment,
+	app_publish_cost FROM apps WHERE app_id=?`
 	err = m.GetRDbMap().SelectOne(&res, q, id)
 	if err != nil {
 		return nil, err
@@ -294,7 +340,30 @@ func (m *Manager) FetchAppByPack(pack, supplier string) (*App, error) {
 	if err == nil {
 		return &res, nil
 	}
-	q := "SELECT * FROM apps WHERE app_supplier=? AND app_package=? AND app_status NOT IN (2,3) LIMIT 1"
+	q := `SELECT app_id,
+	u_id,
+	app_token,
+	app_name,
+	en_app_name,
+	app_package,
+	app_supplier,
+	am_id,
+	app_minbid,
+	app_floor_cpm,
+	app_div,
+	app_status,
+	app_review,
+	app_today_ctr,
+	app_today_imps,
+	app_today_clicks,
+	app_date,
+	app_cat,
+	app_notapprovedreason,
+	app_fatfinger,
+	created_at,
+	updated_at,
+	app_prepayment,
+	app_publish_cost FROM apps WHERE app_supplier=? AND app_package=? AND app_status NOT IN (2,3) LIMIT 1`
 	err = m.GetRDbMap().SelectOne(&res, q, supplier, pack)
 	if err != nil {
 		return nil, err
@@ -311,7 +380,30 @@ func (m *Manager) FetchValidAppByID(ID int64) (*App, error) {
 	if err == nil {
 		return &res, nil
 	}
-	q := "SELECT * FROM apps WHERE app_id=? AND app_status NOT IN (2,3) LIMIT 1"
+	q := `SELECT app_id,
+	u_id,
+	app_token,
+	app_name,
+	en_app_name,
+	app_package,
+	app_supplier,
+	am_id,
+	app_minbid,
+	app_floor_cpm,
+	app_div,
+	app_status,
+	app_review,
+	app_today_ctr,
+	app_today_imps,
+	app_today_clicks,
+	app_date,
+	app_cat,
+	app_notapprovedreason,
+	app_fatfinger,
+	created_at,
+	updated_at,
+	app_prepayment,
+	app_publish_cost FROM apps WHERE app_id=? AND app_status NOT IN (2,3) LIMIT 1`
 	err = m.GetProperDBMap().SelectOne(&res, q, ID)
 	if err != nil {
 		return nil, err

@@ -4,7 +4,34 @@ package mr
 func (m *Manager) FetchWebsiteAll() ([]*Website, error) {
 	var res = []*Website{}
 	//key := utils.Hash("WebsiteAll")
-	query := `SELECT * FROM websites ORDER BY w_today_clicks DESC LIMIT 100`
+	query := `SELECT w_id,
+	u_id,
+	w_pub_id,
+	w_domain,
+	w_supplier,
+	w_name,
+	w_categories,
+	w_minbid,
+	w_floor_cpm,
+	w_profile_type,
+	w_status,
+	w_review,
+	w_alexarank,
+	w_div,
+	w_mobad,
+	w_nativead,
+	w_fatfinger,
+	w_publish_start,
+	w_publish_end,
+	w_publish_cost,
+	w_prepayment,
+	w_today_ctr,
+	w_today_imps,
+	w_today_clicks,
+	w_date,
+	w_notapprovedreason,
+	created_at,
+	updated_at FROM websites ORDER BY w_today_clicks DESC LIMIT 100`
 	_, err := m.GetRDbMap().Select(
 		&res,
 		query,
