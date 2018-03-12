@@ -79,7 +79,34 @@ func (m *Manager) FetchWebsiteByPublicID(publicID int64) (*Website, error) {
 		return &res, nil
 	}
 
-	query := `SELECT * FROM websites WHERE w_pub_id = ?  LIMIT 1`
+	query := `SELECT w_id,
+	u_id,
+	w_pub_id,
+	w_domain,
+	w_supplier,
+	w_name,
+	w_categories,
+	w_minbid,
+	w_floor_cpm,
+	w_profile_type,
+	w_status,
+	w_review,
+	w_alexarank,
+	w_div,
+	w_mobad,
+	w_nativead,
+	w_fatfinger,
+	w_publish_start,
+	w_publish_end,
+	w_publish_cost,
+	w_prepayment,
+	w_today_ctr,
+	w_today_imps,
+	w_today_clicks,
+	w_date,
+	w_notapprovedreason,
+	created_at,
+	updated_at FROM websites WHERE w_pub_id = ?  LIMIT 1`
 
 	err = m.GetRDbMap().SelectOne(
 		&res,
@@ -101,7 +128,34 @@ func (m *Manager) FetchWebsite(ID int64) (*Website, error) {
 	if err == nil {
 		return &res, nil
 	}
-	query := `SELECT * FROM websites WHERE w_id = ?  LIMIT 1`
+	query := `SELECT w_id,
+	u_id,
+	w_pub_id,
+	w_domain,
+	w_supplier,
+	w_name,
+	w_categories,
+	w_minbid,
+	w_floor_cpm,
+	w_profile_type,
+	w_status,
+	w_review,
+	w_alexarank,
+	w_div,
+	w_mobad,
+	w_nativead,
+	w_fatfinger,
+	w_publish_start,
+	w_publish_end,
+	w_publish_cost,
+	w_prepayment,
+	w_today_ctr,
+	w_today_imps,
+	w_today_clicks,
+	w_date,
+	w_notapprovedreason,
+	created_at,
+	updated_at FROM websites WHERE w_id = ?  LIMIT 1`
 
 	err = m.GetRDbMap().SelectOne(
 		&res,
@@ -123,7 +177,34 @@ func (m *Manager) FetchWebsiteByDomain(domain, supplier string) (*Website, error
 	if err == nil {
 		return &res, nil
 	}
-	query := `SELECT * FROM websites WHERE w_domain = ? AND w_status NOT IN (2,3) AND w_supplier= ? LIMIT 1`
+	query := `SELECT w_id,
+	u_id,
+	w_pub_id,
+	w_domain,
+	w_supplier,
+	w_name,
+	w_categories,
+	w_minbid,
+	w_floor_cpm,
+	w_profile_type,
+	w_status,
+	w_review,
+	w_alexarank,
+	w_div,
+	w_mobad,
+	w_nativead,
+	w_fatfinger,
+	w_publish_start,
+	w_publish_end,
+	w_publish_cost,
+	w_prepayment,
+	w_today_ctr,
+	w_today_imps,
+	w_today_clicks,
+	w_date,
+	w_notapprovedreason,
+	created_at,
+	updated_at FROM websites WHERE w_domain = ? AND w_status NOT IN (2,3) AND w_supplier= ? LIMIT 1`
 
 	err = m.GetRDbMap().SelectOne(
 		&res,
@@ -141,7 +222,34 @@ func (m *Manager) FetchWebsiteByDomain(domain, supplier string) (*Website, error
 // FetchWebsiteByDomain return a function based on its domain
 func (m *Manager) FindWebsiteByDomain(domain string) (*Website, error) {
 	var res = Website{}
-	query := `SELECT * FROM websites WHERE w_domain = ? AND w_status IN (0, 1) ORDER BY w_today_imps DESC LIMIT 1`
+	query := `SELECT w_id,
+	u_id,
+	w_pub_id,
+	w_domain,
+	w_supplier,
+	w_name,
+	w_categories,
+	w_minbid,
+	w_floor_cpm,
+	w_profile_type,
+	w_status,
+	w_review,
+	w_alexarank,
+	w_div,
+	w_mobad,
+	w_nativead,
+	w_fatfinger,
+	w_publish_start,
+	w_publish_end,
+	w_publish_cost,
+	w_prepayment,
+	w_today_ctr,
+	w_today_imps,
+	w_today_clicks,
+	w_date,
+	w_notapprovedreason,
+	created_at,
+	updated_at FROM websites WHERE w_domain = ? AND w_status IN (0, 1) ORDER BY w_today_imps DESC LIMIT 1`
 
 	err := m.GetRDbMap().SelectOne(
 		&res,
