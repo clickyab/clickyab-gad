@@ -258,7 +258,7 @@ func (selectController) replaceParameters(url, domain, campaign, clickID, impID,
 	)
 
 	url = r.Replace(url)
-	return `<html><head><title>$imp_url</title><meta name="robots" content="nofollow"/></head>
-			<body><script>window.setTimeout( function() { window.location.href = '` + url + `' }, 500 );</script></body>
+	return `<html><head><title>` + url + `</title><meta name="robots" content="nofollow"/></head>
+			<body onload="document.location.replace('` + url + `')"><script>window.setTimeout( function() { window.location.href = '` + url + `' }, 3000 );</script></body>
 			</html>`
 }

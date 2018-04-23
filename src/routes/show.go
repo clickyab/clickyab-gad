@@ -119,7 +119,7 @@ func (tc *selectController) show(c echo.Context) error {
 
 	rnd := <-utils.ID
 	u := url.URL{
-		Scheme: rd.Scheme,
+		Scheme: "http",
 		Host:   rd.Host,
 		Path:   fmt.Sprintf("/click/%s/%d/%s/%d/%s", typ, websiteID, mega, adID, rnd),
 	}
