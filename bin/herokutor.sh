@@ -6,10 +6,18 @@ set -eo pipefail
 exit_message() {
     echo ${1:-'exiting...'}
     code=${2:-1}
+    if [[ "#{code}" == "0" ]]; then
+        echo "${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
+        echo "Build was OK, but it's not the correct branch(${APP}:${BRANCH}.${COMMIT_COUNT} By ${CHANGE_AUTHOR}). ignore this." >> ${OUT_LOG}
+        echo "green" >> ${OUT_LOG_COLOR}
+    else
+        echo "${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
+        echo "Build was NOT OK (${APP}:${BRANCH}.${COMMIT_COUNT} By ${CHANGE_AUTHOR}). Verify with dev team." >> ${OUT_LOG}
+        echo "red" > ${OUT_LOG_COLOR}
+    fi
     exit ${code}
 }
 
-env
 APP=${APP:-}
 BRANCH=${BRANCH_NAME:-master}
 BRANCH=${CHANGE_TARGET:-${BRANCH}}
@@ -78,6 +86,8 @@ RUN ln -snf /usr/share/zoneinfo/\$TZ /etc/localtime && echo \$TZ > /etc/timezone
 
 TAG registry.clickyab.ae/clickyab/{{ .App }}:{{ .Version }}
 PUSH registry.clickyab.ae/clickyab/{{ .App }}:{{ .Version }}
+TAG registry.clickyab.ae/clickyab/{{ .App }}:latest
+PUSH registry.clickyab.ae/clickyab/{{ .App }}:latest
 EOF
 
 pushd ${TEMPORARY}
@@ -94,13 +104,18 @@ echo "${BUILD_PACKS_DIR}" >> /tmp/kill-me
 
 [ -z ${CHANGE_AUTHOR} ] || exit_message "Build OK" 0
 
+echo "${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
+echo "The branch ${BRANCH} build finished, try to deploy it" >> ${OUT_LOG}
+echo "If there is no report after this for successful deploy, it means the deply failed. report it please." >> ${OUT_LOG}
 if [[  "${BRANCH}" == "master"  ]]; then
-
-for WRKTYP in webserver impression click
-do
-    kubectl -n ${APP} set image deployment  ${APP}-${WRKTYP} ${APP}-${BRANCH}=registry.clickyab.ae/clickyab/${APP}:${BRANCH}.${COMMITCOUNT} --record
-done
+    for WRKTYP in webserver impression click
+    do
+        kubectl -n ${APP} set image deployment  ${APP}-${WRKTYP} ${APP}-${BRANCH}=registry.clickyab.ae/clickyab/${APP}:${BRANCH}.${COMMITCOUNT} --record
+    done
 
 elif [[  "${BRANCH}" == "dev"  ]]; then
     kubectl -n ${APP} set image deployment  ${APP}-webserver-${BRANCH} ${APP}-${BRANCH}=registry.clickyab.ae/clickyab/${APP}:${BRANCH}.${COMMITCOUNT} --record
 fi
+echo "..." >> ${OUT_LOG}
+echo "Deploy done successfully to image registry.clickyab.ae/clickyab/${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
+echo "green" >> ${OUT_LOG_COLOR}
