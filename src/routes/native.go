@@ -97,7 +97,7 @@ func (tc *selectController) selectNativeAd(c echo.Context) error {
 
 		rnd := <-utils.ID
 		u := url.URL{
-			Scheme: rd.Scheme,
+			Scheme: "http",
 			Host:   rd.Host,
 			Path:   fmt.Sprintf("/click/%s/%d/%s/%d/%s", "native", website.WID, m.RequestData.MegaImp, j.AdID, rnd),
 		}
