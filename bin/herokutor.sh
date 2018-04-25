@@ -6,6 +6,15 @@ set -eo pipefail
 exit_message() {
     echo ${1:-'exiting...'}
     code=${2:-1}
+    if [[ "#{code}" == "0" ]]; then
+        echo "[✓] ${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
+        echo "Build was OK, but it's not the correct branch(${APP}:${BRANCH}.${COMMIT_COUNT} By ${CHANGE_AUTHOR}). ignore this." >> ${OUT_LOG}
+        echo "green" >> ${OUT_LOG_COLOR}
+    else
+        echo "[✖] ${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
+        echo "Build was NOT OK (${APP}:${BRANCH}.${COMMIT_COUNT} By ${CHANGE_AUTHOR}). Verify with dev team." >> ${OUT_LOG}
+        echo "red" > ${OUT_LOG_COLOR}
+    fi
     exit ${code}
 }
 
@@ -14,6 +23,8 @@ APP=${APP:-}
 BRANCH=${BRANCH_NAME:-master}
 BRANCH=${CHANGE_TARGET:-${BRANCH}}
 CACHE_ROOT=${CACHE_ROOT:-/var/lib/jenkins/cache}
+OUT_LOG=${OUT_LOG:-/dev/null}
+OUT_LOG_COLOR=${OUT_LOG_COLOR:-/dev/null}
 
 [ -z ${CHANGE_AUTHOR} ] && PUSH="--push"
 [ -z ${APP} ] && exit_message "The APP is not defined." # WTF, the APP_NAME is important
@@ -94,6 +105,9 @@ echo "${BUILD_PACKS_DIR}" >> /tmp/kill-me
 
 [ -z ${CHANGE_AUTHOR} ] || exit_message "Build OK" 0
 
+echo "[✓] ${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
+echo "The branch ${BRANCH} build finished, try to deploy it" >> ${OUT_LOG}
+echo "If there is no report after this for successful deploy, it means the deply failed. report it please." >> ${OUT_LOG}
 if [[  "${BRANCH}" == "master"  ]]; then
 
 for WRKTYP in webserver impression click
