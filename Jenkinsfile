@@ -13,6 +13,11 @@ node {
     }
     stage('Build and deploy') {
         checkout scm
-        sh "APP=gad bash ./bin/herokutor.sh `pwd`"
+        def OUT_LOG = sh(script: 'mktemp', returnStdout: true).trim()
+        def OUT_LOG_COLOR = sh(script: 'mktemp', returnStdout: true).trim()
+        sh "APP=gad OUT_LOG=$OUT_LOG OUT_LOG_COLOE=$OUT_LOG_COLOR bash ./bin/herokutor.sh `pwd`"
+        def color = readFile OUT_LOG_COLOR
+        def message = readFile OUT_LOG
+        slackSend color: color, message: message
     }
 }
