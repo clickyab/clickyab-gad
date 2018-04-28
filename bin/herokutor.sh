@@ -6,7 +6,7 @@ set -eo pipefail
 exit_message() {
     echo ${1:-'exiting...'}
     code=${2:-1}
-    if [[ "#{code}" == "0" ]]; then
+    if [[ "${code}" == "0" ]]; then
         echo "[✓] ${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
         echo "Build was OK, but it's not the correct branch(${APP}:${BRANCH}.${COMMIT_COUNT} By ${CHANGE_AUTHOR}). ignore this." >> ${OUT_LOG}
         echo "green" >> ${OUT_LOG_COLOR}
