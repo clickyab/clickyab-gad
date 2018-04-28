@@ -6,12 +6,12 @@ set -eo pipefail
 exit_message() {
     echo ${1:-'exiting...'}
     code=${2:-1}
-    if [[ "#{code}" == "0" ]]; then
+    if [[ "${code}" == "0" ]]; then
         echo "[✓] ${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
         echo "Build was OK, but it's not the correct branch(${APP}:${BRANCH}.${COMMIT_COUNT} By ${CHANGE_AUTHOR}). ignore this." >> ${OUT_LOG}
         echo "green" >> ${OUT_LOG_COLOR}
     else
-        echo "[✖] ${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
+        echo "[✕] ${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
         echo "Build was NOT OK (${APP}:${BRANCH}.${COMMIT_COUNT} By ${CHANGE_AUTHOR}). Verify with dev team." >> ${OUT_LOG}
         echo "red" > ${OUT_LOG_COLOR}
     fi
@@ -58,7 +58,7 @@ export LONGHASH=$(git log -n1 --pretty="format:%H" | cat)
 export SHORTHASH=$(git log -n1 --pretty="format:%h"| cat)
 export COMMITDATE=$(git log -n1 --date="format:%D-%H-%I-%S" --pretty="format:%cd"| sed -e "s/\//-/g")
 export IMPDATE=$(date +%Y%m%d)
-export COMMITCOUNT=$(git rev-list HEAD --count| cat)
+export COMMIT_COUNT=$(git rev-list HEAD --count| cat)
 export BUILDDATE=$(date "+%D/%H/%I/%S"| sed -e "s/\//-/g")
 popd
 
@@ -118,3 +118,7 @@ done
 elif [[  "${BRANCH}" == "dev"  ]]; then
     kubectl -n ${APP} set image deployment  ${APP}-webserver-${BRANCH} ${APP}-${BRANCH}=registry.clickyab.ae/clickyab/${APP}:${BRANCH}.${COMMITCOUNT} --record
 fi
+
+echo "..." >> ${OUT_LOG}
+echo "Deploy done successfully to image registry.clickyab.ae/clickyab/${APP}:${BRANCH}.${COMMIT_COUNT}" >> ${OUT_LOG}
+echo "green" >> ${OUT_LOG_COLOR}
