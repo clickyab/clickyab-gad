@@ -58,7 +58,7 @@ export LONGHASH=$(git log -n1 --pretty="format:%H" | cat)
 export SHORTHASH=$(git log -n1 --pretty="format:%h"| cat)
 export COMMITDATE=$(git log -n1 --date="format:%D-%H-%I-%S" --pretty="format:%cd"| sed -e "s/\//-/g")
 export IMPDATE=$(date +%Y%m%d)
-export COMMITCOUNT=$(git rev-list HEAD --count| cat)
+export COMMIT_COUNT=$(git rev-list HEAD --count| cat)
 export BUILDDATE=$(date "+%D/%H/%I/%S"| sed -e "s/\//-/g")
 popd
 
