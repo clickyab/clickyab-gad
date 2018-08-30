@@ -13,7 +13,7 @@ type SlotData struct {
 
 // InsertSlotAd try to insert slot ad
 func (m *Manager) InsertSlotAd(slotID, adID int64) (int64, error) {
-	query := `insert into slots_ads (slot_id, ad_id) values (?, ?)`
+	query := `insert into slots_ads (slot_id, ad_id) values (?, ?) ON DUPLICATE KEY UPDATE sla_id=LAST_INSERT_ID(sla_id)`
 	res, err := m.GetWDbMap().Exec(
 		query,
 		slotID,
